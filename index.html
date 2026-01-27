@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tirumala Sightseeing</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        h1 { color: #ff9800; }
+        button { background: #03a9f4; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
 
+    <div class="card">
+        <h1>Tirumala Tours</h1>
+        <p>Welcome to your master web app!</p>
+        <p id="status">Connecting to Firebase...</p>
+        <button onclick="checkStatus()">Refresh Status</button>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      
+      // PASTE YOUR FIREBASE CONFIGURATION BELOW THIS LINE
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_ID",
+        appId: "YOUR_APP_ID"
+      };
+      // PASTE YOUR FIREBASE CONFIGURATION ABOVE THIS LINE
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      document.getElementById('status').innerText = "Firebase is Connected! ✅";
+    </script>
+
+    <script>
+        function checkStatus() {
+            alert("App is running smoothly!");
+        }
+    </script>
+</body>
+</html>
