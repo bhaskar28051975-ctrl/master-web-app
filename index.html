@@ -6,100 +6,112 @@
     <title>Master Web App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Reduced font sizes and responsive scaling */
         .title-font { font-size: clamp(1.8rem, 7vw, 2.8rem); font-weight: 900; line-height: 1.1; }
         .phone-font { font-size: clamp(1.4rem, 5vw, 2rem); font-weight: bold; }
-        .driver-text { font-size: clamp(0.95rem, 3.8vw, 1.2rem); font-weight: 600; }
-        
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
         .popup-active { display: flex; }
     </style>
 </head>
 <body class="bg-gray-100">
 
-    <header class="bg-[#003399] text-white p-5 md:p-6 text-center border-b-4 border-yellow-400">
-        <h1 id="main-title" class="title-font uppercase tracking-tight mb-2">Tirumala One Day Sightseeing</h1>
-        <p id="main-phone" class="phone-font text-yellow-300">+91 98765 43210</p>
-        <p id="status" class="text-[10px] mt-1 font-bold text-green-400 opacity-80">Firebase Connected ✅</p>
+    <header class="bg-[#003399] text-white p-5 text-center border-b-4 border-yellow-400">
+        <h1 id="display-title" class="title-font uppercase mb-2">Loading...</h1>
+        <p id="display-phone" class="phone-font text-yellow-300">...</p>
     </header>
 
-    <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40 shadow-md">
-        <button onclick="changeLang('en')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">English</button>
-        <button onclick="changeLang('te')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">Telugu</button>
-        <button onclick="changeLang('ta')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">Tamil</button>
-        <button onclick="changeLang('kn')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">Kannada</button>
-        <button onclick="changeLang('mr')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">Marathi</button>
+    <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40">
+        <button onclick="changeLang('en')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">ENGLISH</button>
+        <button onclick="changeLang('te')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">TELUGU</button>
+        <button onclick="changeLang('ta')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">TAMIL</button>
+        <button onclick="changeLang('kn')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">KANNADA</button>
+        <button onclick="changeLang('mr')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">MARATHI</button>
     </div>
 
-    <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
+    <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4">
         <div class="w-[30%]">
-            <img src="driver-image.jpg" onerror="this.src='https://via.placeholder.com/150'" class="w-full aspect-square object-cover border-2 border-white shadow-md">
+            <img id="display-driver-img" src="" class="w-full aspect-square object-cover border-2 border-white shadow-md">
         </div>
-        <div class="w-[70%] pl-4 driver-text leading-tight">
-            <p id="driver-name" class="uppercase">BHASKAR RAO</p>
-            <p id="taxi-no">Taxi No: AP 03 TV 1234</p>
-            <p id="taxi-model">Model: Toyota Innova</p>
-            <p id="taxi-capacity">Capacity: 7 + 1 Seater</p>
+        <div class="w-[70%] pl-4 font-bold leading-tight">
+            <p id="display-driver-name" class="uppercase text-lg"></p>
+            <p id="display-taxi-no"></p>
+            <p id="display-taxi-model"></p>
+            <p id="display-taxi-capacity"></p>
         </div>
     </section>
 
-    <main class="px-4 pb-10">
-        <div class="bg-white rounded-xl shadow-xl overflow-hidden max-w-sm mx-auto">
-            <img id="pkg-img" src="https://via.placeholder.com/600x350" class="w-full h-44 object-cover">
-            <div class="p-5">
-                <h2 id="pkg-title" class="text-xl font-black mb-2 text-gray-800">Tirumala Special Package</h2>
-                <p id="pkg-desc" class="text-gray-600 text-sm mb-5 leading-snug">Full day local sightseeing with VIP Darshan help.</p>
-                
-                <div class="flex gap-2">
-                    <button onclick="openPopup()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-wider">View Details</button>
-                    <a id="wa-link" href="https://wa.me/919876543210" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-wider text-center">WhatsApp</a>
-                </div>
-            </div>
-        </div>
-    </main>
+    <main id="package-container" class="px-4 pb-10 space-y-4">
+        </main>
 
     <div id="popup-box" class="popup-overlay">
-        <div class="bg-white w-full max-w-xs rounded-2xl overflow-hidden relative p-5 shadow-2xl animate-in fade-in zoom-in duration-300">
-            <button onclick="closePopup()" class="absolute top-2 right-2 bg-gray-100 text-gray-800 w-8 h-8 rounded-full font-bold">✕</button>
-            <h2 id="pop-title" class="text-lg font-black mb-3 border-b pb-2 text-blue-800">Tirumala Special Package</h2>
-            <p id="pop-desc" class="text-gray-700 text-sm leading-relaxed">Includes pickup from Tirupati Railway Station, Breakfast, Special Entry Darshan guidance, and local temple visits.</p>
+        <div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden relative shadow-2xl">
+            <button onclick="closePopup()" class="absolute top-2 right-2 bg-gray-200 w-8 h-8 rounded-full">✕</button>
+            <img id="pop-img" src="" class="w-full h-48 object-cover">
+            <div class="p-5">
+                <h2 id="pop-title" class="text-xl font-black mb-2 text-blue-800"></h2>
+                <p id="pop-desc" class="text-gray-700 text-sm"></p>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
             authDomain: "master-web-app-d8d1b.firebaseapp.com",
             projectId: "master-web-app-d8d1b",
+            databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com", // Updated to Realtime DB
             storageBucket: "master-web-app-d8d1b.firebasestorage.app",
-            messagingSenderId: "460731698074",
             appId: "1:460731698074:web:40ad4f12c5fb3126874823"
         };
-        try { initializeApp(firebaseConfig); } catch (e) { console.error(e); }
-    </script>
 
-    <script>
-        // Full 5-Language Translation Logic
-        const langData = {
-            en: { title: "Tirumala Special Package", desc: "Full day local sightseeing with VIP Darshan help." },
-            te: { title: "ತಿರುಮಲ ವಿಶೇಷ ಪ್ಯಾಕೇಜ್", desc: "VIP ದರ್ಶನದೊಂದಿಗೆ ಪೂರ್ಣ ಒಂದು ದಿನದ ಪ್ಯಾಕೇಜ್." },
-            ta: { title: "திருமலை சிறப்பு தொகுப்பு", desc: "முழு நாள் உள்ளூர் சுற்றிப்பார்த்தல் மற்றும் தரிசனம்." },
-            kn: { title: "ತಿರುಮಲ ವಿಶೇಷ ಪ್ಯಾಕೇಜ್", desc: "ಪೂರ್ಣ ದಿನದ ಸ್ಥಳೀಯ ಪ್ರೇಕ್ಷಣೀಯ ಸ್ಥಳಗಳು ಮತ್ತು ದರ್ಶನ." },
-            mr: { title: "तिरुपती विशेष पॅकेज", desc: "पूर्ण दिवस स्थानिक प्रेक्षणीय स्थळे आणि दर्शन." }
-        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        function changeLang(lang) {
-            const data = langData[lang];
+        // Load Settings & Driver
+        onValue(ref(db, 'settings'), (snapshot) => {
+            const data = snapshot.val();
             if(data) {
-                document.getElementById('pkg-title').innerText = data.title;
-                document.getElementById('pop-title').innerText = data.title;
-                document.getElementById('pkg-desc').innerText = data.desc;
-                document.getElementById('pop-desc').innerText = data.desc;
+                document.getElementById('display-title').innerText = data.title;
+                document.getElementById('display-phone').innerText = data.phone;
+                document.getElementById('display-driver-name').innerText = data.driverName;
+                document.getElementById('display-taxi-no').innerText = "Taxi No: " + data.taxiNo;
+                document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
+                document.getElementById('display-taxi-capacity').innerText = "Capacity: " + data.capacity;
+                document.getElementById('display-driver-img').src = data.driverImg;
             }
-        }
+        });
 
-        function openPopup() { document.getElementById('popup-box').classList.add('popup-active'); }
+        // Load Packages
+        onValue(ref(db, 'packages'), (snapshot) => {
+            const container = document.getElementById('package-container');
+            container.innerHTML = "";
+            snapshot.forEach((child) => {
+                const pkg = child.val();
+                container.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <img src="${pkg.img}" class="w-full h-44 object-cover">
+                        <div class="p-4">
+                            <h2 class="text-xl font-black">${pkg.title}</h2>
+                            <p class="text-gray-600 text-sm mb-4">${pkg.desc}</p>
+                            <div class="flex gap-2">
+                                <button onclick="window.openPop('${pkg.title}', '${pkg.desc}', '${pkg.img}')" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-xs">VIEW DETAILS</button>
+                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-xs text-center">WHATSAPP</a>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        });
+
+        window.openPop = (title, desc, img) => {
+            document.getElementById('pop-title').innerText = title;
+            document.getElementById('pop-desc').innerText = desc;
+            document.getElementById('pop-img').src = img;
+            document.getElementById('popup-box').classList.add('popup-active');
+        };
+    </script>
+    <script>
         function closePopup() { document.getElementById('popup-box').classList.remove('popup-active'); }
     </script>
 </body>
