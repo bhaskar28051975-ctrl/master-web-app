@@ -6,36 +6,37 @@
     <title>Master Web App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Responsive font sizes to prevent cutting off on mobile */
-        .title-font { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 900; line-height: 1.1; }
-        .phone-font { font-size: clamp(1.5rem, 6vw, 2.5rem); font-weight: bold; }
-        .driver-text { font-size: clamp(1rem, 4vw, 1.4rem); font-weight: 600; }
+        /* Reduced font sizes and responsive scaling */
+        .title-font { font-size: clamp(1.8rem, 7vw, 2.8rem); font-weight: 900; line-height: 1.1; }
+        .phone-font { font-size: clamp(1.4rem, 5vw, 2rem); font-weight: bold; }
+        .driver-text { font-size: clamp(0.95rem, 3.8vw, 1.2rem); font-weight: 600; }
+        
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
         .popup-active { display: flex; }
     </style>
 </head>
 <body class="bg-gray-100">
 
-    <header class="bg-[#003399] text-white p-6 md:p-10 text-center border-b-4 border-yellow-400">
-        <h1 id="main-title" class="title-font uppercase tracking-tighter mb-4">Tirumala One Day Sightseeing</h1>
-        <p id="main-phone" class="phone-font">+91 98765 43210</p>
-        <p id="status" class="text-xs mt-2 font-bold text-green-400">Firebase Connected ✅</p>
+    <header class="bg-[#003399] text-white p-5 md:p-6 text-center border-b-4 border-yellow-400">
+        <h1 id="main-title" class="title-font uppercase tracking-tight mb-2">Tirumala One Day Sightseeing</h1>
+        <p id="main-phone" class="phone-font text-yellow-300">+91 98765 43210</p>
+        <p id="status" class="text-[10px] mt-1 font-bold text-green-400 opacity-80">Firebase Connected ✅</p>
     </header>
 
-    <div class="bg-gray-900 p-3 flex flex-wrap justify-center gap-2 sticky top-0 z-40">
-        <button onclick="changeLang('en')" class="bg-white text-black px-3 py-1 rounded font-bold text-xs uppercase">English</button>
-        <button onclick="changeLang('te')" class="bg-white text-black px-3 py-1 rounded font-bold text-xs uppercase">Telugu</button>
-        <button onclick="changeLang('ta')" class="bg-white text-black px-3 py-1 rounded font-bold text-xs uppercase">Tamil</button>
-        <button onclick="changeLang('kn')" class="bg-white text-black px-3 py-1 rounded font-bold text-xs uppercase">Kannada</button>
-        <button onclick="changeLang('mr')" class="bg-white text-black px-3 py-1 rounded font-bold text-xs uppercase">Marathi</button>
+    <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40 shadow-md">
+        <button onclick="changeLang('en')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">English</button>
+        <button onclick="changeLang('te')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">Telugu</button>
+        <button onclick="changeLang('ta')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">Tamil</button>
+        <button onclick="changeLang('kn')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">Kannada</button>
+        <button onclick="changeLang('mr')" class="bg-white text-black px-3 py-1 rounded-md font-bold text-[10px] uppercase">Marathi</button>
     </div>
 
-    <section class="bg-[#cc0000] text-white flex items-center p-4 md:p-6 mb-6">
+    <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
         <div class="w-[30%]">
-            <img src="driver-image.jpg" onerror="this.src='https://via.placeholder.com/150'" class="w-full aspect-square object-cover border-2 border-white shadow-lg">
+            <img src="driver-image.jpg" onerror="this.src='https://via.placeholder.com/150'" class="w-full aspect-square object-cover border-2 border-white shadow-md">
         </div>
-        <div class="w-[70%] pl-4 md:pl-6 driver-text leading-tight">
-            <p id="driver-name">BHASKAR RAO</p>
+        <div class="w-[70%] pl-4 driver-text leading-tight">
+            <p id="driver-name" class="uppercase">BHASKAR RAO</p>
             <p id="taxi-no">Taxi No: AP 03 TV 1234</p>
             <p id="taxi-model">Model: Toyota Innova</p>
             <p id="taxi-capacity">Capacity: 7 + 1 Seater</p>
@@ -43,36 +44,49 @@
     </section>
 
     <main class="px-4 pb-10">
-        <div class="bg-white rounded-xl shadow-xl overflow-hidden max-w-md mx-auto">
-            <img id="pkg-img" src="https://via.placeholder.com/600x400" class="w-full h-48 object-cover">
+        <div class="bg-white rounded-xl shadow-xl overflow-hidden max-w-sm mx-auto">
+            <img id="pkg-img" src="https://via.placeholder.com/600x350" class="w-full h-44 object-cover">
             <div class="p-5">
-                <h2 id="pkg-title" class="text-2xl font-black mb-2 text-gray-800">Tirumala Special Package</h2>
-                <p id="pkg-desc" class="text-gray-600 text-base mb-6">Full day local sightseeing with VIP Darshan help.</p>
+                <h2 id="pkg-title" class="text-xl font-black mb-2 text-gray-800">Tirumala Special Package</h2>
+                <p id="pkg-desc" class="text-gray-600 text-sm mb-5 leading-snug">Full day local sightseeing with VIP Darshan help.</p>
                 
                 <div class="flex gap-2">
-                    <button onclick="openPopup()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-sm">VIEW DETAILS</button>
-                    <a id="wa-link" href="https://wa.me/919876543210" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-sm text-center">WHATSAPP</a>
+                    <button onclick="openPopup()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-wider">View Details</button>
+                    <a id="wa-link" href="https://wa.me/919876543210" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-wider text-center">WhatsApp</a>
                 </div>
             </div>
         </div>
     </main>
 
     <div id="popup-box" class="popup-overlay">
-        <div class="bg-white w-full max-w-sm rounded-xl overflow-hidden relative p-4">
-            <button onclick="closePopup()" class="absolute top-2 right-2 bg-gray-200 w-8 h-8 rounded-full font-bold">✕</button>
-            <h2 id="pop-title" class="text-xl font-black mb-2">Tirumala Special Package</h2>
-            <p id="pop-desc" class="text-gray-700 text-sm">Detailed tour information will appear here.</p>
+        <div class="bg-white w-full max-w-xs rounded-2xl overflow-hidden relative p-5 shadow-2xl animate-in fade-in zoom-in duration-300">
+            <button onclick="closePopup()" class="absolute top-2 right-2 bg-gray-100 text-gray-800 w-8 h-8 rounded-full font-bold">✕</button>
+            <h2 id="pop-title" class="text-lg font-black mb-3 border-b pb-2 text-blue-800">Tirumala Special Package</h2>
+            <p id="pop-desc" class="text-gray-700 text-sm leading-relaxed">Includes pickup from Tirupati Railway Station, Breakfast, Special Entry Darshan guidance, and local temple visits.</p>
         </div>
     </div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
+            authDomain: "master-web-app-d8d1b.firebaseapp.com",
+            projectId: "master-web-app-d8d1b",
+            storageBucket: "master-web-app-d8d1b.firebasestorage.app",
+            messagingSenderId: "460731698074",
+            appId: "1:460731698074:web:40ad4f12c5fb3126874823"
+        };
+        try { initializeApp(firebaseConfig); } catch (e) { console.error(e); }
+    </script>
+
     <script>
-        // Full Translation Data for all 5 languages
+        // Full 5-Language Translation Logic
         const langData = {
-            en: { title: "Tirumala Special Package", desc: "Full day local sightseeing with VIP Darshan help.", btn: "VIEW DETAILS" },
-            te: { title: "తిరుమల స్పెషల్ ప్యాకేజీ", desc: "VIP దర్శనంతో పూర్తి ఒక రోజు ప్యాకేజీ.", btn: "వివరాలు చూడండి" },
-            ta: { title: "திருமலை சிறப்பு தொகுப்பு", desc: "முழு நாள் உள்ளூர் சுற்றிப்பார்த்தல் மற்றும் தரிசனம்.", btn: "விவரங்களைக் காண்க" },
-            kn: { title: "ತಿರುಮಲ ವಿಶೇಷ ಪ್ಯಾಕೇಜ್", desc: "ಪೂರ್ಣ ದಿನದ ಸ್ಥಳೀಯ ಪ್ರೇಕ್ಷಣೀಯ ಸ್ಥಳಗಳು ಮತ್ತು ದರ್ಶನ.", btn: "ವಿವರಗಳನ್ನು ನೋಡಿ" },
-            mr: { title: "तिरुपती विशेष पॅकेज", desc: "पूर्ण दिवस स्थानिक प्रेक्षणीय स्थळे आणि दर्शन.", btn: "तपशील पहा" }
+            en: { title: "Tirumala Special Package", desc: "Full day local sightseeing with VIP Darshan help." },
+            te: { title: "ತಿರುಮಲ ವಿಶೇಷ ಪ್ಯಾಕೇಜ್", desc: "VIP ದರ್ಶನದೊಂದಿಗೆ ಪೂರ್ಣ ಒಂದು ದಿನದ ಪ್ಯಾಕೇಜ್." },
+            ta: { title: "திருமலை சிறப்பு தொகுப்பு", desc: "முழு நாள் உள்ளூர் சுற்றிப்பார்த்தல் மற்றும் தரிசனம்." },
+            kn: { title: "ತಿರುಮಲ ವಿಶೇಷ ಪ್ಯಾಕೇಜ್", desc: "ಪೂರ್ಣ ದಿನದ ಸ್ಥಳೀಯ ಪ್ರೇಕ್ಷಣೀಯ ಸ್ಥಳಗಳು ಮತ್ತು ದರ್ಶನ." },
+            mr: { title: "तिरुपती विशेष पॅकेज", desc: "पूर्ण दिवस स्थानिक प्रेक्षणीय स्थळे आणि दर्शन." }
         };
 
         function changeLang(lang) {
@@ -82,7 +96,6 @@
                 document.getElementById('pop-title').innerText = data.title;
                 document.getElementById('pkg-desc').innerText = data.desc;
                 document.getElementById('pop-desc').innerText = data.desc;
-                // Update button text if needed
             }
         }
 
