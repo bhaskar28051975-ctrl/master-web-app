@@ -24,10 +24,11 @@
         <button onclick="translatePackages('te')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TELUGU</button>
         <button onclick="translatePackages('ta')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TAMIL</button>
         <button onclick="translatePackages('kn')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">KANNADA</button>
+        <button onclick="translatePackages('mr')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">MARATHI</button>
     </div>
 
     <section class="bg-[#cc0000] text-white flex items-center p-3 mb-4 shadow-lg">
-        <div class="w-[30%]">
+        <div class="w-[30%] text-center">
             <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-md">
         </div>
         <div class="w-[70%] pl-4 text-xs font-bold leading-tight">
@@ -41,12 +42,12 @@
     <main id="package-container" class="px-3 pb-20 space-y-4"></main>
 
     <div id="popup-box" class="popup-overlay">
-        <div class="bg-white w-full max-w-sm rounded-xl overflow-hidden relative">
-            <button onclick="closePopup()" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full font-bold">✕</button>
+        <div class="bg-white w-full max-w-sm rounded-xl overflow-hidden relative shadow-2xl">
+            <button onclick="closePopup()" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full font-bold z-50">✕</button>
             <img id="pop-img" src="" class="w-full h-48 object-cover">
             <div class="p-4">
                 <h2 id="pop-title" class="text-xl font-black text-blue-900 mb-2 uppercase"></h2>
-                <p id="pop-desc" class="text-gray-700 text-sm leading-relaxed max-h-48 overflow-y-auto"></p>
+                <div id="pop-desc" class="text-gray-700 text-sm leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line"></div>
             </div>
         </div>
     </div>
@@ -67,34 +68,50 @@
         const db = getDatabase(app);
         let allPackages = [];
 
-        // Language Dictionary
-        const translations = {
-            "PAPAVINASHNAM": { te: "పాపవినాశనం", ta: "பாபவிநாசம்", kn: "ಪಾಪವಿನಾಶನ" },
-            "TIRUMALA ONE DAY SIGHTSEEING": { te: "తిరుమల ఒక రోజు పర్యటన", ta: "திருமலை ஒரு நாள் சுற்றுலா", kn: "ತಿರುಮಲ ಒಂದು ದಿನದ ಪ್ರವಾಸ" }
-            // Add more translations here as needed
-        };
+        // Smart Translation Dictionary
+        const transDict = [
+            {
+                key: "PAPAVINASHNAM",
+                te: { t: "పాపవినాశనం", d: "పాపవినాశనం మరియు తిరుమల స్థల దర్శనం ప్యాకేజీ." },
+                ta: { t: "பாபவிநாசம்", d: "பாபவிநாசம் மற்றும் திருமலை உள்ளூர் சுற்றிப் பார்க்கும் தொகுப்பு." },
+                kn: { t: "ಪಾಪವಿನಾಶನ", d: "ಪಾಪವಿನಾಶನ ಮತ್ತು ತಿರುಮಲ ಸ್ಥಳೀಯ ದರ್ಶನ ಪ್ಯಾಕೇಜ್." },
+                mr: { t: "पापविनाशम", d: "पापविनाशम आणि तिरुमला स्थानिक दर्शन पॅकेज." }
+            },
+            {
+                key: "ONE DAY SIGHTSEEING",
+                te: { t: "తిరుమల ఒక రోజు పర్యటన", d: "తిరుమల లోని అన్ని ముఖ్యమైన ప్రదేశాల సందర్శన." },
+                ta: { t: "திருமலை ஒரு நாள் சுற்றுலா", d: "திருமலையில் உள்ள அனைத்து முக்கிய இடங்களையும் பார்வையிடுதல்." },
+                kn: { t: "ತಿರುಮಲ ಒಂದು ದಿನದ ಪ್ರವಾಸ", d: "ತಿರುಮಲದಲ್ಲಿನ ಎಲ್ಲಾ ಪ್ರಮುಖ ಪ್ರವಾಸಿ ತಾಣಗಳ ದರ್ಶನ." },
+                mr: { t: "तिरुमला एक दिवसीय सहल", d: "तिरुमला मधील सर्व महत्त्वाची ठिकाणे पाहणे." }
+            }
+        ];
 
-        window.translatePackages = (lang) => {
-            renderPackages(lang);
-        };
+        window.translatePackages = (lang) => { renderPackages(lang); };
 
         function renderPackages(lang = 'en') {
             const container = document.getElementById('package-container');
             container.innerHTML = "";
+            
             allPackages.forEach((pkg) => {
-                let displayTitle = pkg.title;
-                if (lang !== 'en' && translations[pkg.title] && translations[pkg.title][lang]) {
-                    displayTitle = translations[pkg.title][lang];
+                let dTitle = pkg.title;
+                let dDesc = pkg.desc;
+
+                // Check if package title matches any translation key
+                const match = transDict.find(item => pkg.title.toUpperCase().includes(item.key));
+                
+                if (lang !== 'en' && match && match[lang]) {
+                    dTitle = match[lang].t;
+                    dDesc = match[lang].d;
                 }
                 
                 container.innerHTML += `
                     <div class="bg-white rounded-lg shadow-md overflow-hidden border">
                         <img src="${pkg.img}" class="w-full h-40 object-cover">
                         <div class="p-3">
-                            <h2 class="text-md font-black uppercase text-gray-800">${displayTitle}</h2>
-                            <p class="text-gray-600 text-[10px] mb-3 line-clamp-2">${pkg.desc}</p>
+                            <h2 class="text-md font-black uppercase text-gray-800">${dTitle}</h2>
+                            <p class="text-gray-600 text-[10px] mb-3 line-clamp-2">${dDesc}</p>
                             <div class="flex gap-2">
-                                <button onclick="openPop('${displayTitle.replace(/'/g, "\\'")}', '${pkg.desc.replace(/'/g, "\\'")}', '${pkg.img}')" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px]">VIEW DETAILS</button>
+                                <button onclick="openPop('${dTitle.replace(/'/g, "\\'")}', '${dDesc.replace(/'/g, "\\'")}', '${pkg.img}')" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px]">VIEW DETAILS</button>
                                 <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px] text-center pt-2">WHATSAPP</a>
                             </div>
                         </div>
