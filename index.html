@@ -20,10 +20,10 @@
     </header>
 
     <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40 shadow-md">
-        <button onclick="changeLang('en')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">ENGLISH</button>
-        <button onclick="changeLang('te')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TELUGU</button>
-        <button onclick="changeLang('ta')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TAMIL</button>
-        <button onclick="changeLang('kn')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">KANNADA</button>
+        <button onclick="translatePackages('en')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">ENGLISH</button>
+        <button onclick="translatePackages('te')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TELUGU</button>
+        <button onclick="translatePackages('ta')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TAMIL</button>
+        <button onclick="translatePackages('kn')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">KANNADA</button>
     </div>
 
     <section class="bg-[#cc0000] text-white flex items-center p-3 mb-4 shadow-lg">
@@ -31,7 +31,7 @@
             <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-md">
         </div>
         <div class="w-[70%] pl-4 text-xs font-bold leading-tight">
-            <p id="display-driver-name" class="uppercase text-yellow-300 text-sm mb-1">Loading...</p>
+            <p id="display-driver-name" class="uppercase text-yellow-300 text-sm mb-1"></p>
             <p id="display-taxi-no"></p>
             <p id="display-taxi-model"></p>
             <p id="display-taxi-capacity"></p>
@@ -65,55 +65,60 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        let allPackages = [];
 
-        // Language data
-        const langData = {
-            en: { title: "BHASKAR TRAVELS", driver: "Driver" },
-            te: { title: "భాస్కర్ ట్రావెల్స్", driver: "డ్రైవర్" },
-            ta: { title: "பாஸ்கர் டிராவல்ஸ்", driver: "டிரைவர்" },
-            kn: { title: "ಭಾಸ್ಕರ್ ಟ್ರಾವೆಲ್ಸ್", driver: "ಚಾಲಕ" }
+        // Language Dictionary
+        const translations = {
+            "PAPAVINASHNAM": { te: "పాపవినాశనం", ta: "பாபவிநாசம்", kn: "ಪಾಪವಿನಾಶನ" },
+            "TIRUMALA ONE DAY SIGHTSEEING": { te: "తిరుమల ఒక రోజు పర్యటన", ta: "திருமலை ஒரு நாள் சுற்றுலா", kn: "ತಿರುಮಲ ಒಂದು ದಿನದ ಪ್ರವಾಸ" }
+            // Add more translations here as needed
         };
 
-        window.changeLang = (lang) => {
-            document.getElementById('display-title').innerText = langData[lang].title;
-            alert("Language changed to " + lang.toUpperCase());
+        window.translatePackages = (lang) => {
+            renderPackages(lang);
         };
 
-        onValue(ref(db, 'settings'), (snap) => {
-            const data = snap.val();
-            if(data) {
-                document.getElementById('display-title').innerText = data.title || "BHASKAR TRAVELS";
-                document.getElementById('display-phone').innerText = data.phone || "";
-                document.getElementById('display-driver-name').innerText = data.driverName || "Driver";
-                document.getElementById('display-taxi-no').innerText = "Taxi: " + (data.taxiNo || "");
-                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "");
-                document.getElementById('display-taxi-capacity').innerText = "Cap: " + (data.capacity || "");
-                
-                // Fixed: Explicitly setting the image source from Firebase
-                if(data.driverImg && data.driverImg !== "") {
-                    document.getElementById('display-driver-img').src = data.driverImg;
-                }
-            }
-        });
-
-        onValue(ref(db, 'packages'), (snap) => {
+        function renderPackages(lang = 'en') {
             const container = document.getElementById('package-container');
             container.innerHTML = "";
-            snap.forEach((child) => {
-                const pkg = child.val();
+            allPackages.forEach((pkg) => {
+                let displayTitle = pkg.title;
+                if (lang !== 'en' && translations[pkg.title] && translations[pkg.title][lang]) {
+                    displayTitle = translations[pkg.title][lang];
+                }
+                
                 container.innerHTML += `
                     <div class="bg-white rounded-lg shadow-md overflow-hidden border">
                         <img src="${pkg.img}" class="w-full h-40 object-cover">
                         <div class="p-3">
-                            <h2 class="text-md font-black uppercase text-gray-800">${pkg.title}</h2>
+                            <h2 class="text-md font-black uppercase text-gray-800">${displayTitle}</h2>
                             <p class="text-gray-600 text-[10px] mb-3 line-clamp-2">${pkg.desc}</p>
                             <div class="flex gap-2">
-                                <button onclick="openPop('${pkg.title.replace(/'/g, "\\'")}', '${pkg.desc.replace(/'/g, "\\'")}', '${pkg.img}')" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px]">VIEW DETAILS</button>
+                                <button onclick="openPop('${displayTitle.replace(/'/g, "\\'")}', '${pkg.desc.replace(/'/g, "\\'")}', '${pkg.img}')" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px]">VIEW DETAILS</button>
                                 <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px] text-center pt-2">WHATSAPP</a>
                             </div>
                         </div>
                     </div>`;
             });
+        }
+
+        onValue(ref(db, 'settings'), (snap) => {
+            const data = snap.val();
+            if(data) {
+                document.getElementById('display-title').innerText = data.title;
+                document.getElementById('display-phone').innerText = data.phone;
+                document.getElementById('display-driver-name').innerText = data.driverName;
+                document.getElementById('display-taxi-no').innerText = "Taxi: " + data.taxiNo;
+                document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
+                document.getElementById('display-taxi-capacity').innerText = "Cap: " + data.capacity;
+                if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
+            }
+        });
+
+        onValue(ref(db, 'packages'), (snap) => {
+            allPackages = [];
+            snap.forEach((child) => { allPackages.push(child.val()); });
+            renderPackages('en');
         });
 
         window.openPop = (t, d, i) => {
