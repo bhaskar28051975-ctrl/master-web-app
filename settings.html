@@ -2,35 +2,73 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Settings - Admin Control</title>
+    <title>Admin - Settings</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 p-4 text-white">
-    <div class="max-w-xl mx-auto bg-white text-black p-6 rounded-2xl shadow-2xl">
-        <h1 class="text-2xl font-black border-b-2 pb-2 mb-6 text-blue-800">ADMIN CONTROL PANEL</h1>
+<body class="bg-gray-800 p-4">
+    <div class="max-w-md mx-auto bg-white p-5 rounded-xl shadow-2xl">
+        <h1 class="text-xl font-black text-blue-700 mb-4 border-b pb-2">ADMIN CONTROL PANEL</h1>
         
-        <div class="mb-8 p-4 bg-blue-50 rounded-lg">
-            <h2 class="font-bold mb-2">1. Title & Contact</h2>
-            <input type="text" placeholder="Title" class="w-full p-2 border rounded mb-2">
-            <input type="text" placeholder="Phone Number" class="w-full p-2 border rounded">
+        <div class="bg-blue-50 p-3 rounded-lg mb-4 space-y-2">
+            <h2 class="text-xs font-bold uppercase">1. Header & Driver</h2>
+            <input id="title" type="text" placeholder="Travels Title" class="w-full p-2 border text-sm">
+            <input id="phone" type="text" placeholder="Phone Number" class="w-full p-2 border text-sm">
+            <input id="dName" type="text" placeholder="Driver Name" class="w-full p-2 border text-sm">
+            <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-2 border text-sm">
+            <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-2 border text-sm">
+            <input id="tCap" type="text" placeholder="Capacity (7+1)" class="w-full p-2 border text-sm">
+            <input id="dImg" type="text" placeholder="Driver Image URL" class="w-full p-2 border text-sm">
+            <button onclick="saveSet()" class="w-full bg-blue-700 text-white py-2 font-bold rounded text-sm uppercase">Update Header</button>
         </div>
 
-        <div class="mb-8 p-4 bg-red-50 rounded-lg">
-            <h2 class="font-bold mb-2 text-red-700">2. Driver Profile</h2>
-            <input type="file" accept="image/*" class="mb-2 block text-sm">
-            <input type="text" placeholder="Driver Name" class="w-full p-2 border rounded mb-2">
-            <input type="text" placeholder="Taxi Number" class="w-full p-2 border rounded mb-2">
-            <input type="text" placeholder="Taxi Model" class="w-full p-2 border rounded mb-2">
-            <input type="text" placeholder="Capacity" class="w-full p-2 border rounded">
-        </div>
-
-        <div class="p-4 bg-green-50 rounded-lg">
-            <h2 class="font-bold mb-2 text-green-700">3. Add New Package</h2>
-            <input type="text" placeholder="Package Title" class="w-full p-2 border rounded mb-2">
-            <input type="text" placeholder="Image Link (URL)" class="w-full p-2 border rounded mb-2">
-            <textarea placeholder="Description" class="w-full p-2 border rounded mb-4 h-24"></textarea>
-            <button class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg">UPDATE WEBSITE</button>
+        <div class="bg-green-50 p-3 rounded-lg space-y-2">
+            <h2 class="text-xs font-bold uppercase">2. Add Tour Package</h2>
+            <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-2 border text-sm">
+            <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-2 border text-sm">
+            <textarea id="pDesc" placeholder="Full Package Description" class="w-full p-2 border text-sm h-24"></textarea>
+            <button onclick="addPkg()" class="w-full bg-green-700 text-white py-2 font-bold rounded text-sm uppercase">Add Package to Site</button>
         </div>
     </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
+            authDomain: "master-web-app-d8d1b.firebaseapp.com",
+            projectId: "master-web-app-d8d1b",
+            databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
+            appId: "1:460731698074:web:40ad4f12c5fb3126874823"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.saveSet = () => {
+            set(ref(db, 'settings'), {
+                title: document.getElementById('title').value,
+                phone: document.getElementById('phone').value,
+                driverName: document.getElementById('dName').value,
+                taxiNo: document.getElementById('tNo').value,
+                taxiModel: document.getElementById('tModel').value,
+                capacity: document.getElementById('tCap').value,
+                driverImg: document.getElementById('dImg').value
+            }).then(() => alert("Header Updated!"));
+        };
+
+        window.addPkg = () => {
+            push(ref(db, 'packages'), {
+                title: document.getElementById('pTitle').value,
+                img: document.getElementById('pImg').value,
+                desc: document.getElementById('pDesc').value
+            }).then(() => {
+                alert("Package Added Successfully!");
+                document.getElementById('pTitle').value = "";
+                document.getElementById('pImg').value = "";
+                document.getElementById('pDesc').value = "";
+            });
+        };
+    </script>
 </body>
 </html>
