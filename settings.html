@@ -1,1 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Settings - Admin Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 p-4 text-white">
+    <div class="max-w-xl mx-auto bg-white text-black p-6 rounded-2xl shadow-2xl">
+        <h1 class="text-2xl font-black border-b-2 pb-2 mb-6 text-blue-800">ADMIN CONTROL PANEL</h1>
+        
+        <div class="mb-8 p-4 bg-blue-50 rounded-lg">
+            <h2 class="font-bold mb-2">1. Title & Contact</h2>
+            <input type="text" placeholder="Title" class="w-full p-2 border rounded mb-2">
+            <input type="text" placeholder="Phone Number" class="w-full p-2 border rounded">
+        </div>
 
+        <div class="mb-8 p-4 bg-red-50 rounded-lg">
+            <h2 class="font-bold mb-2 text-red-700">2. Driver Profile</h2>
+            <input type="file" accept="image/*" class="mb-2 block text-sm">
+            <input type="text" placeholder="Driver Name" class="w-full p-2 border rounded mb-2">
+            <input type="text" placeholder="Taxi Number" class="w-full p-2 border rounded mb-2">
+            <input type="text" placeholder="Taxi Model" class="w-full p-2 border rounded mb-2">
+            <input type="text" placeholder="Capacity" class="w-full p-2 border rounded">
+        </div>
+
+        <div class="p-4 bg-green-50 rounded-lg">
+            <h2 class="font-bold mb-2 text-green-700">3. Add New Package</h2>
+            <input type="text" placeholder="Package Title" class="w-full p-2 border rounded mb-2">
+            <input type="text" placeholder="Image Link (URL)" class="w-full p-2 border rounded mb-2">
+            <textarea placeholder="Description" class="w-full p-2 border rounded mb-4 h-24"></textarea>
+            <button class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg">UPDATE WEBSITE</button>
+        </div>
+    </div>
+</body>
+</html>
