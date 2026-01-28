@@ -21,7 +21,12 @@
                 <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-3 border rounded text-sm">
                 <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-3 border rounded text-sm">
                 <input id="tCap" type="text" placeholder="Capacity" class="w-full p-3 border rounded text-sm">
-                <input id="dImg" type="text" placeholder="Driver Image URL" class="w-full p-3 border rounded text-sm">
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-500">DRIVER PHOTO (.JPG/.PNG)</label>
+                    <input id="dImgFile" type="file" accept="image/*" class="w-full text-xs p-2 border rounded bg-white">
+                </div>
+
                 <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded font-bold text-xs uppercase shadow">Update Header</button>
             </div>
 
@@ -55,7 +60,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        window.saveSet = () => {
+        // Function to convert Image File to Text (Base64)
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        window.saveSet = async () => {
+            const fileInput = document.getElementById('dImgFile');
+            let driverImageData = "";
+
+            // Check if a file was selected
+            if (fileInput.files.length > 0) {
+                driverImageData = await toBase64(fileInput.files[0]);
+            }
+
             const data = {
                 title: document.getElementById('title').value,
                 phone: document.getElementById('phone').value,
@@ -63,9 +84,10 @@
                 taxiNo: document.getElementById('tNo').value,
                 taxiModel: document.getElementById('tModel').value,
                 capacity: document.getElementById('tCap').value,
-                driverImg: document.getElementById('dImg').value
+                driverImg: driverImageData // This now saves the actual image data
             };
-            set(ref(db, 'settings'), data).then(() => alert("✅ Header Updated!"));
+
+            set(ref(db, 'settings'), data).then(() => alert("✅ Header & Photo Updated!"));
         };
 
         window.addPkg = () => {
