@@ -3,27 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Web App</title>
+    <title>Master Web App - Tirumala Sightseeing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; }
-        .container { text-align: center; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #03a9f4; }
-        #status { font-weight: bold; color: #555; }
+        .title-font { font-size: 3.5rem; font-weight: 900; line-height: 1.1; }
+        .phone-font { font-size: 2.5rem; font-weight: bold; }
+        .driver-text { font-size: 1.4rem; font-weight: 600; }
+        .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
+        .popup-active { display: flex; }
     </style>
 </head>
-<body>
+<body class="bg-gray-100">
 
-    <div class="container">
-        <h1>Master Web App</h1>
-        <p id="status">Connecting to Firebase...</p>
+    <header class="bg-[#003399] text-white p-10 text-center border-b-4 border-yellow-400">
+        <h1 id="main-title" class="title-font uppercase tracking-tighter mb-4">Tirumala One Day Sightseeing</h1>
+        <p id="main-phone" class="phone-font">+91 98765 43210</p>
+        <p id="status" class="text-sm mt-2 opacity-70 italic text-yellow-300 font-bold">Connecting Firebase...</p>
+    </header>
+
+    <div class="bg-gray-900 p-3 flex flex-wrap justify-center gap-2 sticky top-0 z-40">
+        <button onclick="changeLang('en')" class="bg-white text-black px-4 py-1 rounded font-bold text-xs uppercase">English</button>
+        <button onclick="changeLang('te')" class="bg-white text-black px-4 py-1 rounded font-bold text-xs uppercase">Telugu</button>
+        <button onclick="changeLang('ta')" class="bg-white text-black px-4 py-1 rounded font-bold text-xs uppercase">Tamil</button>
+        <button onclick="changeLang('kn')" class="bg-white text-black px-4 py-1 rounded font-bold text-xs uppercase">Kannada</button>
+        <button onclick="changeLang('mr')" class="bg-white text-black px-4 py-1 rounded font-bold text-xs uppercase">Marathi</button>
+    </div>
+
+    <section class="bg-[#cc0000] text-white flex items-center p-6 mb-6 shadow-xl">
+        <div class="w-[30%]">
+            <img src="driver-image.jpg" onerror="this.src='https://via.placeholder.com/150'" class="w-full aspect-square object-cover border-4 border-white rounded-none shadow-lg">
+        </div>
+        <div class="w-[70%] pl-6 driver-text leading-snug">
+            <p id="driver-name">BHASKAR RAO</p>
+            <p id="taxi-no">Taxi No: AP 03 TV 1234</p>
+            <p id="taxi-model">Model: Toyota Innova</p>
+            <p id="taxi-capacity">Capacity: 7 + 1 Seater</p>
+        </div>
+    </section>
+
+    <main class="px-4 pb-10">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-md mx-auto">
+            <img id="pkg-img" src="https://via.placeholder.com/600x400" class="w-full h-56 object-cover">
+            <div class="p-6">
+                <h2 id="pkg-title" class="text-3xl font-black mb-3 text-gray-800">Tirumala Special Package</h2>
+                <p id="pkg-desc" class="text-gray-600 text-lg mb-6 leading-relaxed">Full day local sightseeing with VIP Darshan help.</p>
+                
+                <div class="flex gap-3">
+                    <button onclick="openPopup()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg shadow-md transition-all">VIEW DETAILS</button>
+                    <a id="wa-link" href="https://wa.me/919876543210" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg shadow-md transition-all text-center">WHATSAPP</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="popup-box" class="popup-overlay">
+        <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden relative animate-bounce-in">
+            <button onclick="closePopup()" class="absolute top-4 right-4 bg-black text-white w-10 h-10 rounded-full font-bold text-xl">✕</button>
+            <img id="pop-img" src="https://via.placeholder.com/600x400" class="w-full h-48 object-cover">
+            <div class="p-6">
+                <h2 id="pop-title" class="text-3xl font-black mb-4">Tirumala Special Package</h2>
+                <p id="pop-desc" class="text-gray-700 text-xl leading-relaxed">Detailed description of the tour: Pickup at 6 AM, Breakfast, Temple visit, Lunch, and Drop back at 8 PM.</p>
+            </div>
+        </div>
     </div>
 
     <script type="module">
-        // We use the full URL so the browser can find Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
-        // Your specific configuration
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
             authDomain: "master-web-app-d8d1b.firebaseapp.com",
@@ -34,16 +81,34 @@
             measurementId: "G-V21FQHC54G"
         };
 
-        // Initialize Firebase
         try {
             const app = initializeApp(firebaseConfig);
             const analytics = getAnalytics(app);
-            document.getElementById('status').innerText = "Firebase Connected Successfully! ✅";
-            document.getElementById('status').style.color = "green";
+            document.getElementById('status').innerText = "Firebase Connected ✅";
+            document.getElementById('status').style.color = "#4ade80";
         } catch (error) {
-            console.error(error);
             document.getElementById('status').innerText = "Connection Failed ❌";
-            document.getElementById('status').style.color = "red";
+        }
+    </script>
+
+    <script>
+        function openPopup() { document.getElementById('popup-box').classList.add('popup-active'); }
+        function closePopup() { document.getElementById('popup-box').classList.remove('popup-active'); }
+
+        // Translation logic for dynamic content
+        const langData = {
+            te: { title: "తిరుమల ఒక రోజు ప్రయాణం", desc: "VIP దర్శనంతో పూర్తి ప్యాకేజీ", btn: "వివరాలు చూడండి" },
+            en: { title: "Tirumala One Day Sightseeing", desc: "Full day local sightseeing with VIP Darshan help.", btn: "VIEW DETAILS" }
+            // Add other languages here...
+        };
+
+        function changeLang(lang) {
+            if(langData[lang]) {
+                document.getElementById('pkg-title').innerText = langData[lang].title;
+                document.getElementById('pop-title').innerText = langData[lang].title;
+                document.getElementById('pkg-desc').innerText = langData[lang].desc;
+                document.getElementById('pop-desc').innerText = langData[lang].desc;
+            }
         }
     </script>
 </body>
