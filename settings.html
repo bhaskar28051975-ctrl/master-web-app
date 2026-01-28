@@ -3,47 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin - Settings</title>
+    <title>Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #0f172a; font-family: sans-serif; }
-        .admin-card { width: 100%; max-width: 400px; margin: auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        input, textarea { font-size: 16px !important; } /* Prevents iOS zoom on focus */
-    </style>
+    <style>input, textarea { font-size: 16px !important; }</style>
 </head>
-<body class="p-3 min-h-screen flex flex-col">
+<body class="bg-slate-900 p-3 min-h-screen">
 
-    <div class="admin-card">
-        <div class="bg-white p-4 border-b text-center">
-            <h1 class="text-blue-700 font-black text-lg uppercase tracking-widest">Admin Control Panel</h1>
-        </div>
+    <div class="max-w-[400px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-white p-4 border-b text-center font-black text-blue-700 uppercase">Admin Control Panel</div>
         
         <div class="p-4 space-y-6">
-            <div class="border rounded-xl p-3 space-y-3 bg-blue-50">
-                <h2 class="text-[10px] font-bold text-blue-600 uppercase">1. Header & Driver Profile</h2>
-                <input id="title" type="text" placeholder="Travels Title (e.g. Bhaskar Travels)" class="w-full p-3 border rounded-lg text-sm">
-                <input id="phone" type="text" placeholder="Phone Number" class="w-full p-3 border rounded-lg text-sm">
-                <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded-lg text-sm">
-                <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-3 border rounded-lg text-sm">
-                <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-3 border rounded-lg text-sm">
-                <input id="tCap" type="text" placeholder="Capacity (e.g. 7+1)" class="w-full p-3 border rounded-lg text-sm">
-                <input id="dImg" type="text" placeholder="Driver Image URL (.jpg)" class="w-full p-3 border rounded-lg text-sm">
-                <button onclick="saveHeader()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-xs uppercase shadow-md active:scale-95 transition">Update Header</button>
+            <div class="bg-blue-50 p-3 rounded-xl space-y-3 border">
+                <h2 class="text-[10px] font-bold text-blue-600 uppercase">1. Header & Driver</h2>
+                <input id="title" type="text" placeholder="Travels Title" class="w-full p-3 border rounded text-sm">
+                <input id="phone" type="text" placeholder="Phone Number" class="w-full p-3 border rounded text-sm">
+                <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded text-sm">
+                <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-3 border rounded text-sm">
+                <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-3 border rounded text-sm">
+                <input id="tCap" type="text" placeholder="Capacity" class="w-full p-3 border rounded text-sm">
+                <input id="dImg" type="text" placeholder="Driver Image URL" class="w-full p-3 border rounded text-sm">
+                <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded font-bold text-xs uppercase shadow">Update Header</button>
             </div>
 
-            <div class="border rounded-xl p-3 space-y-3 bg-green-50">
+            <div class="bg-green-50 p-3 rounded-xl space-y-3 border">
                 <h2 class="text-[10px] font-bold text-green-700 uppercase">2. Add Tour Package</h2>
-                <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-3 border rounded-lg text-sm">
-                <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-3 border rounded-lg text-sm">
-                <textarea id="pDesc" placeholder="Package Description (Details for Popup)" class="w-full p-3 border rounded-lg text-sm h-28 resize-none"></textarea>
-                <button onclick="addTour()" class="w-full bg-green-700 text-white py-3 rounded-lg font-bold text-xs uppercase shadow-md active:scale-95 transition">Add Package to Site</button>
+                <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-3 border rounded text-sm">
+                <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-3 border rounded text-sm">
+                <textarea id="pDesc" placeholder="Package Description" class="w-full p-3 border rounded text-sm h-24 resize-none"></textarea>
+                <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold text-xs uppercase shadow">Add Package</button>
             </div>
 
-            <div class="border rounded-xl p-3 bg-gray-50">
-                <h2 class="text-[10px] font-bold text-gray-500 uppercase mb-3">3. Current Packages (Delete)</h2>
-                <div id="package-list" class="space-y-2">
-                    <p class="text-xs text-gray-400 italic text-center">Loading packages...</p>
-                </div>
+            <div class="bg-gray-50 p-3 rounded-xl border">
+                <h2 class="text-[10px] font-bold text-gray-500 uppercase mb-2">3. Delete Packages</h2>
+                <div id="pkg-list" class="space-y-2"></div>
             </div>
         </div>
     </div>
@@ -63,8 +55,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 1. SAVE HEADER INFO
-        window.saveHeader = () => {
+        window.saveSet = () => {
             const data = {
                 title: document.getElementById('title').value,
                 phone: document.getElementById('phone').value,
@@ -77,43 +68,28 @@
             set(ref(db, 'settings'), data).then(() => alert("✅ Header Updated!"));
         };
 
-        // 2. ADD NEW PACKAGE
-        window.addTour = () => {
-            const title = document.getElementById('pTitle').value;
-            const img = document.getElementById('pImg').value;
-            const desc = document.getElementById('pDesc').value;
-
-            if(!title || !img || !desc) return alert("Please fill all fields");
-
-            const newRef = push(ref(db, 'packages'));
-            set(newRef, { title, img, desc }).then(() => {
-                alert("✅ Package Added!");
-                document.getElementById('pTitle').value = "";
-                document.getElementById('pImg').value = "";
-                document.getElementById('pDesc').value = "";
-            });
+        window.addPkg = () => {
+            const pkg = {
+                title: document.getElementById('pTitle').value,
+                img: document.getElementById('pImg').value,
+                desc: document.getElementById('pDesc').value
+            };
+            push(ref(db, 'packages'), pkg).then(() => alert("✅ Package Added!"));
         };
 
-        // 3. LOAD & DELETE PACKAGES
-        onValue(ref(db, 'packages'), (snapshot) => {
-            const list = document.getElementById('package-list');
+        onValue(ref(db, 'packages'), (snap) => {
+            const list = document.getElementById('pkg-list');
             list.innerHTML = "";
-            snapshot.forEach((child) => {
-                const pkg = child.val();
-                const key = child.key;
+            snap.forEach((child) => {
                 list.innerHTML += `
-                    <div class="flex items-center justify-between bg-white p-2 border rounded shadow-sm">
-                        <span class="text-xs font-bold truncate pr-2">${pkg.title}</span>
-                        <button onclick="deletePkg('${key}')" class="bg-red-500 text-white px-3 py-1 rounded text-[10px] font-bold">DELETE</button>
+                    <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-[10px]">
+                        <span class="font-bold truncate w-2/3">${child.val().title}</span>
+                        <button onclick="delPkg('${child.key}')" class="bg-red-500 text-white px-2 py-1 rounded font-bold">DELETE</button>
                     </div>`;
             });
         });
 
-        window.deletePkg = (key) => {
-            if(confirm("Delete this package?")) {
-                remove(ref(db, 'packages/' + key));
-            }
-        };
+        window.delPkg = (id) => { if(confirm("Delete?")) remove(ref(db, 'packages/'+id)); };
     </script>
 </body>
 </html>
