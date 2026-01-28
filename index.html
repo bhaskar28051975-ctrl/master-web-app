@@ -2,53 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Master Web App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .title-font { font-size: clamp(1.8rem, 7vw, 2.8rem); font-weight: 900; line-height: 1.1; }
-        .phone-font { font-size: clamp(1.4rem, 5vw, 2rem); font-weight: bold; }
-        .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
+        /* Mobile-first Font Scaling */
+        .title-text { font-size: clamp(1.4rem, 6vw, 2.2rem); font-weight: 900; line-height: 1.2; }
+        .phone-text { font-size: clamp(1.2rem, 5vw, 1.8rem); font-weight: bold; }
+        .driver-info { font-size: clamp(0.85rem, 3.5vw, 1.1rem); }
+        .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 overflow-x-hidden">
 
-    <header class="bg-[#003399] text-white p-5 text-center border-b-4 border-yellow-400">
-        <h1 id="display-title" class="title-font uppercase mb-2">Loading...</h1>
-        <p id="display-phone" class="phone-font text-yellow-300">...</p>
+    <header class="bg-[#003399] text-white p-4 text-center border-b-4 border-yellow-400">
+        <h1 id="display-title" class="title-text uppercase mb-1">BHASKAR TRAVELS</h1>
+        <p id="display-phone" class="phone-text text-yellow-300">9154095125</p>
+        <p id="status" class="text-[10px] font-bold text-green-400">Firebase Connected ✅</p>
     </header>
 
-    <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40">
-        <button onclick="changeLang('en')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">ENGLISH</button>
-        <button onclick="changeLang('te')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">TELUGU</button>
-        <button onclick="changeLang('ta')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">TAMIL</button>
-        <button onclick="changeLang('kn')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">KANNADA</button>
-        <button onclick="changeLang('mr')" class="bg-white px-3 py-1 rounded font-bold text-[10px]">MARATHI</button>
+    <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40 shadow-md">
+        <button onclick="changeLang('en')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">ENGLISH</button>
+        <button onclick="changeLang('te')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TELUGU</button>
+        <button onclick="changeLang('ta')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TAMIL</button>
+        <button onclick="changeLang('kn')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">KANNADA</button>
+        <button onclick="changeLang('mr')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">MARATHI</button>
     </div>
 
-    <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4">
+    <section class="bg-[#cc0000] text-white flex items-center p-3 mb-4 shadow-lg">
         <div class="w-[30%]">
-            <img id="display-driver-img" src="" class="w-full aspect-square object-cover border-2 border-white shadow-md">
+            <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white">
         </div>
-        <div class="w-[70%] pl-4 font-bold leading-tight">
-            <p id="display-driver-name" class="uppercase text-lg"></p>
+        <div class="w-[70%] pl-4 driver-info leading-tight font-bold">
+            <p id="display-driver-name" class="uppercase text-yellow-300"></p>
             <p id="display-taxi-no"></p>
             <p id="display-taxi-model"></p>
             <p id="display-taxi-capacity"></p>
         </div>
     </section>
 
-    <main id="package-container" class="px-4 pb-10 space-y-4">
+    <main id="package-container" class="px-3 pb-20 space-y-4">
         </main>
 
     <div id="popup-box" class="popup-overlay">
-        <div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden relative shadow-2xl">
-            <button onclick="closePopup()" class="absolute top-2 right-2 bg-gray-200 w-8 h-8 rounded-full">✕</button>
-            <img id="pop-img" src="" class="w-full h-48 object-cover">
-            <div class="p-5">
-                <h2 id="pop-title" class="text-xl font-black mb-2 text-blue-800"></h2>
-                <p id="pop-desc" class="text-gray-700 text-sm"></p>
+        <div class="bg-white w-full max-w-sm rounded-xl overflow-hidden relative shadow-2xl">
+            <button onclick="closePopup()" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full font-bold">✕</button>
+            <img id="pop-img" src="" class="w-full h-48 object-cover border-b-4 border-blue-800">
+            <div class="p-4">
+                <h2 id="pop-title" class="text-xl font-black text-blue-900 mb-2"></h2>
+                <p id="pop-desc" class="text-gray-700 text-sm leading-relaxed overflow-y-auto max-h-40"></p>
             </div>
         </div>
     </div>
@@ -61,43 +64,42 @@
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
             authDomain: "master-web-app-d8d1b.firebaseapp.com",
             projectId: "master-web-app-d8d1b",
-            databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com", // Updated to Realtime DB
-            storageBucket: "master-web-app-d8d1b.firebasestorage.app",
+            databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
             appId: "1:460731698074:web:40ad4f12c5fb3126874823"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Load Settings & Driver
-        onValue(ref(db, 'settings'), (snapshot) => {
-            const data = snapshot.val();
+        // Fetch Settings & Driver Info
+        onValue(ref(db, 'settings'), (snap) => {
+            const data = snap.val();
             if(data) {
-                document.getElementById('display-title').innerText = data.title;
-                document.getElementById('display-phone').innerText = data.phone;
-                document.getElementById('display-driver-name').innerText = data.driverName;
-                document.getElementById('display-taxi-no').innerText = "Taxi No: " + data.taxiNo;
-                document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
-                document.getElementById('display-taxi-capacity').innerText = "Capacity: " + data.capacity;
-                document.getElementById('display-driver-img').src = data.driverImg;
+                document.getElementById('display-title').innerText = data.title || "BHASKAR TRAVELS";
+                document.getElementById('display-phone').innerText = data.phone || "9154095125";
+                document.getElementById('display-driver-name').innerText = data.driverName || "";
+                document.getElementById('display-taxi-no').innerText = "Taxi: " + (data.taxiNo || "");
+                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "");
+                document.getElementById('display-taxi-capacity').innerText = "Cap: " + (data.capacity || "");
+                if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
             }
         });
 
-        // Load Packages
-        onValue(ref(db, 'packages'), (snapshot) => {
+        // Fetch Packages
+        onValue(ref(db, 'packages'), (snap) => {
             const container = document.getElementById('package-container');
             container.innerHTML = "";
-            snapshot.forEach((child) => {
+            snap.forEach((child) => {
                 const pkg = child.val();
                 container.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <img src="${pkg.img}" class="w-full h-44 object-cover">
-                        <div class="p-4">
-                            <h2 class="text-xl font-black">${pkg.title}</h2>
-                            <p class="text-gray-600 text-sm mb-4">${pkg.desc}</p>
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden border">
+                        <img src="${pkg.img}" class="w-full h-40 object-cover">
+                        <div class="p-3">
+                            <h2 class="text-lg font-black uppercase text-gray-800">${pkg.title}</h2>
+                            <p class="text-gray-600 text-xs mb-3 line-clamp-2">${pkg.desc}</p>
                             <div class="flex gap-2">
-                                <button onclick="window.openPop('${pkg.title}', '${pkg.desc}', '${pkg.img}')" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-xs">VIEW DETAILS</button>
-                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg text-xs text-center">WHATSAPP</a>
+                                <button onclick="openPop('${pkg.title.replace(/'/g, "\\'")}', '${pkg.desc.replace(/'/g, "\\'")}', '${pkg.img}')" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px]">VIEW DETAILS</button>
+                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px] text-center">WHATSAPP</a>
                             </div>
                         </div>
                     </div>`;
@@ -113,6 +115,8 @@
     </script>
     <script>
         function closePopup() { document.getElementById('popup-box').classList.remove('popup-active'); }
+        // Simple lang switcher for package content
+        function changeLang(lang) { alert("Translation for " + lang + " will load if content is added in that language."); }
     </script>
 </body>
 </html>
