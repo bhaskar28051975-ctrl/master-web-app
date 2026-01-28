@@ -6,7 +6,6 @@
     <title>Bhaskar Travels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Mobile-first Font Scaling */
         .title-text { font-size: clamp(1.2rem, 5vw, 1.8rem); font-weight: 900; }
         .phone-text { font-size: clamp(1rem, 4.5vw, 1.4rem); font-weight: bold; }
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
@@ -21,10 +20,10 @@
     </header>
 
     <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40 shadow-md">
-        <button class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">ENGLISH</button>
-        <button class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TELUGU</button>
-        <button class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TAMIL</button>
-        <button class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">KANNADA</button>
+        <button onclick="changeLang('en')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">ENGLISH</button>
+        <button onclick="changeLang('te')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TELUGU</button>
+        <button onclick="changeLang('ta')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TAMIL</button>
+        <button onclick="changeLang('kn')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">KANNADA</button>
     </div>
 
     <section class="bg-[#cc0000] text-white flex items-center p-3 mb-4 shadow-lg">
@@ -32,7 +31,7 @@
             <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-md">
         </div>
         <div class="w-[70%] pl-4 text-xs font-bold leading-tight">
-            <p id="display-driver-name" class="uppercase text-yellow-300 text-sm mb-1"></p>
+            <p id="display-driver-name" class="uppercase text-yellow-300 text-sm mb-1">Loading...</p>
             <p id="display-taxi-no"></p>
             <p id="display-taxi-model"></p>
             <p id="display-taxi-capacity"></p>
@@ -67,16 +66,33 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // Language data
+        const langData = {
+            en: { title: "BHASKAR TRAVELS", driver: "Driver" },
+            te: { title: "భాస్కర్ ట్రావెల్స్", driver: "డ్రైవర్" },
+            ta: { title: "பாஸ்கர் டிராவல்ஸ்", driver: "டிரைவர்" },
+            kn: { title: "ಭಾಸ್ಕರ್ ಟ್ರಾವೆಲ್ಸ್", driver: "ಚಾಲಕ" }
+        };
+
+        window.changeLang = (lang) => {
+            document.getElementById('display-title').innerText = langData[lang].title;
+            alert("Language changed to " + lang.toUpperCase());
+        };
+
         onValue(ref(db, 'settings'), (snap) => {
             const data = snap.val();
             if(data) {
-                document.getElementById('display-title').innerText = data.title;
-                document.getElementById('display-phone').innerText = data.phone;
-                document.getElementById('display-driver-name').innerText = data.driverName;
-                document.getElementById('display-taxi-no').innerText = "Taxi: " + data.taxiNo;
-                document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
-                document.getElementById('display-taxi-capacity').innerText = "Cap: " + data.capacity;
-                if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
+                document.getElementById('display-title').innerText = data.title || "BHASKAR TRAVELS";
+                document.getElementById('display-phone').innerText = data.phone || "";
+                document.getElementById('display-driver-name').innerText = data.driverName || "Driver";
+                document.getElementById('display-taxi-no').innerText = "Taxi: " + (data.taxiNo || "");
+                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "");
+                document.getElementById('display-taxi-capacity').innerText = "Cap: " + (data.capacity || "");
+                
+                // Fixed: Explicitly setting the image source from Firebase
+                if(data.driverImg && data.driverImg !== "") {
+                    document.getElementById('display-driver-img').src = data.driverImg;
+                }
             }
         });
 
