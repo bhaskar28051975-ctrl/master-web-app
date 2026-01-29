@@ -11,15 +11,20 @@
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
         
-        /* Forces Description and UI text to be 16px */
-        .desc-text { font-size: 16px !important; line-height: 1.6; }
+        /* Decreased space between lines (from 1.6 to 1.2) */
+        .desc-text { font-size: 16px !important; line-height: 1.2; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
 
-    <header class="bg-[#003399] text-white p-4 text-center border-b-4 border-yellow-400 shadow-md">
-        <h1 id="display-title" class="title-text uppercase">BHASKAR TRAVELS</h1>
-        <p id="display-phone" class="phone-text text-yellow-300 mt-1">9154095125</p>
+    <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-md">
+        <div class="flex items-center justify-center gap-3">
+            <img id="display-title-img" src="" class="hidden w-12 h-12 object-cover rounded border border-white">
+            <div class="text-center">
+                <h1 id="display-title" class="title-text uppercase">BHASKAR TRAVELS</h1>
+                <p id="display-phone" class="phone-text text-yellow-300 mt-1">9154095125</p>
+            </div>
+        </div>
     </header>
 
     <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-2 sticky top-0 z-40 shadow-md">
@@ -36,7 +41,7 @@
         </div>
         <div class="w-[65%] pl-5 font-bold space-y-1">
             <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1">DRIVER NAME</p>
-            <p id="display-taxi-no" class="text-[16px]">🚖 Taxi: <span>---</span></p>
+            <p id="display-taxi-no" class="text-[16px]">Taxi: <span>---</span></p>
             <p id="display-taxi-model" class="text-[16px]">Model: ---</p>
             <p id="display-taxi-capacity" class="text-[16px]">Cap: ---</p>
         </div>
@@ -121,7 +126,6 @@
         onValue(ref(db, 'settings'), (snap) => {
             const data = snap.val();
             if(data) {
-                // Fix: Only update if the value actually exists in database
                 if(data.title) document.getElementById('display-title').innerText = data.title;
                 if(data.phone) document.getElementById('display-phone').innerText = data.phone;
                 if(data.driverName) document.getElementById('display-driver-name').innerText = data.driverName;
@@ -129,6 +133,13 @@
                 if(data.taxiModel) document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
                 if(data.capacity) document.getElementById('display-taxi-capacity').innerText = "Cap: " + data.capacity;
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
+                
+                // Show Title Image if exists
+                if(data.titleImg) {
+                    const tImg = document.getElementById('display-title-img');
+                    tImg.src = data.titleImg;
+                    tImg.classList.remove('hidden');
+                }
             }
         });
 
