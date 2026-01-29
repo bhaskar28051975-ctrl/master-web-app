@@ -11,7 +11,7 @@
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
         
-        /* Decreased space between lines */
+        /* Decreased line-height for descriptions */
         .desc-text { font-size: 16px !important; line-height: 1.2; }
     </style>
 </head>
@@ -76,12 +76,9 @@
         const db = getDatabase(app);
         let allPackages = [];
 
-        window.translatePackages = (lang) => { renderPackages(lang); };
-
-        function renderPackages(lang = 'en') {
+        function renderPackages() {
             const container = document.getElementById('package-container');
             container.innerHTML = "";
-            
             allPackages.forEach((pkg) => {
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
@@ -91,13 +88,9 @@
                             <p class="text-gray-700 desc-text mb-5 line-clamp-3">${pkg.desc}</p>
                             <div class="flex gap-3">
                                 <button onclick="openPop('${pkg.title.replace(/'/g, "\\'")}', '${pkg.desc.replace(/'/g, "\\'")}', '${pkg.img}')" 
-                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] uppercase shadow-md">
-                                    VIEW DETAILS
-                                </button>
+                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] uppercase shadow-md">VIEW DETAILS</button>
                                 <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
-                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] text-center uppercase shadow-md">
-                                    WHATSAPP
-                                </a>
+                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] text-center uppercase shadow-md">WHATSAPP</a>
                             </div>
                         </div>
                     </div>`;
@@ -114,7 +107,6 @@
                 if(data.taxiModel) document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
                 if(data.capacity) document.getElementById('display-taxi-capacity').innerText = "Cap: " + data.capacity;
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
-                
                 if(data.titleImg) {
                     const tImg = document.getElementById('display-title-img');
                     tImg.src = data.titleImg;
@@ -126,7 +118,7 @@
         onValue(ref(db, 'packages'), (snap) => {
             allPackages = [];
             snap.forEach((child) => { allPackages.push(child.val()); });
-            renderPackages('en');
+            renderPackages();
         });
 
         window.openPop = (t, d, i) => {
