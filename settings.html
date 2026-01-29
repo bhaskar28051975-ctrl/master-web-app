@@ -17,12 +17,12 @@
                 <h2 class="text-xs font-bold text-blue-600 uppercase">1. Header & Driver</h2>
                 
                 <div class="flex gap-2 items-center">
-                    <div class="w-16 h-16 border-2 border-blue-200 rounded flex flex-col items-center justify-center bg-white shrink-0 text-center">
-                        <span class="text-[9px] text-gray-400 font-bold uppercase">Logo File</span>
+                    <div class="w-16 h-16 border-2 border-blue-200 rounded flex items-center justify-center bg-white shrink-0">
+                        <span class="text-[9px] text-gray-400 font-bold uppercase">Logo</span>
                     </div>
                     <div class="flex-1 space-y-2">
                         <input id="title" type="text" placeholder="Travels Title" class="w-full p-2 border rounded text-sm">
-                        <input id="titleImg" type="text" placeholder="logo.jpg (File Name)" class="w-full p-2 border rounded text-xs bg-yellow-50">
+                        <input id="titleImg" type="text" placeholder="Paste Logo Image URL here" class="w-full p-2 border rounded text-xs bg-yellow-50">
                     </div>
                 </div>
 
@@ -33,8 +33,8 @@
                 <input id="tCap" type="text" placeholder="Capacity" class="w-full p-3 border rounded text-sm">
                 
                 <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-gray-500 uppercase">Driver Photo File Name</label>
-                    <input id="dImg" type="text" placeholder="driver.jpg" class="w-full p-3 border rounded text-sm bg-yellow-50">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase">Driver Photo URL</label>
+                    <input id="dImg" type="text" placeholder="Paste Driver Photo URL here" class="w-full p-3 border rounded text-sm bg-yellow-50">
                 </div>
 
                 <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded font-bold text-sm uppercase shadow">Update Header</button>
@@ -43,7 +43,7 @@
             <div class="bg-green-50 p-4 rounded-xl space-y-3 border">
                 <h2 class="text-xs font-bold text-green-700 uppercase">2. Add Tour Package</h2>
                 <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-3 border rounded text-sm">
-                <input id="pImg" type="text" placeholder="Image File Name (e.g. ooty.jpg)" class="w-full p-3 border rounded text-sm">
+                <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-3 border rounded text-sm">
                 <textarea id="pDesc" placeholder="Package Description" class="w-full p-3 border rounded text-sm h-24 resize-none"></textarea>
                 <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold text-sm uppercase shadow">Add Package</button>
             </div>
@@ -81,8 +81,7 @@
                 capacity: document.getElementById('tCap').value,
                 driverImg: document.getElementById('dImg').value
             };
-
-            update(ref(db, 'settings'), updates).then(() => alert("✅ Settings Updated!"));
+            update(ref(db, 'settings'), updates).then(() => alert("✅ Updated!"));
         };
 
         window.addPkg = () => {
@@ -103,15 +102,14 @@
             const list = document.getElementById('pkg-list');
             list.innerHTML = "";
             snap.forEach((child) => {
-                list.innerHTML += `
-                    <div class="flex justify-between items-center bg-white p-3 border rounded shadow-sm text-sm">
-                        <span class="font-bold truncate w-2/3 uppercase">${child.val().title}</span>
-                        <button onclick="delPkg('${child.key}')" class="bg-red-500 text-white px-3 py-1 rounded font-bold text-xs">DELETE</button>
-                    </div>`;
+                list.innerHTML += `<div class="flex justify-between items-center bg-white p-3 border rounded shadow-sm text-sm">
+                    <span class="font-bold truncate w-2/3 uppercase">${child.val().title}</span>
+                    <button onclick="delPkg('${child.key}')" class="bg-red-500 text-white px-3 py-1 rounded font-bold text-xs">DELETE</button>
+                </div>`;
             });
         });
 
-        window.delPkg = (id) => { if(confirm("Delete this package?")) remove(ref(db, 'packages/'+id)); };
+        window.delPkg = (id) => { if(confirm("Delete?")) remove(ref(db, 'packages/'+id)); };
     </script>
 </body>
 </html>
