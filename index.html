@@ -11,11 +11,9 @@
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
         
-        /* HIDE GOOGLE OVERLAYS */
-        iframe.goog-te-banner-frame { display: none !important; }
+        /* HIDE GOOGLE WIDGETS BUT KEEP FUNCTIONAL */
+        #google_translate_element, .skiptranslate, .goog-te-banner-frame { display: none !important; }
         body { top: 0px !important; }
-        #google_translate_element { display: none !important; }
-        .goog-te-gadget { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
@@ -42,7 +40,7 @@
 
     <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
         <div class="w-[35%] text-center">
-            <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-lg shadow-sm">
+            <img id="display-driver-img" src="" class="w-full aspect-square object-cover border-2 border-white rounded-lg shadow-sm">
         </div>
         <div class="w-[65%] pl-5 font-bold space-y-1">
             <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1 notranslate">BHASKAR</p>
@@ -67,19 +65,18 @@
 
     <script type="text/javascript">
         function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'en', 
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-                autoDisplay: false
-            }, 'google_translate_element');
+            new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element');
         }
 
-        function changeLang(code) {
-            const select = document.querySelector('select.goog-te-combo');
-            if (select) {
-                select.value = code;
-                // Force Google to notice the change
-                select.dispatchEvent(new Event('change', { bubbles: true }));
+        function changeLang(langCode) {
+            var selectField = document.querySelector("select.goog-te-combo");
+            if (selectField) {
+                selectField.value = langCode;
+                selectField.dispatchEvent(new Event('change'));
+            } else {
+                // If the translate element isn't ready, try to initialize it manually
+                googleTranslateElementInit();
+                setTimeout(function() { changeLang(langCode); }, 500);
             }
         }
     </script>
@@ -100,6 +97,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // Load Header Data
         onValue(ref(db, 'settings'), (snap) => {
             const data = snap.val();
             if(data) {
@@ -118,6 +116,7 @@
             }
         });
 
+        // Load Package Data
         onValue(ref(db, 'packages'), (snap) => {
             const container = document.getElementById('package-container');
             container.innerHTML = "";
@@ -146,7 +145,7 @@
             document.getElementById('pop-img').src = i;
             document.getElementById('popup-box').classList.add('popup-active');
         };
-        window.closePopup = () => document.getElementById('pop-box').classList.remove('popup-active');
+        window.closePopup = () => document.getElementById('popup-box').classList.remove('popup-active');
     </script>
 </body>
 </html>
