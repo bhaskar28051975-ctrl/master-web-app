@@ -32,11 +32,7 @@
                 <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-3 border rounded text-sm">
                 <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-3 border rounded text-sm">
                 <input id="tCap" type="text" placeholder="Capacity" class="w-full p-3 border rounded text-sm">
-                
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-gray-500 uppercase">Driver Photo URL</label>
-                    <input id="dImg" type="text" placeholder="Driver Photo URL" class="w-full p-3 border rounded text-sm bg-yellow-50">
-                </div>
+                <input id="dImg" type="text" placeholder="Driver Photo URL" class="w-full p-3 border rounded text-sm bg-yellow-50">
 
                 <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded font-bold text-sm uppercase shadow active:bg-blue-800">Update Header</button>
             </div>
@@ -47,6 +43,7 @@
                 <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-3 border rounded text-sm draft">
                 <textarea id="pDesc" placeholder="Package Description" class="w-full p-3 border rounded text-sm h-24 resize-none draft"></textarea>
                 <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold text-sm uppercase shadow">Add Package</button>
+                <p class="text-[10px] text-green-600 text-center font-bold italic">Drafts save automatically as you type!</p>
             </div>
 
             <div class="bg-gray-50 p-4 rounded-xl border">
@@ -55,12 +52,11 @@
             </div>
 
             <div class="pb-2">
-                <button onclick="viewSite()" class="block w-full bg-slate-800 text-white py-4 rounded-xl text-center font-bold text-sm uppercase shadow-lg active:scale-95 transition-transform">
+                <a href="https://bhaskar28051975-ctrl.github.io/master-web-app/" target="_blank" class="block w-full bg-slate-800 text-white py-4 rounded-xl text-center font-bold text-sm uppercase shadow-lg active:scale-95">
                     View Live Website
-                </button>
+                </a>
             </div>
-
-        </div> 
+        </div>
     </div>
 
     <script type="module">
@@ -78,22 +74,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- Auto-Draft Logic for Packages ---
-        const draftInputs = document.querySelectorAll('.draft');
-        draftInputs.forEach(input => {
-            // Load saved draft
-            const saved = localStorage.getItem('draft_' + input.id);
-            if (saved) input.value = saved;
-
-            // Save draft on every keystroke
-            input.addEventListener('input', () => {
-                localStorage.setItem('draft_' + input.id, input.value);
-            });
+        // --- DRAFT SAVER LOGIC ---
+        const drafts = document.querySelectorAll('.draft');
+        drafts.forEach(el => {
+            el.value = localStorage.getItem('draft_' + el.id) || "";
+            el.addEventListener('input', () => localStorage.setItem('draft_' + el.id, el.value));
         });
-
-        window.viewSite = () => {
-            window.open('index.html', '_blank');
-        };
 
         onValue(ref(db, 'settings'), (snap) => {
             const data = snap.val();
@@ -106,11 +92,9 @@
                 document.getElementById('tModel').value = data.taxiModel || "";
                 document.getElementById('tCap').value = data.capacity || "";
                 document.getElementById('dImg').value = data.driverImg || "";
-
                 if(data.titleImg) {
-                    const prev = document.getElementById('prev-logo');
-                    prev.src = data.titleImg;
-                    prev.classList.remove('hidden');
+                    document.getElementById('prev-logo').src = data.titleImg;
+                    document.getElementById('prev-logo').classList.remove('hidden');
                     document.getElementById('logo-placeholder').classList.add('hidden');
                 }
             }
@@ -127,7 +111,7 @@
                 capacity: document.getElementById('tCap').value,
                 driverImg: document.getElementById('dImg').value
             };
-            update(ref(db, 'settings'), updates).then(() => alert("✅ Settings Saved!"));
+            update(ref(db, 'settings'), updates).then(() => alert("✅ Header Updated!"));
         };
 
         window.addPkg = () => {
@@ -139,10 +123,9 @@
             if(!pkg.title) return alert("Title required");
             push(ref(db, 'packages'), pkg).then(() => {
                 alert("✅ Package Added!");
-                // Clear inputs AND clear the drafts
-                draftInputs.forEach(input => {
-                    input.value = "";
-                    localStorage.removeItem('draft_' + input.id);
+                drafts.forEach(el => {
+                    el.value = "";
+                    localStorage.removeItem('draft_' + el.id);
                 });
             });
         };
@@ -151,14 +134,14 @@
             const list = document.getElementById('pkg-list');
             list.innerHTML = "";
             snap.forEach((child) => {
-                list.innerHTML += `<div class="flex justify-between items-center bg-white p-3 border rounded shadow-sm text-sm">
+                list.innerHTML += `<div class="flex justify-between items-center bg-white p-3 border rounded shadow-sm text-xs">
                     <span class="font-bold truncate w-2/3 uppercase">${child.val().title}</span>
-                    <button onclick="delPkg('${child.key}')" class="bg-red-500 text-white px-3 py-1 rounded font-bold text-xs">DELETE</button>
+                    <button onclick="delPkg('${child.key}')" class="bg-red-500 text-white px-3 py-1 rounded font-bold">DEL</button>
                 </div>`;
             });
         });
 
-        window.delPkg = (id) => { if(confirm("Delete this package?")) remove(ref(db, 'packages/'+id)); };
+        window.delPkg = (id) => { if(confirm("Delete?")) remove(ref(db, 'packages/'+id)); };
     </script>
 </body>
 </html>
