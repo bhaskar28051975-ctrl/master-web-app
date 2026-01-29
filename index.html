@@ -11,7 +11,7 @@
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
         
-        /* Decreased space between lines (from 1.6 to 1.2) */
+        /* Decreased space between lines */
         .desc-text { font-size: 16px !important; line-height: 1.2; }
     </style>
 </head>
@@ -19,7 +19,7 @@
 
     <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-md">
         <div class="flex items-center justify-center gap-3">
-            <img id="display-title-img" src="" class="hidden w-12 h-12 object-cover rounded border border-white">
+            <img id="display-title-img" src="" class="hidden w-14 h-14 object-cover rounded border-2 border-white shadow-sm">
             <div class="text-center">
                 <h1 id="display-title" class="title-text uppercase">BHASKAR TRAVELS</h1>
                 <p id="display-phone" class="phone-text text-yellow-300 mt-1">9154095125</p>
@@ -76,16 +76,6 @@
         const db = getDatabase(app);
         let allPackages = [];
 
-        const transDict = [
-            {
-                key: "PAPAVINASHNAM",
-                te: { t: "పాపవినాశనం", d: "పాపవినాశనం మరియు తిరుమల స్థల దర్శనం ప్యాకేజీ." },
-                ta: { t: "பாபவிநாசம்", d: "பாபவிநாசம் மற்றும் திருமலை உள்ளூர் சுற்றிப் பார்க்கும் தொகுப்பு." },
-                kn: { t: "ಪಾಪವಿನಾಶನ", d: "ಪಾಪವಿನಾಶನ మరియు తిరుమల స్థల దర్శనం ప్యాకేజీ." },
-                mr: { t: "पापविनाशम", d: "पापविनाशम आणि तिरुमला स्थानिक दर्शन पॅकेज." }
-            }
-        ];
-
         window.translatePackages = (lang) => { renderPackages(lang); };
 
         function renderPackages(lang = 'en') {
@@ -93,23 +83,14 @@
             container.innerHTML = "";
             
             allPackages.forEach((pkg) => {
-                let dTitle = pkg.title;
-                let dDesc = pkg.desc;
-
-                const match = transDict.find(item => pkg.title.toUpperCase().includes(item.key));
-                if (lang !== 'en' && match && match[lang]) {
-                    dTitle = match[lang].t;
-                    dDesc = match[lang].d;
-                }
-                
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
                         <img src="${pkg.img}" class="w-full h-52 object-cover">
                         <div class="p-5">
-                            <h2 class="text-[24px] font-black uppercase text-blue-900 mb-2 leading-tight">${dTitle}</h2>
-                            <p class="text-gray-700 desc-text mb-5 line-clamp-3">${dDesc}</p>
+                            <h2 class="text-[24px] font-black uppercase text-blue-900 mb-2 leading-tight">${pkg.title}</h2>
+                            <p class="text-gray-700 desc-text mb-5 line-clamp-3">${pkg.desc}</p>
                             <div class="flex gap-3">
-                                <button onclick="openPop('${dTitle.replace(/'/g, "\\'")}', '${dDesc.replace(/'/g, "\\'")}', '${pkg.img}')" 
+                                <button onclick="openPop('${pkg.title.replace(/'/g, "\\'")}', '${pkg.desc.replace(/'/g, "\\'")}', '${pkg.img}')" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] uppercase shadow-md">
                                     VIEW DETAILS
                                 </button>
@@ -134,7 +115,6 @@
                 if(data.capacity) document.getElementById('display-taxi-capacity').innerText = "Cap: " + data.capacity;
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
                 
-                // Show Title Image if exists
                 if(data.titleImg) {
                     const tImg = document.getElementById('display-title-img');
                     tImg.src = data.titleImg;
