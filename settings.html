@@ -15,7 +15,15 @@
         <div class="p-4 space-y-6">
             <div class="bg-blue-50 p-4 rounded-xl space-y-3 border">
                 <h2 class="text-xs font-bold text-blue-600 uppercase">1. Header & Driver</h2>
-                <input id="title" type="text" placeholder="Travels Title" class="w-full p-3 border rounded text-sm">
+                
+                <div class="flex gap-2 items-center">
+                    <label class="w-16 h-16 border-2 border-dashed border-blue-300 rounded flex flex-col items-center justify-center bg-white cursor-pointer overflow-hidden shrink-0">
+                        <span class="text-[10px] text-blue-500 font-bold">LOGO</span>
+                        <input id="titleImgFile" type="file" accept="image/*" class="hidden">
+                    </label>
+                    <input id="title" type="text" placeholder="Travels Title" class="flex-1 p-3 border rounded text-sm h-16">
+                </div>
+
                 <input id="phone" type="text" placeholder="Phone Number" class="w-full p-3 border rounded text-sm">
                 <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded text-sm">
                 <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-3 border rounded text-sm">
@@ -67,25 +75,45 @@
             reader.onerror = error => reject(error);
         });
 
-        window.saveSet = async () => {
-            const fileInput = document.getElementById('dImgFile');
-            let driverImageData = "";
-
-            if (fileInput.files.length > 0) {
-                driverImageData = await toBase64(fileInput.files[0]);
+        // Load existing values to prevent overwriting with empty strings
+        onValue(ref(db, 'settings'), (snap) => {
+            const data = snap.val();
+            if(data) {
+                document.getElementById('title').value = data.title || "";
+                document.getElementById('phone').value = data.phone || "";
+                document.getElementById('dName').value = data.driverName || "";
+                document.getElementById('tNo').value = data.taxiNo || "";
+                document.getElementById('tModel').value = data.taxiModel || "";
+                document.getElementById('tCap').value = data.capacity || "";
             }
+        }, { onlyOnce: true });
 
-            const data = {
+        window.saveSet = async () => {
+            const dFileInput = document.getElementById('dImgFile');
+            const tFileInput = document.getElementById('titleImgFile');
+            
+            // Get current values to avoid losing images if not re-uploaded
+            let driverImageData = "";
+            let titleImageData = "";
+
+            // If a new file is chosen, convert it; otherwise, logic can be added to keep old one
+            if (dFileInput.files.length > 0) driverImageData = await toBase64(dFileInput.files[0]);
+            if (tFileInput.files.length > 0) titleImageData = await toBase64(tFileInput.files[0]);
+
+            const updates = {
                 title: document.getElementById('title').value,
                 phone: document.getElementById('phone').value,
                 driverName: document.getElementById('dName').value,
                 taxiNo: document.getElementById('tNo').value,
                 taxiModel: document.getElementById('tModel').value,
                 capacity: document.getElementById('tCap').value,
-                driverImg: driverImageData || "" 
             };
 
-            set(ref(db, 'settings'), data).then(() => alert("✅ Header & Photo Updated!"));
+            // Only update image fields if a new file was actually selected
+            if (driverImageData) updates.driverImg = driverImageData;
+            if (titleImageData) updates.titleImg = titleImageData;
+
+            set(ref(db, 'settings'), updates).then(() => alert("✅ Settings Updated!"));
         };
 
         window.addPkg = () => {
