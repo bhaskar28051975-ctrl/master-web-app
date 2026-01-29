@@ -9,32 +9,27 @@
 </head>
 <body class="bg-slate-900 p-3 min-h-screen">
 
-    <div class="max-w-[400px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-10">
+    <div id="login-box" class="max-w-[400px] mx-auto bg-white rounded-2xl p-6 mt-10 shadow-2xl">
+        <h2 class="text-center font-black text-blue-700 uppercase mb-4">Admin Login</h2>
+        <input id="pass-input" type="password" placeholder="Enter Password" class="w-full p-3 border rounded mb-4">
+        <button onclick="checkPass()" class="w-full bg-blue-600 text-white py-3 rounded font-bold uppercase">Unlock Panel</button>
+    </div>
+
+    <div id="admin-content" class="hidden max-w-[400px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-10">
         <div class="bg-white p-4 border-b text-center font-black text-blue-700 uppercase">Admin Control Panel</div>
         
         <div class="p-4 space-y-6">
             <div class="bg-blue-50 p-4 rounded-xl space-y-3 border">
                 <h2 class="text-xs font-bold text-blue-600 uppercase">1. Header & Driver</h2>
-                
-                <div class="flex gap-2 items-center">
-                    <div class="w-16 h-16 border-2 border-blue-200 rounded flex flex-col items-center justify-center bg-white shrink-0 overflow-hidden">
-                        <img id="prev-logo" src="" class="hidden w-full h-full object-cover">
-                        <span id="logo-placeholder" class="text-[9px] text-gray-400 font-bold uppercase">Logo</span>
-                    </div>
-                    <div class="flex-1 space-y-2">
-                        <input id="title" type="text" placeholder="Travels Title" class="w-full p-2 border rounded text-sm">
-                        <input id="titleImg" type="text" placeholder="Logo Image URL" class="w-full p-2 border rounded text-xs bg-yellow-50">
-                    </div>
-                </div>
-
+                <input id="title" type="text" placeholder="Travels Title" class="w-full p-2 border rounded text-sm">
+                <input id="titleImg" type="text" placeholder="Logo Image URL" class="w-full p-2 border rounded text-xs bg-yellow-50">
                 <input id="phone" type="text" placeholder="Phone Number" class="w-full p-3 border rounded text-sm">
                 <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded text-sm">
                 <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-3 border rounded text-sm">
                 <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-3 border rounded text-sm">
                 <input id="tCap" type="text" placeholder="Capacity" class="w-full p-3 border rounded text-sm">
                 <input id="dImg" type="text" placeholder="Driver Photo URL" class="w-full p-3 border rounded text-sm bg-yellow-50">
-
-                <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded font-bold text-sm uppercase shadow active:bg-blue-800">Update Header</button>
+                <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded font-bold uppercase shadow">Update Header</button>
             </div>
 
             <div class="bg-green-50 p-4 rounded-xl space-y-3 border">
@@ -42,8 +37,7 @@
                 <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-3 border rounded text-sm draft">
                 <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-3 border rounded text-sm draft">
                 <textarea id="pDesc" placeholder="Package Description" class="w-full p-3 border rounded text-sm h-24 resize-none draft"></textarea>
-                <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold text-sm uppercase shadow">Add Package</button>
-                <p class="text-[10px] text-green-600 text-center font-bold italic">Drafts save automatically as you type!</p>
+                <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold uppercase shadow">Add Package</button>
             </div>
 
             <div class="bg-gray-50 p-4 rounded-xl border">
@@ -52,7 +46,7 @@
             </div>
 
             <div class="pb-2">
-                <a href="https://bhaskar28051975-ctrl.github.io/master-web-app/" target="_blank" class="block w-full bg-slate-800 text-white py-4 rounded-xl text-center font-bold text-sm uppercase shadow-lg active:scale-95">
+                <a href="https://bhaskar28051975-ctrl.github.io/master-web-app/" target="_blank" class="block w-full bg-slate-800 text-white py-4 rounded-xl text-center font-bold text-sm uppercase">
                     View Live Website
                 </a>
             </div>
@@ -74,7 +68,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- DRAFT SAVER LOGIC ---
+        // PASSWORD LOGIC
+        window.checkPass = () => {
+            const pass = document.getElementById('pass-input').value;
+            if(pass === "1234") { // <--- CHANGE YOUR PASSWORD HERE
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+            } else {
+                alert("Incorrect Password!");
+            }
+        };
+
+        // DRAFTS
         const drafts = document.querySelectorAll('.draft');
         drafts.forEach(el => {
             el.value = localStorage.getItem('draft_' + el.id) || "";
@@ -92,11 +97,6 @@
                 document.getElementById('tModel').value = data.taxiModel || "";
                 document.getElementById('tCap').value = data.capacity || "";
                 document.getElementById('dImg').value = data.driverImg || "";
-                if(data.titleImg) {
-                    document.getElementById('prev-logo').src = data.titleImg;
-                    document.getElementById('prev-logo').classList.remove('hidden');
-                    document.getElementById('logo-placeholder').classList.add('hidden');
-                }
             }
         });
 
@@ -123,10 +123,7 @@
             if(!pkg.title) return alert("Title required");
             push(ref(db, 'packages'), pkg).then(() => {
                 alert("✅ Package Added!");
-                drafts.forEach(el => {
-                    el.value = "";
-                    localStorage.removeItem('draft_' + el.id);
-                });
+                drafts.forEach(el => { el.value = ""; localStorage.removeItem('draft_' + el.id); });
             });
         };
 
@@ -134,9 +131,9 @@
             const list = document.getElementById('pkg-list');
             list.innerHTML = "";
             snap.forEach((child) => {
-                list.innerHTML += `<div class="flex justify-between items-center bg-white p-3 border rounded shadow-sm text-xs">
-                    <span class="font-bold truncate w-2/3 uppercase">${child.val().title}</span>
-                    <button onclick="delPkg('${child.key}')" class="bg-red-500 text-white px-3 py-1 rounded font-bold">DEL</button>
+                list.innerHTML += `<div class="flex justify-between items-center bg-white p-3 border rounded shadow-sm text-xs uppercase font-bold">
+                    <span class="truncate w-2/3">${child.val().title}</span>
+                    <button onclick="delPkg('${child.key}')" class="bg-red-500 text-white px-3 py-1 rounded">DEL</button>
                 </div>`;
             });
         });
