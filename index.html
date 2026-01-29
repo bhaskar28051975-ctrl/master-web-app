@@ -10,9 +10,7 @@
         .phone-text { font-size: clamp(1.1rem, 5vw, 1.5rem); font-weight: bold; }
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
-        
-        /* Decreased line-height for descriptions */
-        .desc-text { font-size: 16px !important; line-height: 1.2; }
+        .desc-text { font-size: 16px !important; line-height: 1.2; } /* Decreased line height */
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
@@ -76,18 +74,43 @@
         const db = getDatabase(app);
         let allPackages = [];
 
-        function renderPackages() {
+        // Your Language Dictionary
+        const transDict = [
+            {
+                key: "PAPAVINASHNAM",
+                te: { t: "పాపవినాశనం", d: "పాపవినాశనం మరియు తిరుమల స్థల దర్శనం ప్యాకేజీ." },
+                ta: { t: "பாபவிநாசம்", d: "பாபவிநாசம் மற்றும் திருமலை உள்ளூர் சுற்றிப் பார்க்கும் தொகுப்பு." },
+                kn: { t: "ಪಾಪವಿನಾಶನ", d: "ಪಾಪವಿನಾಶನ మరియు తిరుమల స్థల దర్శనం ప్యాకేజీ." },
+                mr: { t: "पापविनाशम", d: "पापविनाशम आणि तिरుమలా స్థానిక దర్శనం ప్యాకేజీ." }
+            }
+            // Add more translations here following the same key format
+        ];
+
+        window.translatePackages = (lang) => { renderPackages(lang); };
+
+        function renderPackages(lang = 'en') {
             const container = document.getElementById('package-container');
             container.innerHTML = "";
+            
             allPackages.forEach((pkg) => {
+                let dTitle = pkg.title;
+                let dDesc = pkg.desc;
+
+                // Restored translation logic
+                const match = transDict.find(item => pkg.title.toUpperCase().includes(item.key));
+                if (lang !== 'en' && match && match[lang]) {
+                    dTitle = match[lang].t;
+                    dDesc = match[lang].d;
+                }
+
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
                         <img src="${pkg.img}" class="w-full h-52 object-cover">
                         <div class="p-5">
-                            <h2 class="text-[24px] font-black uppercase text-blue-900 mb-2 leading-tight">${pkg.title}</h2>
-                            <p class="text-gray-700 desc-text mb-5 line-clamp-3">${pkg.desc}</p>
+                            <h2 class="text-[24px] font-black uppercase text-blue-900 mb-2 leading-tight">${dTitle}</h2>
+                            <p class="text-gray-700 desc-text mb-5 line-clamp-3">${dDesc}</p>
                             <div class="flex gap-3">
-                                <button onclick="openPop('${pkg.title.replace(/'/g, "\\'")}', '${pkg.desc.replace(/'/g, "\\'")}', '${pkg.img}')" 
+                                <button onclick="openPop('${dTitle.replace(/'/g, "\\'")}', '${dDesc.replace(/'/g, "\\'")}', '${pkg.img}')" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] uppercase shadow-md">VIEW DETAILS</button>
                                 <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] text-center uppercase shadow-md">WHATSAPP</a>
@@ -118,7 +141,7 @@
         onValue(ref(db, 'packages'), (snap) => {
             allPackages = [];
             snap.forEach((child) => { allPackages.push(child.val()); });
-            renderPackages();
+            renderPackages('en');
         });
 
         window.openPop = (t, d, i) => {
