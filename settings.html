@@ -3,51 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Panel</title>
+    <title>Bhaskar Travels</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>input, textarea { font-size: 16px !important; }</style>
+    <style>
+        .title-text { font-size: clamp(1.2rem, 5vw, 1.8rem); font-weight: 900; }
+        .phone-text { font-size: clamp(1rem, 4.5vw, 1.4rem); font-weight: bold; }
+        .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
+        .popup-active { display: flex; }
+    </style>
 </head>
-<body class="bg-slate-900 p-3 min-h-screen">
+<body class="bg-gray-100 overflow-x-hidden">
 
-    <div class="max-w-[400px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div class="bg-white p-4 border-b text-center font-black text-blue-700 uppercase">Admin Control Panel</div>
-        
-        <div class="p-4 space-y-6">
-            <div class="bg-blue-50 p-3 rounded-xl space-y-3 border">
-                <h2 class="text-[10px] font-bold text-blue-600 uppercase">1. Header & Driver</h2>
-                <input id="title" type="text" placeholder="Travels Title" class="w-full p-3 border rounded text-sm">
-                <input id="phone" type="text" placeholder="Phone Number" class="w-full p-3 border rounded text-sm">
-                <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded text-sm">
-                <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-3 border rounded text-sm">
-                <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-3 border rounded text-sm">
-                <input id="tCap" type="text" placeholder="Capacity" class="w-full p-3 border rounded text-sm">
-                
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-gray-500">DRIVER PHOTO (.JPG/.PNG)</label>
-                    <input id="dImgFile" type="file" accept="image/*" class="w-full text-xs p-2 border rounded bg-white">
-                </div>
+    <header class="bg-[#003399] text-white p-3 text-center border-b-4 border-yellow-400">
+        <h1 id="display-title" class="title-text uppercase">BHASKAR TRAVELS</h1>
+        <p id="display-phone" class="phone-text text-yellow-300">9154095125</p>
+    </header>
 
-                <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded font-bold text-xs uppercase shadow">Update Header</button>
-            </div>
+    <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40 shadow-md">
+        <button onclick="translatePackages('en')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">ENGLISH</button>
+        <button onclick="translatePackages('te')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">TELUGU</button>
+        <button onclick="translatePackages('ta')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">TAMIL</button>
+        <button onclick="translatePackages('kn')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">KANNADA</button>
+        <button onclick="translatePackages('mr')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">MARATHI</button>
+    </div>
 
-            <div class="bg-green-50 p-3 rounded-xl space-y-3 border">
-                <h2 class="text-[10px] font-bold text-green-700 uppercase">2. Add Tour Package</h2>
-                <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-3 border rounded text-sm">
-                <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-3 border rounded text-sm">
-                <textarea id="pDesc" placeholder="Package Description" class="w-full p-3 border rounded text-sm h-24 resize-none"></textarea>
-                <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold text-xs uppercase shadow">Add Package</button>
-            </div>
+    <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
+        <div class="w-[30%] text-center">
+            <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-md">
+        </div>
+        <div class="w-[70%] pl-4 text-sm font-bold leading-normal">
+            <p id="display-driver-name" class="uppercase text-yellow-300 text-base mb-1"></p>
+            <p id="display-taxi-no"></p>
+            <p id="display-taxi-model"></p>
+            <p id="display-taxi-capacity"></p>
+        </div>
+    </section>
 
-            <div class="bg-gray-50 p-3 rounded-xl border">
-                <h2 class="text-[10px] font-bold text-gray-500 uppercase mb-2">3. Delete Packages</h2>
-                <div id="pkg-list" class="space-y-2"></div>
+    <main id="package-container" class="px-3 pb-20 space-y-4"></main>
+
+    <div id="popup-box" class="popup-overlay">
+        <div class="bg-white w-full max-w-sm rounded-xl overflow-hidden relative shadow-2xl">
+            <button onclick="closePopup()" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full font-bold z-50">✕</button>
+            <img id="pop-img" src="" class="w-full h-48 object-cover">
+            <div class="p-4">
+                <h2 id="pop-title" class="text-xl font-black text-blue-900 mb-2 uppercase"></h2>
+                <div id="pop-desc" class="text-gray-700 text-base leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line"></div>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
@@ -59,59 +66,82 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        let allPackages = [];
 
-        // Function to convert Image File to Text (Base64)
-        const toBase64 = file => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
-
-        window.saveSet = async () => {
-            const fileInput = document.getElementById('dImgFile');
-            let driverImageData = "";
-
-            // Check if a file was selected
-            if (fileInput.files.length > 0) {
-                driverImageData = await toBase64(fileInput.files[0]);
+        const transDict = [
+            {
+                key: "PAPAVINASHNAM",
+                te: { t: "పాపవినాశనం", d: "పాపవినాశనం మరియు తిరుమల స్థల దర్శనం ప్యాకేజీ." },
+                ta: { t: "பாபவிநாசம்", d: "பாபவிநாசம் மற்றும் திருமலை உள்ளூர் சுற்றிப் பார்க்கும் தொகுப்பு." },
+                kn: { t: "ಪಾಪವಿನಾಶನ", d: "ಪಾಪವಿನಾಶನ ಮತ್ತು ತಿರುಮಲ ಸ್ಥಳೀಯ ದರ್ಶನ ಪ್ಯಾಕೇಜ್." },
+                mr: { t: "पापविनाशम", d: "पापविनाशम आणि तिरुमला स्थानिक दर्शन पॅकेज." }
+            },
+            {
+                key: "ONE DAY SIGHTSEEING",
+                te: { t: "తిరుమల ఒక రోజు పర్యటన", d: "తిరుమల లోని అన్ని ముఖ్యమైన ప్రదేశాల సందర్శన." },
+                ta: { t: "திருமலை ஒரு நாள் சுற்றுலா", d: "திருமலையில் உள்ள அனைத்து முக்கிய இடங்களையும் பார்வையிடுதல்." },
+                kn: { t: "ತಿರುಮಲ ಒಂದು ದಿನದ ಪ್ರವಾಸ", d: "ತಿರುಮಲದಲ್ಲಿನ ಎಲ್ಲಾ ಪ್ರಮುಖ ಪ್ರವಾಸಿ ತಾಣಗಳ ದರ್ಶನ." },
+                mr: { t: "तिरुमला एक दिवसीय सहल", d: "तिरुमला मधील सर्व महत्त्वाची ठिकाणे पाहणे." }
             }
+        ];
 
-            const data = {
-                title: document.getElementById('title').value,
-                phone: document.getElementById('phone').value,
-                driverName: document.getElementById('dName').value,
-                taxiNo: document.getElementById('tNo').value,
-                taxiModel: document.getElementById('tModel').value,
-                capacity: document.getElementById('tCap').value,
-                driverImg: driverImageData // This now saves the actual image data
-            };
+        window.translatePackages = (lang) => { renderPackages(lang); };
 
-            set(ref(db, 'settings'), data).then(() => alert("✅ Header & Photo Updated!"));
-        };
+        function renderPackages(lang = 'en') {
+            const container = document.getElementById('package-container');
+            container.innerHTML = "";
+            
+            allPackages.forEach((pkg) => {
+                let dTitle = pkg.title;
+                let dDesc = pkg.desc;
 
-        window.addPkg = () => {
-            const pkg = {
-                title: document.getElementById('pTitle').value,
-                img: document.getElementById('pImg').value,
-                desc: document.getElementById('pDesc').value
-            };
-            push(ref(db, 'packages'), pkg).then(() => alert("✅ Package Added!"));
-        };
-
-        onValue(ref(db, 'packages'), (snap) => {
-            const list = document.getElementById('pkg-list');
-            list.innerHTML = "";
-            snap.forEach((child) => {
-                list.innerHTML += `
-                    <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-[10px]">
-                        <span class="font-bold truncate w-2/3">${child.val().title}</span>
-                        <button onclick="delPkg('${child.key}')" class="bg-red-500 text-white px-2 py-1 rounded font-bold">DELETE</button>
+                const match = transDict.find(item => pkg.title.toUpperCase().includes(item.key));
+                if (lang !== 'en' && match && match[lang]) {
+                    dTitle = match[lang].t;
+                    dDesc = match[lang].d;
+                }
+                
+                container.innerHTML += `
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden border">
+                        <img src="${pkg.img}" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <h2 class="text-lg font-black uppercase text-gray-800 mb-1">${dTitle}</h2>
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-3">${dDesc}</p>
+                            <div class="flex gap-2">
+                                <button onclick="openPop('${dTitle.replace(/'/g, "\\'")}', '${dDesc.replace(/'/g, "\\'")}', '${pkg.img}')" class="flex-1 bg-green-600 text-white font-bold py-3 rounded text-xs uppercase">VIEW DETAILS</button>
+                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" class="flex-1 bg-green-600 text-white font-bold py-3 rounded text-xs text-center uppercase">WHATSAPP</a>
+                            </div>
+                        </div>
                     </div>`;
             });
+        }
+
+        onValue(ref(db, 'settings'), (snap) => {
+            const data = snap.val();
+            if(data) {
+                document.getElementById('display-title').innerText = data.title;
+                document.getElementById('display-phone').innerText = data.phone;
+                document.getElementById('display-driver-name').innerText = data.driverName;
+                document.getElementById('display-taxi-no').innerText = "Taxi: " + data.taxiNo;
+                document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
+                document.getElementById('display-taxi-capacity').innerText = "Cap: " + data.capacity;
+                if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
+            }
         });
 
-        window.delPkg = (id) => { if(confirm("Delete?")) remove(ref(db, 'packages/'+id)); };
+        onValue(ref(db, 'packages'), (snap) => {
+            allPackages = [];
+            snap.forEach((child) => { allPackages.push(child.val()); });
+            renderPackages('en');
+        });
+
+        window.openPop = (t, d, i) => {
+            document.getElementById('pop-title').innerText = t;
+            document.getElementById('pop-desc').innerText = d;
+            document.getElementById('pop-img').src = i;
+            document.getElementById('popup-box').classList.add('popup-active');
+        };
+        window.closePopup = () => document.getElementById('popup-box').classList.remove('popup-active');
     </script>
 </body>
 </html>
