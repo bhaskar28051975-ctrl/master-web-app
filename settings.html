@@ -24,9 +24,6 @@
                     <div class="flex-1 space-y-2">
                         <input id="title" type="text" placeholder="Travels Title" class="w-full p-2 border rounded text-sm">
                         <input id="titleImg" type="text" placeholder="Logo Image URL" class="w-full p-2 border rounded text-xs bg-yellow-50">
-                        <div class="p-4 pt-0">
-    <a href="index.html" class="block w-full bg-slate-700 text-white py-3 rounded text-center font-bold text-sm uppercase shadow">View Live Website</a>
-</div>
                     </div>
                 </div>
 
@@ -54,12 +51,16 @@
 
             <div class="bg-gray-50 p-4 rounded-xl border">
                 <h2 class="text-xs font-bold text-gray-500 uppercase mb-2">3. Manage Packages</h2>
-                <div id="pkg-list" class="space-y-2"></div>
+                <div id="pkg-list" class="space-y-2 mb-4"></div>
             </div>
-        </div>
-    </div>
 
-    <script type="module">
+            <div class="pb-2">
+                <a href="index.html" class="block w-full bg-slate-800 text-white py-4 rounded-xl text-center font-bold text-sm uppercase shadow-lg active:scale-95 transition-transform">
+                    View Live Website
+                </a>
+            </div>
+
+        </div> </div> <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -74,7 +75,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- NEW: FETCH DATA AND HOLD IT IN INPUTS ---
         onValue(ref(db, 'settings'), (snap) => {
             const data = snap.val();
             if(data) {
@@ -87,7 +87,6 @@
                 document.getElementById('tCap').value = data.capacity || "";
                 document.getElementById('dImg').value = data.driverImg || "";
 
-                // Show a small preview of the logo if URL exists
                 if(data.titleImg) {
                     const prev = document.getElementById('prev-logo');
                     prev.src = data.titleImg;
@@ -108,10 +107,9 @@
                 capacity: document.getElementById('tCap').value,
                 driverImg: document.getElementById('dImg').value
             };
-            update(ref(db, 'settings'), updates).then(() => alert("✅ Settings Saved and Held!"));
+            update(ref(db, 'settings'), updates).then(() => alert("✅ Settings Saved!"));
         };
 
-        // --- Package Logic ---
         window.addPkg = () => {
             const pkg = {
                 title: document.getElementById('pTitle').value,
