@@ -1,59 +1,167 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>input, textarea { font-size: 16px !important; }</style>
+</head>
+<body class="bg-slate-900 p-3 min-h-screen">
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
-        authDomain: "master-web-app-d8d1b.firebaseapp.com",
-        projectId: "master-web-app-d8d1b",
-        databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
-        appId: "1:460731698074:web:40ad4f12c5fb3126874823"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const toBase64 = file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-
-    window.saveSet = async () => {
-        const dFileInput = document.getElementById('dImgFile');
-        const tFileInput = document.getElementById('titleImgFile');
+    <div class="max-w-[400px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-10">
+        <div class="bg-white p-4 border-b text-center font-black text-blue-700 uppercase">Admin Control Panel</div>
         
-        // Create an update object with ONLY the fields that have values
-        const updates = {};
-        
-        const title = document.getElementById('title').value;
-        const phone = document.getElementById('phone').value;
-        const dName = document.getElementById('dName').value;
-        const tNo = document.getElementById('tNo').value;
-        const tModel = document.getElementById('tModel').value;
-        const tCap = document.getElementById('tCap').value;
+        <div class="p-4 space-y-6">
+            <div class="bg-blue-50 p-4 rounded-xl space-y-3 border">
+                <h2 class="text-xs font-bold text-blue-600 uppercase">1. Header & Driver</h2>
+                
+                <div class="flex gap-2 items-center">
+                    <label class="w-16 h-16 border-2 border-dashed border-blue-300 rounded flex flex-col items-center justify-center bg-white cursor-pointer overflow-hidden shrink-0 relative">
+                        <img id="title-prev" class="absolute inset-0 w-full h-full object-cover hidden">
+                        <span id="title-label" class="text-[10px] text-blue-500 font-bold">LOGO</span>
+                        <input id="titleImgFile" type="file" accept="image/*" class="hidden" onchange="preview(this, 'title-prev', 'title-label')">
+                    </label>
+                    <input id="title" type="text" placeholder="Travels Title" class="flex-1 p-3 border rounded text-sm h-16">
+                </div>
 
-        if(title) updates.title = title;
-        if(phone) updates.phone = phone;
-        if(dName) updates.driverName = dName;
-        if(tNo) updates.taxiNo = tNo;
-        if(tModel) updates.taxiModel = tModel;
-        if(tCap) updates.capacity = tCap;
+                <input id="phone" type="text" placeholder="Phone Number" class="w-full p-3 border rounded text-sm">
+                <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded text-sm">
+                <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-3 border rounded text-sm">
+                <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-3 border rounded text-sm">
+                <input id="tCap" type="text" placeholder="Capacity" class="w-full p-3 border rounded text-sm">
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase">Driver Photo</label>
+                    <input id="dImgFile" type="file" accept="image/*" class="w-full text-xs p-2 border rounded bg-white">
+                </div>
 
-        // Only add images if a new file was selected
-        if (dFileInput.files.length > 0) {
-            updates.driverImg = await toBase64(dFileInput.files[0]);
-        }
-        if (tFileInput.files.length > 0) {
-            updates.titleImg = await toBase64(tFileInput.files[0]);
-        }
+                <button onclick="saveSet()" id="saveBtn" class="w-full bg-blue-600 text-white py-3 rounded font-bold text-sm uppercase shadow disabled:bg-gray-400">Update Header</button>
+            </div>
 
-        // Use 'update' instead of 'set' to keep existing data safe
-        update(ref(db, 'settings'), updates)
-            .then(() => alert("✅ Settings Updated Successfully!"))
-            .catch((err) => alert("❌ Error: " + err.message));
-    };
+            <div class="bg-green-50 p-4 rounded-xl space-y-3 border">
+                <h2 class="text-xs font-bold text-green-700 uppercase">2. Add Tour Package</h2>
+                <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-3 border rounded text-sm">
+                <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-3 border rounded text-sm">
+                <textarea id="pDesc" placeholder="Package Description" class="w-full p-3 border rounded text-sm h-24 resize-none"></textarea>
+                <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold text-sm uppercase shadow">Add Package</button>
+            </div>
 
-    // ... (rest of the addPkg and delPkg functions remain the same)
-</script>
+            <div class="bg-gray-50 p-4 rounded-xl border">
+                <h2 class="text-xs font-bold text-gray-500 uppercase mb-2">3. Delete Packages</h2>
+                <div id="pkg-list" class="space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
+            authDomain: "master-web-app-d8d1b.firebaseapp.com",
+            projectId: "master-web-app-d8d1b",
+            databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
+            appId: "1:460731698074:web:40ad4f12c5fb3126874823"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Preview function
+        window.preview = (input, imgId, labelId) => {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById(imgId).src = e.target.result;
+                    document.getElementById(imgId).classList.remove('hidden');
+                    document.getElementById(labelId).classList.add('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        // Image Compressor to prevent blank page/database errors
+        const compressImage = (file) => new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 400; // Small size for fast loading
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7)); // 70% quality
+                };
+            };
+        });
+
+        window.saveSet = async () => {
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            const dFileInput = document.getElementById('dImgFile');
+            const tFileInput = document.getElementById('titleImgFile');
+            
+            const updates = {};
+            const fields = {
+                title: 'title', phone: 'phone', driverName: 'dName', 
+                taxiNo: 'tNo', taxiModel: 'tModel', capacity: 'tCap'
+            };
+
+            for (let [key, id] of Object.entries(fields)) {
+                const val = document.getElementById(id).value;
+                if(val) updates[key] = val;
+            }
+
+            if (dFileInput.files.length > 0) updates.driverImg = await compressImage(dFileInput.files[0]);
+            if (tFileInput.files.length > 0) updates.titleImg = await compressImage(tFileInput.files[0]);
+
+            update(ref(db, 'settings'), updates).then(() => {
+                alert("✅ Settings Updated!");
+                btn.disabled = false;
+                btn.innerText = "Update Header";
+            }).catch(e => {
+                alert("Error: " + e.message);
+                btn.disabled = false;
+            });
+        };
+
+        // Package management
+        window.addPkg = () => {
+            const pkg = {
+                title: document.getElementById('pTitle').value,
+                img: document.getElementById('pImg').value,
+                desc: document.getElementById('pDesc').value
+            };
+            push(ref(db, 'packages'), pkg).then(() => {
+                alert("✅ Package Added!");
+                document.getElementById('pTitle').value = "";
+                document.getElementById('pImg').value = "";
+                document.getElementById('pDesc').value = "";
+            });
+        };
+
+        onValue(ref(db, 'packages'), (snap) => {
+            const list = document.getElementById('pkg-list');
+            list.innerHTML = "";
+            snap.forEach((child) => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-3 border rounded shadow-sm text-sm">
+                        <span class="font-bold truncate w-2/3 uppercase">${child.val().title}</span>
+                        <button onclick="delPkg('${child.key}')" class="bg-red-500 text-white px-3 py-1 rounded font-bold text-xs">DELETE</button>
+                    </div>`;
+            });
+        });
+
+        window.delPkg = (id) => { if(confirm("Delete this package?")) remove(ref(db, 'packages/'+id)); };
+    </script>
+</body>
+</html>
