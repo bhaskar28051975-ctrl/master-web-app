@@ -20,19 +20,19 @@
     </header>
 
     <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40 shadow-md">
-        <button onclick="translatePackages('en')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">ENGLISH</button>
-        <button onclick="translatePackages('te')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TELUGU</button>
-        <button onclick="translatePackages('ta')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">TAMIL</button>
-        <button onclick="translatePackages('kn')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">KANNADA</button>
-        <button onclick="translatePackages('mr')" class="bg-white text-black px-2 py-1 rounded font-bold text-[10px]">MARATHI</button>
+        <button onclick="translatePackages('en')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">ENGLISH</button>
+        <button onclick="translatePackages('te')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">TELUGU</button>
+        <button onclick="translatePackages('ta')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">TAMIL</button>
+        <button onclick="translatePackages('kn')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">KANNADA</button>
+        <button onclick="translatePackages('mr')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">MARATHI</button>
     </div>
 
-    <section class="bg-[#cc0000] text-white flex items-center p-3 mb-4 shadow-lg">
+    <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
         <div class="w-[30%] text-center">
             <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-md">
         </div>
-        <div class="w-[70%] pl-4 text-xs font-bold leading-tight">
-            <p id="display-driver-name" class="uppercase text-yellow-300 text-sm mb-1"></p>
+        <div class="w-[70%] pl-4 text-sm font-bold leading-normal">
+            <p id="display-driver-name" class="uppercase text-yellow-300 text-base mb-1"></p>
             <p id="display-taxi-no"></p>
             <p id="display-taxi-model"></p>
             <p id="display-taxi-capacity"></p>
@@ -47,7 +47,7 @@
             <img id="pop-img" src="" class="w-full h-48 object-cover">
             <div class="p-4">
                 <h2 id="pop-title" class="text-xl font-black text-blue-900 mb-2 uppercase"></h2>
-                <div id="pop-desc" class="text-gray-700 text-sm leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line"></div>
+                <div id="pop-desc" class="text-gray-700 text-base leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line"></div>
             </div>
         </div>
     </div>
@@ -68,21 +68,13 @@
         const db = getDatabase(app);
         let allPackages = [];
 
-        // Smart Translation Dictionary
         const transDict = [
             {
                 key: "PAPAVINASHNAM",
                 te: { t: "పాపవినాశనం", d: "పాపవినాశనం మరియు తిరుమల స్థల దర్శనం ప్యాకేజీ." },
                 ta: { t: "பாபவிநாசம்", d: "பாபவிநாசம் மற்றும் திருமலை உள்ளூர் சுற்றிப் பார்க்கும் தொகுப்பு." },
-                kn: { t: "ಪಾಪವಿನಾಶನ", d: "ಪಾಪವಿನಾಶನ ಮತ್ತು ತಿರುಮಲ ಸ್ಥಳೀಯ ದರ್ಶನ ಪ್ಯಾಕೇಜ್." },
+                kn: { t: "ಪಾಪವಿನಾಶನ", d: "ಪಾಪವಿನಾಶನ మరియు తిరుమల స్థల దర్శనం ప్యాకేజీ." },
                 mr: { t: "पापविनाशम", d: "पापविनाशम आणि तिरुमला स्थानिक दर्शन पॅकेज." }
-            },
-            {
-                key: "ONE DAY SIGHTSEEING",
-                te: { t: "తిరుమల ఒక రోజు పర్యటన", d: "తిరుమల లోని అన్ని ముఖ్యమైన ప్రదేశాల సందర్శన." },
-                ta: { t: "திருமலை ஒரு நாள் சுற்றுலா", d: "திருமலையில் உள்ள அனைத்து முக்கிய இடங்களையும் பார்வையிடுதல்." },
-                kn: { t: "ತಿರುಮಲ ಒಂದು ದಿನದ ಪ್ರವಾಸ", d: "ತಿರುಮಲದಲ್ಲಿನ ಎಲ್ಲಾ ಪ್ರಮುಖ ಪ್ರವಾಸಿ ತಾಣಗಳ ದರ್ಶನ." },
-                mr: { t: "तिरुमला एक दिवसीय सहल", d: "तिरुमला मधील सर्व महत्त्वाची ठिकाणे पाहणे." }
             }
         ];
 
@@ -96,9 +88,7 @@
                 let dTitle = pkg.title;
                 let dDesc = pkg.desc;
 
-                // Check if package title matches any translation key
                 const match = transDict.find(item => pkg.title.toUpperCase().includes(item.key));
-                
                 if (lang !== 'en' && match && match[lang]) {
                     dTitle = match[lang].t;
                     dDesc = match[lang].d;
@@ -106,13 +96,21 @@
                 
                 container.innerHTML += `
                     <div class="bg-white rounded-lg shadow-md overflow-hidden border">
-                        <img src="${pkg.img}" class="w-full h-40 object-cover">
-                        <div class="p-3">
-                            <h2 class="text-md font-black uppercase text-gray-800">${dTitle}</h2>
-                            <p class="text-gray-600 text-[10px] mb-3 line-clamp-2">${dDesc}</p>
+                        <img src="${pkg.img}" class="w-full h-44 object-cover">
+                        <div class="p-4">
+                            <h2 class="text-lg font-black uppercase text-gray-800 mb-1 leading-tight">${dTitle}</h2>
+                            
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">${dDesc}</p>
+                            
                             <div class="flex gap-2">
-                                <button onclick="openPop('${dTitle.replace(/'/g, "\\'")}', '${dDesc.replace(/'/g, "\\'")}', '${pkg.img}')" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px]">VIEW DETAILS</button>
-                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" class="flex-1 bg-green-600 text-white font-bold py-2 rounded text-[10px] text-center pt-2">WHATSAPP</a>
+                                <button onclick="openPop('${dTitle.replace(/'/g, "\\'")}', '${dDesc.replace(/'/g, "\\'")}', '${pkg.img}')" 
+                                    class="flex-1 bg-green-600 text-white font-bold py-3 rounded text-xs uppercase">
+                                    VIEW DETAILS
+                                </button>
+                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
+                                    class="flex-1 bg-green-600 text-white font-bold py-3 rounded text-xs text-center uppercase">
+                                    WHATSAPP
+                                </a>
                             </div>
                         </div>
                     </div>`;
