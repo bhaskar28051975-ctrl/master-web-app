@@ -6,48 +6,52 @@
     <title>Bhaskar Travels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .title-text { font-size: clamp(1.2rem, 5vw, 1.8rem); font-weight: 900; }
-        .phone-text { font-size: clamp(1rem, 4.5vw, 1.4rem); font-weight: bold; }
+        /* Clamp ensures title stays readable but doesn't overflow */
+        .title-text { font-size: clamp(1.4rem, 6vw, 2rem); font-weight: 900; letter-spacing: 0.05em; }
+        .phone-text { font-size: clamp(1.1rem, 5vw, 1.5rem); font-weight: bold; }
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
+        
+        /* Custom class for 16px text to ensure it overrides defaults */
+        .desc-text { font-size: 16px !important; line-height: 1.6; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
 
-    <header class="bg-[#003399] text-white p-3 text-center border-b-4 border-yellow-400">
-        <h1 id="display-title" class="title-text uppercase">BHASKAR TRAVELS</h1>
-        <p id="display-phone" class="phone-text text-yellow-300">9154095125</p>
+    <header class="bg-[#003399] text-white p-4 text-center border-b-4 border-yellow-400 shadow-md">
+        <h1 id="display-title" class="title-text uppercase drop-shadow-md">BHASKAR TRAVELS</h1>
+        <p id="display-phone" class="phone-text text-yellow-300 mt-1">9154095125</p>
     </header>
 
-    <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-1.5 sticky top-0 z-40 shadow-md">
-        <button onclick="translatePackages('en')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">ENGLISH</button>
-        <button onclick="translatePackages('te')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">TELUGU</button>
-        <button onclick="translatePackages('ta')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">TAMIL</button>
-        <button onclick="translatePackages('kn')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">KANNADA</button>
-        <button onclick="translatePackages('mr')" class="bg-white text-black px-3 py-1.5 rounded font-bold text-xs">MARATHI</button>
+    <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-2 sticky top-0 z-40 shadow-md">
+        <button onclick="translatePackages('en')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs">ENGLISH</button>
+        <button onclick="translatePackages('te')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs">TELUGU</button>
+        <button onclick="translatePackages('ta')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs">TAMIL</button>
+        <button onclick="translatePackages('kn')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs">KANNADA</button>
+        <button onclick="translatePackages('mr')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs">MARATHI</button>
     </div>
 
     <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
-        <div class="w-[30%] text-center">
-            <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-md">
+        <div class="w-[35%] text-center">
+            <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-lg shadow-sm">
         </div>
-        <div class="w-[70%] pl-4 text-sm font-bold leading-normal">
-            <p id="display-driver-name" class="uppercase text-yellow-300 text-base mb-1"></p>
-            <p id="display-taxi-no"></p>
+        <div class="w-[65%] pl-5 text-[15px] font-bold space-y-1">
+            <p id="display-driver-name" class="uppercase text-yellow-300 text-lg border-b border-red-400 pb-1 mb-1"></p>
+            <p id="display-taxi-no" class="flex items-center">🚖 <span class="ml-2"></span></p>
             <p id="display-taxi-model"></p>
             <p id="display-taxi-capacity"></p>
         </div>
     </section>
 
-    <main id="package-container" class="px-3 pb-20 space-y-4"></main>
+    <main id="package-container" class="px-4 pb-24 space-y-6"></main>
 
     <div id="popup-box" class="popup-overlay">
-        <div class="bg-white w-full max-w-sm rounded-xl overflow-hidden relative shadow-2xl">
-            <button onclick="closePopup()" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full font-bold z-50">✕</button>
-            <img id="pop-img" src="" class="w-full h-48 object-cover">
-            <div class="p-4">
-                <h2 id="pop-title" class="text-xl font-black text-blue-900 mb-2 uppercase"></h2>
-                <div id="pop-desc" class="text-gray-700 text-base leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line"></div>
+        <div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden relative shadow-2xl">
+            <button onclick="closePopup()" class="absolute top-3 right-3 bg-red-600 text-white w-10 h-10 rounded-full font-bold z-50 shadow-lg text-xl">✕</button>
+            <img id="pop-img" src="" class="w-full h-56 object-cover">
+            <div class="p-5">
+                <h2 id="pop-title" class="text-2xl font-black text-blue-900 mb-3 uppercase leading-tight"></h2>
+                <div id="pop-desc" class="text-gray-800 desc-text max-h-64 overflow-y-auto whitespace-pre-line"></div>
             </div>
         </div>
     </div>
@@ -95,20 +99,20 @@
                 }
                 
                 container.innerHTML += `
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden border">
-                        <img src="${pkg.img}" class="w-full h-44 object-cover">
-                        <div class="p-4">
-                            <h2 class="text-lg font-black uppercase text-gray-800 mb-1 leading-tight">${dTitle}</h2>
+                    <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
+                        <img src="${pkg.img}" class="w-full h-52 object-cover">
+                        <div class="p-5">
+                            <h2 class="text-[22px] font-black uppercase text-blue-900 mb-2 leading-tight tracking-tight">${dTitle}</h2>
                             
-                            <p class="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">${dDesc}</p>
+                            <p class="text-gray-700 desc-text mb-5 line-clamp-3">${dDesc}</p>
                             
-                            <div class="flex gap-2">
+                            <div class="flex gap-3">
                                 <button onclick="openPop('${dTitle.replace(/'/g, "\\'")}', '${dDesc.replace(/'/g, "\\'")}', '${pkg.img}')" 
-                                    class="flex-1 bg-green-600 text-white font-bold py-3 rounded text-xs uppercase">
+                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-sm uppercase shadow-md active:bg-green-700">
                                     VIEW DETAILS
                                 </button>
                                 <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
-                                    class="flex-1 bg-green-600 text-white font-bold py-3 rounded text-xs text-center uppercase">
+                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-sm text-center uppercase shadow-md active:bg-green-700">
                                     WHATSAPP
                                 </a>
                             </div>
@@ -123,7 +127,7 @@
                 document.getElementById('display-title').innerText = data.title;
                 document.getElementById('display-phone').innerText = data.phone;
                 document.getElementById('display-driver-name').innerText = data.driverName;
-                document.getElementById('display-taxi-no').innerText = "Taxi: " + data.taxiNo;
+                document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo;
                 document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
                 document.getElementById('display-taxi-capacity').innerText = "Cap: " + data.capacity;
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
