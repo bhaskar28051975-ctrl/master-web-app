@@ -11,13 +11,11 @@
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
         
-        /* HIDDEN GOOGLE BAR BUT ALLOW TRANSLATION */
-        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
+        /* HIDE GOOGLE OVERLAYS */
+        iframe.goog-te-banner-frame { display: none !important; }
         body { top: 0px !important; }
-        #google_translate_element { display: none; }
-        .goog-tooltip { display: none !important; }
-        .goog-tooltip:hover { display: none !important; }
-        .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+        #google_translate_element { display: none !important; }
+        .goog-te-gadget { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
@@ -47,10 +45,10 @@
             <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-lg shadow-sm">
         </div>
         <div class="w-[65%] pl-5 font-bold space-y-1">
-            <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1 notranslate">DRIVER NAME</p>
-            <p id="display-taxi-no" class="text-[16px] notranslate">Taxi: <span>---</span></p>
-            <p id="display-taxi-model" class="text-[16px] notranslate">Model: ---</p>
-            <p id="display-taxi-capacity" class="text-[16px] notranslate">Cap: ---</p>
+            <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1 notranslate">BHASKAR</p>
+            <p id="display-taxi-no" class="text-[16px] notranslate">Taxi: <span>AP04 2435</span></p>
+            <p id="display-taxi-model" class="text-[16px] notranslate">Model: TATA SUMO</p>
+            <p id="display-taxi-capacity" class="text-[16px] notranslate">Cap: 7+1</p>
         </div>
     </section>
 
@@ -76,15 +74,12 @@
             }, 'google_translate_element');
         }
 
-        // IMPROVED LANGUAGE SWITCHER
-        function changeLang(langCode) {
-            const googleCombo = document.querySelector('.goog-te-combo');
-            if (googleCombo) {
-                googleCombo.value = langCode;
-                googleCombo.dispatchEvent(new Event('change'));
-            } else {
-                // If it's not ready yet, wait 500ms and try again
-                setTimeout(() => changeLang(langCode), 500);
+        function changeLang(code) {
+            const select = document.querySelector('select.goog-te-combo');
+            if (select) {
+                select.value = code;
+                // Force Google to notice the change
+                select.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }
     </script>
@@ -108,12 +103,12 @@
         onValue(ref(db, 'settings'), (snap) => {
             const data = snap.val();
             if(data) {
-                document.getElementById('display-title').innerText = data.title || "";
-                document.getElementById('display-phone').innerText = data.phone || "";
-                document.getElementById('display-driver-name').innerText = data.driverName || "";
-                document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo || "";
-                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "");
-                document.getElementById('display-taxi-capacity').innerText = "Cap: " + (data.capacity || "");
+                document.getElementById('display-title').innerText = data.title || "BHASKAR TRAVELS";
+                document.getElementById('display-phone').innerText = data.phone || "9154095125";
+                document.getElementById('display-driver-name').innerText = data.driverName || "BHASKAR";
+                document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo || "AP04 2435";
+                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "TATA SUMO");
+                document.getElementById('display-taxi-capacity').innerText = "Cap: " + (data.capacity || "7+1");
                 document.getElementById('display-driver-img').src = data.driverImg || "";
                 if(data.titleImg) {
                     const tImg = document.getElementById('display-title-img');
@@ -151,7 +146,7 @@
             document.getElementById('pop-img').src = i;
             document.getElementById('popup-box').classList.add('popup-active');
         };
-        window.closePopup = () => document.getElementById('popup-box').classList.remove('popup-active');
+        window.closePopup = () => document.getElementById('pop-box').classList.remove('popup-active');
     </script>
 </body>
 </html>
