@@ -6,20 +6,19 @@
     <title>Bhaskar Travels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Clamp ensures title stays readable but doesn't overflow */
         .title-text { font-size: clamp(1.4rem, 6vw, 2rem); font-weight: 900; letter-spacing: 0.05em; }
         .phone-text { font-size: clamp(1.1rem, 5vw, 1.5rem); font-weight: bold; }
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
         
-        /* Custom class for 16px text to ensure it overrides defaults */
+        /* Forces Description and UI text to be 16px */
         .desc-text { font-size: 16px !important; line-height: 1.6; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
 
     <header class="bg-[#003399] text-white p-4 text-center border-b-4 border-yellow-400 shadow-md">
-        <h1 id="display-title" class="title-text uppercase drop-shadow-md">BHASKAR TRAVELS</h1>
+        <h1 id="display-title" class="title-text uppercase">BHASKAR TRAVELS</h1>
         <p id="display-phone" class="phone-text text-yellow-300 mt-1">9154095125</p>
     </header>
 
@@ -35,11 +34,11 @@
         <div class="w-[35%] text-center">
             <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-lg shadow-sm">
         </div>
-        <div class="w-[65%] pl-5 text-[15px] font-bold space-y-1">
-            <p id="display-driver-name" class="uppercase text-yellow-300 text-lg border-b border-red-400 pb-1 mb-1"></p>
-            <p id="display-taxi-no" class="flex items-center">🚖 <span class="ml-2"></span></p>
-            <p id="display-taxi-model"></p>
-            <p id="display-taxi-capacity"></p>
+        <div class="w-[65%] pl-5 font-bold space-y-1">
+            <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1">DRIVER NAME</p>
+            <p id="display-taxi-no" class="text-[16px]">🚖 Taxi: <span>---</span></p>
+            <p id="display-taxi-model" class="text-[16px]">Model: ---</p>
+            <p id="display-taxi-capacity" class="text-[16px]">Cap: ---</p>
         </div>
     </section>
 
@@ -102,17 +101,15 @@
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
                         <img src="${pkg.img}" class="w-full h-52 object-cover">
                         <div class="p-5">
-                            <h2 class="text-[22px] font-black uppercase text-blue-900 mb-2 leading-tight tracking-tight">${dTitle}</h2>
-                            
+                            <h2 class="text-[24px] font-black uppercase text-blue-900 mb-2 leading-tight">${dTitle}</h2>
                             <p class="text-gray-700 desc-text mb-5 line-clamp-3">${dDesc}</p>
-                            
                             <div class="flex gap-3">
                                 <button onclick="openPop('${dTitle.replace(/'/g, "\\'")}', '${dDesc.replace(/'/g, "\\'")}', '${pkg.img}')" 
-                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-sm uppercase shadow-md active:bg-green-700">
+                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] uppercase shadow-md">
                                     VIEW DETAILS
                                 </button>
                                 <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
-                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-sm text-center uppercase shadow-md active:bg-green-700">
+                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] text-center uppercase shadow-md">
                                     WHATSAPP
                                 </a>
                             </div>
@@ -124,12 +121,13 @@
         onValue(ref(db, 'settings'), (snap) => {
             const data = snap.val();
             if(data) {
-                document.getElementById('display-title').innerText = data.title;
-                document.getElementById('display-phone').innerText = data.phone;
-                document.getElementById('display-driver-name').innerText = data.driverName;
-                document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo;
-                document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
-                document.getElementById('display-taxi-capacity').innerText = "Cap: " + data.capacity;
+                // Fix: Only update if the value actually exists in database
+                if(data.title) document.getElementById('display-title').innerText = data.title;
+                if(data.phone) document.getElementById('display-phone').innerText = data.phone;
+                if(data.driverName) document.getElementById('display-driver-name').innerText = data.driverName;
+                if(data.taxiNo) document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo;
+                if(data.taxiModel) document.getElementById('display-taxi-model').innerText = "Model: " + data.taxiModel;
+                if(data.capacity) document.getElementById('display-taxi-capacity').innerText = "Cap: " + data.capacity;
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
             }
         });
