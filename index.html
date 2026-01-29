@@ -10,14 +10,14 @@
         .phone-text { font-size: clamp(1.1rem, 5vw, 1.5rem); font-weight: bold; }
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
-        .desc-text { font-size: 16px !important; line-height: 1.2; }
         
-        /* STRICT CSS TO HIDE GOOGLE OVERLAYS */
-        iframe.goog-te-banner-frame { display: none !important; }
+        /* HIDDEN GOOGLE BAR BUT ALLOW TRANSLATION */
+        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
         body { top: 0px !important; }
-        .skiptranslate iframe, .goog-te-gadget-icon { display: none !important; }
         #google_translate_element { display: none; }
-        .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+        .goog-tooltip { display: none !important; }
+        .goog-tooltip:hover { display: none !important; }
+        .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
@@ -69,13 +69,22 @@
 
     <script type="text/javascript">
         function googleTranslateElementInit() {
-            new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false}, 'google_translate_element');
+            new google.translate.TranslateElement({
+                pageLanguage: 'en', 
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
         }
-        function changeLang(code) {
-            const select = document.querySelector('select.goog-te-combo');
-            if (select) {
-                select.value = code;
-                select.dispatchEvent(new Event('change'));
+
+        // IMPROVED LANGUAGE SWITCHER
+        function changeLang(langCode) {
+            const googleCombo = document.querySelector('.goog-te-combo');
+            if (googleCombo) {
+                googleCombo.value = langCode;
+                googleCombo.dispatchEvent(new Event('change'));
+            } else {
+                // If it's not ready yet, wait 500ms and try again
+                setTimeout(() => changeLang(langCode), 500);
             }
         }
     </script>
@@ -99,13 +108,13 @@
         onValue(ref(db, 'settings'), (snap) => {
             const data = snap.val();
             if(data) {
-                document.getElementById('display-title').innerText = data.title || "BHASKAR TRAVELS";
-                document.getElementById('display-phone').innerText = data.phone || "9154095125";
-                document.getElementById('display-driver-name').innerText = data.driverName || "DRIVER NAME";
-                document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo || "---";
-                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "---");
-                document.getElementById('display-taxi-capacity').innerText = "Cap: " + (data.capacity || "---");
-                document.getElementById('display-driver-img').src = data.driverImg || "https://via.placeholder.com/150";
+                document.getElementById('display-title').innerText = data.title || "";
+                document.getElementById('display-phone').innerText = data.phone || "";
+                document.getElementById('display-driver-name').innerText = data.driverName || "";
+                document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo || "";
+                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "");
+                document.getElementById('display-taxi-capacity').innerText = "Cap: " + (data.capacity || "");
+                document.getElementById('display-driver-img').src = data.driverImg || "";
                 if(data.titleImg) {
                     const tImg = document.getElementById('display-title-img');
                     tImg.src = data.titleImg;
