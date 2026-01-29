@@ -43,9 +43,9 @@
 
             <div class="bg-green-50 p-4 rounded-xl space-y-3 border">
                 <h2 class="text-xs font-bold text-green-700 uppercase">2. Add Tour Package</h2>
-                <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-3 border rounded text-sm">
-                <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-3 border rounded text-sm">
-                <textarea id="pDesc" placeholder="Package Description" class="w-full p-3 border rounded text-sm h-24 resize-none"></textarea>
+                <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-3 border rounded text-sm draft">
+                <input id="pImg" type="text" placeholder="Package Image URL" class="w-full p-3 border rounded text-sm draft">
+                <textarea id="pDesc" placeholder="Package Description" class="w-full p-3 border rounded text-sm h-24 resize-none draft"></textarea>
                 <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold text-sm uppercase shadow">Add Package</button>
             </div>
 
@@ -55,12 +55,15 @@
             </div>
 
             <div class="pb-2">
-                <a href="index.html" class="block w-full bg-slate-800 text-white py-4 rounded-xl text-center font-bold text-sm uppercase shadow-lg active:scale-95 transition-transform">
+                <button onclick="viewSite()" class="block w-full bg-slate-800 text-white py-4 rounded-xl text-center font-bold text-sm uppercase shadow-lg active:scale-95 transition-transform">
                     View Live Website
-                </a>
+                </button>
             </div>
 
-        </div> </div> <script type="module">
+        </div> 
+    </div>
+
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -74,6 +77,23 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // --- Auto-Draft Logic for Packages ---
+        const draftInputs = document.querySelectorAll('.draft');
+        draftInputs.forEach(input => {
+            // Load saved draft
+            const saved = localStorage.getItem('draft_' + input.id);
+            if (saved) input.value = saved;
+
+            // Save draft on every keystroke
+            input.addEventListener('input', () => {
+                localStorage.setItem('draft_' + input.id, input.value);
+            });
+        });
+
+        window.viewSite = () => {
+            window.open('index.html', '_blank');
+        };
 
         onValue(ref(db, 'settings'), (snap) => {
             const data = snap.val();
@@ -119,9 +139,11 @@
             if(!pkg.title) return alert("Title required");
             push(ref(db, 'packages'), pkg).then(() => {
                 alert("✅ Package Added!");
-                document.getElementById('pTitle').value = "";
-                document.getElementById('pImg').value = "";
-                document.getElementById('pDesc').value = "";
+                // Clear inputs AND clear the drafts
+                draftInputs.forEach(input => {
+                    input.value = "";
+                    localStorage.removeItem('draft_' + input.id);
+                });
             });
         };
 
