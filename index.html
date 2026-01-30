@@ -29,8 +29,6 @@
             align-items: center;
             gap: 8px;
             font-weight: 900;
-            cursor: pointer;
-            border: none;
         }
     </style>
 </head>
@@ -85,11 +83,10 @@
     </div>
 
     <script type="text/javascript">
-        // FUNCTIONS MOVED OUTSIDE MODULE TO FIX THE "VIEW DETAILS" BUTTON
+        // GLOBAL FUNCTIONS - VIEW DETAILS FIX
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element');
         }
-
         function changeLang(langCode) {
             var selectField = document.querySelector("select.goog-te-combo");
             if (selectField) {
@@ -98,22 +95,19 @@
                 googleTranslateElementInit(); setTimeout(function() { changeLang(langCode); }, 500);
             }
         }
-
         function openPop(t, d, i) {
-            document.getElementById('pop-title').innerText = t;
-            document.getElementById('pop-desc').innerText = d;
+            document.getElementById('pop-title').innerText = decodeURIComponent(t);
+            document.getElementById('pop-desc').innerText = decodeURIComponent(d);
             document.getElementById('pop-img').src = i;
             document.getElementById('popup-box').classList.add('popup-active');
         }
-
         function closePopup() {
             document.getElementById('popup-box').classList.remove('popup-active');
         }
-
         function shareFullWebsite() {
             const siteTitle = document.getElementById('display-title').innerText;
             const url = window.location.href;
-            const message = `*${siteTitle}*\nBook your taxi and check our tour packages here:\n${url}`;
+            const message = `*${siteTitle}*\nBook your taxi and tour packages here:\n${url}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
         }
     </script>
@@ -134,7 +128,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // TAXI ID CONFIGURATION
         const TAXI_ID = 'taxi1'; 
 
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
@@ -153,8 +146,9 @@
             const container = document.getElementById('package-container'); container.innerHTML = "";
             snap.forEach((child) => {
                 const pkg = child.val();
-                const safeTitle = pkg.title.replace(/'/g, "\\'");
-                const safeDesc = pkg.desc.replace(/'/g, "\\'").replace(/\n/g, " ");
+                // Safe encoding for titles and descriptions with apostrophes
+                const safeT = encodeURIComponent(pkg.title);
+                const safeD = encodeURIComponent(pkg.desc);
                 
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
@@ -163,9 +157,9 @@
                             <h2 class="text-[24px] font-black uppercase text-blue-900 mb-2 leading-tight">${pkg.title}</h2>
                             <p class="text-gray-700 desc-text mb-5 line-clamp-3">${pkg.desc}</p>
                             <div class="flex gap-3">
-                                <button onclick="openPop('${safeTitle}', '${safeDesc}', '${pkg.img}')" 
+                                <button onclick="openPop('${safeT}', '${safeD}', '${pkg.img}')" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] uppercase shadow-md notranslate">VIEW DETAILS</button>
-                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
+                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\\D/g,'')}" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] text-center uppercase shadow-md notranslate">WHATSAPP</a>
                             </div>
                         </div>
