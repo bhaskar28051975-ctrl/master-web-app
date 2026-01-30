@@ -12,11 +12,36 @@
         .popup-active { display: flex; }
         #google_translate_element, .skiptranslate, .goog-te-banner-frame { display: none !important; }
         body { top: 0px !important; }
+
+        /* Floating Website Share Button */
+        .website-share-btn {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #25D366;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 30px 0 0 30px;
+            box-shadow: -2px 5px 15px rgba(0,0,0,0.3);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 900;
+            cursor: pointer;
+            border: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
 
     <div id="google_translate_element"></div>
+
+    <button onclick="shareFullWebsite()" class="website-share-btn notranslate shadow-2xl active:scale-95 transition-transform">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.539 2.016 2.126-.54c1.083.58 1.948.893 3.162.893 3.181 0 5.767-2.586 5.768-5.766 0-3.18-2.586-5.766-5.768-5.766zM12.03 16.94c-1.03 0-1.817-.265-2.61-.762l-.186-.115-1.246.316.324-1.21-.13-.205c-.553-.872-.85-1.85-.85-2.868 0-2.805 2.285-5.09 5.093-5.09s5.09 2.285 5.09 5.09-2.285 5.09-5.093 5.09z"/></svg>
+        SHARE
+    </button>
 
     <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-md">
         <div class="flex items-center justify-center gap-3">
@@ -28,11 +53,11 @@
     </header>
 
     <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-2 sticky top-0 z-40 shadow-md">
-        <button onclick="changeLang('en')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs uppercase notranslate">English</button>
-        <button onclick="changeLang('te')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs uppercase notranslate">Telugu</button>
-        <button onclick="changeLang('ta')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs uppercase notranslate">Tamil</button>
-        <button onclick="changeLang('kn')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs uppercase notranslate">Kannada</button>
-        <button onclick="changeLang('mr')" class="bg-white text-black px-3 py-2 rounded-md font-bold text-xs uppercase notranslate">Marathi</button>
+        <button onclick="changeLang('en')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">English</button>
+        <button onclick="changeLang('te')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">Telugu</button>
+        <button onclick="changeLang('ta')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">Tamil</button>
+        <button onclick="changeLang('kn')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">Kannada</button>
+        <button onclick="changeLang('mr')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">Marathi</button>
     </div>
 
     <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
@@ -60,9 +85,11 @@
     </div>
 
     <script type="text/javascript">
+        // FUNCTIONS MOVED OUTSIDE MODULE TO FIX THE "VIEW DETAILS" BUTTON
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element');
         }
+
         function changeLang(langCode) {
             var selectField = document.querySelector("select.goog-te-combo");
             if (selectField) {
@@ -70,6 +97,24 @@
             } else {
                 googleTranslateElementInit(); setTimeout(function() { changeLang(langCode); }, 500);
             }
+        }
+
+        function openPop(t, d, i) {
+            document.getElementById('pop-title').innerText = t;
+            document.getElementById('pop-desc').innerText = d;
+            document.getElementById('pop-img').src = i;
+            document.getElementById('popup-box').classList.add('popup-active');
+        }
+
+        function closePopup() {
+            document.getElementById('popup-box').classList.remove('popup-active');
+        }
+
+        function shareFullWebsite() {
+            const siteTitle = document.getElementById('display-title').innerText;
+            const url = window.location.href;
+            const message = `*${siteTitle}*\nBook your taxi and check our tour packages here:\n${url}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
         }
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -89,7 +134,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // CHANGE THIS TO 'taxi1', 'taxi2', etc. for each repo
+        // TAXI ID CONFIGURATION
         const TAXI_ID = 'taxi1'; 
 
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
@@ -100,7 +145,6 @@
                 document.getElementById('display-driver-name').innerText = data.driverName || "DRIVER";
                 document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo || "";
                 document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "");
-                // Pull driver photo URL
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
             }
         });
@@ -109,6 +153,9 @@
             const container = document.getElementById('package-container'); container.innerHTML = "";
             snap.forEach((child) => {
                 const pkg = child.val();
+                const safeTitle = pkg.title.replace(/'/g, "\\'");
+                const safeDesc = pkg.desc.replace(/'/g, "\\'").replace(/\n/g, " ");
+                
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
                         <img src="${pkg.img || 'https://via.placeholder.com/400x200'}" class="w-full h-52 object-cover">
@@ -116,7 +163,7 @@
                             <h2 class="text-[24px] font-black uppercase text-blue-900 mb-2 leading-tight">${pkg.title}</h2>
                             <p class="text-gray-700 desc-text mb-5 line-clamp-3">${pkg.desc}</p>
                             <div class="flex gap-3">
-                                <button onclick="openPop('${pkg.title.replace(/'/g, "\\'")}', '${pkg.desc.replace(/'/g, "\\'")}', '${pkg.img}')" 
+                                <button onclick="openPop('${safeTitle}', '${safeDesc}', '${pkg.img}')" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] uppercase shadow-md notranslate">VIEW DETAILS</button>
                                 <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] text-center uppercase shadow-md notranslate">WHATSAPP</a>
@@ -125,14 +172,6 @@
                     </div>`;
             });
         });
-
-        window.openPop = (t, d, i) => {
-            document.getElementById('pop-title').innerText = t;
-            document.getElementById('pop-desc').innerText = d;
-            document.getElementById('pop-img').src = i;
-            document.getElementById('popup-box').classList.add('popup-active');
-        };
-        window.closePopup = () => document.getElementById('popup-box').classList.remove('popup-active');
     </script>
 </body>
 </html>
