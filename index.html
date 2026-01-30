@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bhaskar Travels</title>
+    <title>Travels - Fleet Driver</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .title-text { font-size: clamp(1.4rem, 6vw, 2rem); font-weight: 900; letter-spacing: 0.05em; }
         .phone-text { font-size: clamp(1.1rem, 5vw, 1.5rem); font-weight: bold; }
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
-        
-        /* HIDE GOOGLE WIDGETS BUT KEEP FUNCTIONAL */
         #google_translate_element, .skiptranslate, .goog-te-banner-frame { display: none !important; }
         body { top: 0px !important; }
     </style>
@@ -24,8 +22,8 @@
         <div class="flex items-center justify-center gap-3">
             <img id="display-title-img" src="" class="hidden w-14 h-14 object-cover rounded border-2 border-white shadow-sm">
             <div class="text-center">
-                <h1 id="display-title" class="title-text uppercase notranslate">BHASKAR TRAVELS</h1>
-                <p id="display-phone" class="phone-text text-yellow-300 mt-1 notranslate">9154095125</p>
+                <h1 id="display-title" class="title-text uppercase notranslate">LOADING...</h1>
+                <p id="display-phone" class="phone-text text-yellow-300 mt-1 notranslate">---</p>
             </div>
         </div>
     </header>
@@ -40,13 +38,12 @@
 
     <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
         <div class="w-[35%] text-center">
-            <img id="display-driver-img" src="" class="w-full aspect-square object-cover border-2 border-white rounded-lg shadow-sm">
+            <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-lg shadow-sm">
         </div>
         <div class="w-[65%] pl-5 font-bold space-y-1">
-            <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1 notranslate">BHASKAR</p>
-            <p id="display-taxi-no" class="text-[16px] notranslate">Taxi: <span>AP04 2435</span></p>
-            <p id="display-taxi-model" class="text-[16px] notranslate">Model: TATA SUMO</p>
-            <p id="display-taxi-capacity" class="text-[16px] notranslate">Cap: 7+1</p>
+            <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1 notranslate">DRIVER</p>
+            <p id="display-taxi-no" class="text-[16px] notranslate">Taxi: <span>---</span></p>
+            <p id="display-taxi-model" class="text-[16px] notranslate">Model: ---</p>
         </div>
     </section>
 
@@ -67,14 +64,12 @@
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element');
         }
-
         function changeLang(langCode) {
             var selectField = document.querySelector("select.goog-te-combo");
             if (selectField) {
                 selectField.value = langCode;
                 selectField.dispatchEvent(new Event('change'));
             } else {
-                // If the translate element isn't ready, try to initialize it manually
                 googleTranslateElementInit();
                 setTimeout(function() { changeLang(langCode); }, 500);
             }
@@ -97,34 +92,32 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Load Header Data
-        onValue(ref(db, 'settings'), (snap) => {
+        // ==========================================
+        // IMPORTANT: CHANGE THE NUMBER BELOW FOR EACH REPO
+        // Example: 'taxi1', 'taxi2', 'taxi3'... up to 'taxi20'
+        // ==========================================
+        const TAXI_ID = 'taxi1'; 
+        // ==========================================
+
+        onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
-                document.getElementById('display-title').innerText = data.title || "BHASKAR TRAVELS";
-                document.getElementById('display-phone').innerText = data.phone || "9154095125";
-                document.getElementById('display-driver-name').innerText = data.driverName || "BHASKAR";
-                document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo || "AP04 2435";
-                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "TATA SUMO");
-                document.getElementById('display-taxi-capacity').innerText = "Cap: " + (data.capacity || "7+1");
-                document.getElementById('display-driver-img').src = data.driverImg || "";
-                if(data.titleImg) {
-                    const tImg = document.getElementById('display-title-img');
-                    tImg.src = data.titleImg;
-                    tImg.classList.remove('hidden');
-                }
+                document.getElementById('display-title').innerText = data.title || "TRAVELS";
+                document.getElementById('display-phone').innerText = data.phone || "";
+                document.getElementById('display-driver-name').innerText = data.driverName || "DRIVER";
+                document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo || "";
+                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "");
             }
         });
 
-        // Load Package Data
-        onValue(ref(db, 'packages'), (snap) => {
+        onValue(ref(db, TAXI_ID + '/packages'), (snap) => {
             const container = document.getElementById('package-container');
             container.innerHTML = "";
             snap.forEach((child) => {
                 const pkg = child.val();
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
-                        <img src="${pkg.img}" class="w-full h-52 object-cover">
+                        <img src="${pkg.img || 'https://via.placeholder.com/400x200'}" class="w-full h-52 object-cover">
                         <div class="p-5">
                             <h2 class="text-[24px] font-black uppercase text-blue-900 mb-2 leading-tight">${pkg.title}</h2>
                             <p class="text-gray-700 desc-text mb-5 line-clamp-3">${pkg.desc}</p>
