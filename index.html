@@ -20,7 +20,6 @@
 
     <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-md">
         <div class="flex items-center justify-center gap-3">
-            <img id="display-title-img" src="" class="hidden w-14 h-14 object-cover rounded border-2 border-white shadow-sm">
             <div class="text-center">
                 <h1 id="display-title" class="title-text uppercase notranslate">LOADING...</h1>
                 <p id="display-phone" class="phone-text text-yellow-300 mt-1 notranslate">---</p>
@@ -53,7 +52,7 @@
         <div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden relative shadow-2xl">
             <button onclick="closePopup()" class="absolute top-3 right-3 bg-red-600 text-white w-10 h-10 rounded-full font-bold z-50 shadow-lg text-xl">✕</button>
             <img id="pop-img" src="" class="w-full h-56 object-cover">
-            <div class="p-5">
+            <div class="p-5 text-slate-800">
                 <h2 id="pop-title" class="text-2xl font-black text-blue-900 mb-3 uppercase leading-tight"></h2>
                 <div id="pop-desc" class="text-gray-800 desc-text max-h-64 overflow-y-auto whitespace-pre-line"></div>
             </div>
@@ -67,11 +66,9 @@
         function changeLang(langCode) {
             var selectField = document.querySelector("select.goog-te-combo");
             if (selectField) {
-                selectField.value = langCode;
-                selectField.dispatchEvent(new Event('change'));
+                selectField.value = langCode; selectField.dispatchEvent(new Event('change'));
             } else {
-                googleTranslateElementInit();
-                setTimeout(function() { changeLang(langCode); }, 500);
+                googleTranslateElementInit(); setTimeout(function() { changeLang(langCode); }, 500);
             }
         }
     </script>
@@ -92,12 +89,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // ==========================================
-        // IMPORTANT: CHANGE THE NUMBER BELOW FOR EACH REPO
-        // Example: 'taxi1', 'taxi2', 'taxi3'... up to 'taxi20'
-        // ==========================================
+        // CHANGE THIS TO 'taxi1', 'taxi2', etc. for each repo
         const TAXI_ID = 'taxi1'; 
-        // ==========================================
 
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
@@ -107,12 +100,13 @@
                 document.getElementById('display-driver-name').innerText = data.driverName || "DRIVER";
                 document.getElementById('display-taxi-no').querySelector('span').innerText = data.taxiNo || "";
                 document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "");
+                // Pull driver photo URL
+                if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
             }
         });
 
         onValue(ref(db, TAXI_ID + '/packages'), (snap) => {
-            const container = document.getElementById('package-container');
-            container.innerHTML = "";
+            const container = document.getElementById('package-container'); container.innerHTML = "";
             snap.forEach((child) => {
                 const pkg = child.val();
                 container.innerHTML += `
