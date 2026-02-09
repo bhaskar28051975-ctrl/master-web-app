@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fleet Admin (20 Taxis)</title>
+    <title>Fleet Admin - Edit Titles</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 p-3 min-h-screen">
@@ -22,46 +22,48 @@
 
         <div class="p-4 space-y-6">
             <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-                <h2 id="current-taxi-label" class="text-sm font-black text-blue-800 uppercase underline mb-3">Editing: Taxi 1</h2>
+                <h2 id="current-taxi-label" class="text-sm font-black text-blue-800 uppercase underline mb-3">Editing Profile</h2>
                 
-                <div class="flex gap-3 items-center mb-3">
+                <div class="flex gap-3 items-center mb-4">
                     <div class="shrink-0">
-                        <img id="driver-img-prev" src="https://via.placeholder.com/150" class="w-[85px] h-[85px] object-cover rounded-lg border-2 border-blue-300 bg-white shadow-sm">
+                        <img id="driver-img-prev" src="https://via.placeholder.com/150" class="w-[85px] h-[85px] object-cover rounded-lg border-2 border-blue-300 bg-white">
                     </div>
                     <div class="flex-1 space-y-2">
-                        <input id="title" type="text" placeholder="Travels Title (e.g. BHASKAR TRAVELS)" class="w-full p-2 border rounded text-sm font-bold">
-                        <input id="dImg" type="text" oninput="document.getElementById('driver-img-prev').src=this.value" placeholder="Paste Driver Photo URL" class="w-full p-2 border rounded text-[11px] text-blue-600">
+                        <label class="text-[10px] font-bold text-blue-600 uppercase">Driver Photo URL:</label>
+                        <input id="dImg" type="text" oninput="document.getElementById('driver-img-prev').src=this.value" placeholder="Paste Image Link" class="w-full p-2 border rounded text-[11px]">
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <input id="dName" type="text" placeholder="Driver Name" class="w-full p-2 border rounded text-sm">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-2 border rounded text-sm">
-                        <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-2 border rounded text-sm">
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-blue-600 uppercase ml-1">Main Header Title:</label>
+                        <input id="title" type="text" placeholder="e.g. BHASKAR TRAVELS" class="w-full p-2 border-2 border-blue-200 rounded font-bold text-blue-900">
                     </div>
-                    <div class="relative">
+
+                    <div>
                         <label class="text-[10px] font-bold text-blue-600 uppercase ml-1">WhatsApp Phone Number:</label>
-                        <input id="phone" type="text" placeholder="910000000000" class="w-full p-2 border-2 border-blue-200 rounded text-sm font-bold">
+                        <input id="phone" type="text" placeholder="e.g. 919876543210" class="w-full p-2 border-2 border-blue-200 rounded font-bold">
                     </div>
-                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded font-bold uppercase shadow-lg mt-2">Update Driver Profile</button>
+
+                    <div class="grid grid-cols-1 gap-2">
+                        <input id="dName" type="text" placeholder="Driver Name" class="w-full p-2 border rounded text-sm">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-2 border rounded text-sm">
+                            <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-2 border rounded text-sm">
+                        </div>
+                    </div>
+                    
+                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-lg font-black uppercase shadow-lg mt-2 active:scale-95 transition-transform">Save All Settings</button>
                 </div>
             </div>
 
             <div class="bg-green-50 p-4 rounded-xl border-2 border-green-200">
-                <h2 class="text-xs font-bold text-green-700 uppercase mb-3">Add New Tour Package</h2>
-                <div class="flex gap-3 items-center mb-3">
-                    <div class="shrink-0">
-                        <img id="pkg-img-prev" src="https://via.placeholder.com/150" class="w-[85px] h-[85px] object-cover rounded-lg border-2 border-green-300 bg-white shadow-sm">
-                    </div>
-                    <div class="flex-1 space-y-2">
-                        <input id="pTitle" type="text" placeholder="Tour Title" class="w-full p-2 border rounded text-sm font-bold">
-                        <input id="pImg" type="text" oninput="document.getElementById('pkg-img-prev').src=this.value" placeholder="Paste Tour Image URL" class="w-full p-2 border rounded text-[11px] text-green-700">
-                    </div>
-                </div>
+                <h2 class="text-xs font-bold text-green-700 uppercase mb-3">Add Tour Package</h2>
                 <div class="space-y-2">
-                    <textarea id="pDesc" placeholder="Describe the tour locations..." class="w-full p-2 border rounded text-sm h-20"></textarea>
-                    <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold uppercase shadow-lg">Add to Website</button>
+                    <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-2 border rounded font-bold text-sm">
+                    <input id="pImg" type="text" placeholder="Tour Image URL" class="w-full p-2 border rounded text-[11px]">
+                    <textarea id="pDesc" placeholder="Describe the tour..." class="w-full p-2 border rounded text-sm h-20"></textarea>
+                    <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold uppercase active:scale-95 transition-transform">Add to Website</button>
                 </div>
             </div>
 
@@ -84,9 +86,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // Fill Taxi Dropdown
         const selector = document.getElementById('taxi-selector');
         for(let i=1; i<=20; i++) {
-            let opt = document.createElement('option'); opt.value = 'taxi' + i; opt.innerHTML = 'TAXI DRIVER ' + i;
+            let opt = document.createElement('option'); opt.value = 'taxi' + i; opt.innerHTML = 'MANAGE TAXI ' + i;
             selector.appendChild(opt);
         }
 
@@ -102,6 +105,7 @@
             const id = document.getElementById('taxi-selector').value;
             document.getElementById('current-taxi-label').innerText = "Editing: " + id.toUpperCase();
             
+            // Fetch Settings
             onValue(ref(db, id + '/settings'), (snap) => {
                 const d = snap.val() || {};
                 document.getElementById('title').value = d.title || "";
@@ -113,13 +117,14 @@
                 document.getElementById('driver-img-prev').src = d.driverImg || "https://via.placeholder.com/150";
             }, { onlyOnce: true });
 
+            // Fetch Packages
             onValue(ref(db, id + '/packages'), (snap) => {
                 const list = document.getElementById('pkg-list');
-                list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase">Existing Tours:</h3>`;
+                list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase">Active Packages:</h3>`;
                 snap.forEach(c => {
-                    list.innerHTML += `<div class="bg-white p-2 border rounded flex justify-between items-center shadow-sm">
-                        <span class="text-xs font-bold truncate">${c.val().title}</span>
-                        <button onclick="delPkg('${c.key}')" class="text-red-500 font-bold px-2">DELETE</button>
+                    list.innerHTML += `<div class="bg-white p-3 border rounded flex justify-between items-center shadow-sm">
+                        <span class="text-sm font-bold truncate">${c.val().title}</span>
+                        <button onclick="delPkg('${c.key}')" class="text-red-500 font-bold text-xs">DELETE</button>
                     </div>`;
                 });
             });
@@ -134,7 +139,7 @@
                 taxiModel: document.getElementById('tModel').value,
                 phone: document.getElementById('phone').value,
                 driverImg: document.getElementById('dImg').value
-            }).then(() => alert("Profile Updated Successfully!"));
+            }).then(() => alert("All settings saved for " + id.toUpperCase()));
         };
 
         window.addPkg = () => {
@@ -144,15 +149,14 @@
                 desc: document.getElementById('pDesc').value,
                 img: document.getElementById('pImg').value || "https://via.placeholder.com/400x200"
             }).then(() => { 
-                alert("Tour Added!"); 
+                alert("Tour Package Added!"); 
                 document.getElementById('pTitle').value = ""; document.getElementById('pDesc').value = ""; document.getElementById('pImg').value = "";
-                document.getElementById('pkg-img-prev').src = "https://via.placeholder.com/150";
             });
         };
 
         window.delPkg = (key) => {
             const id = document.getElementById('taxi-selector').value;
-            if(confirm("Delete this tour?")) remove(ref(db, id + '/packages/' + key));
+            if(confirm("Permanently delete this tour?")) remove(ref(db, id + '/packages/' + key));
         };
     </script>
 </body>
