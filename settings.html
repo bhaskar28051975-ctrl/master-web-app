@@ -29,7 +29,7 @@
                         <img id="driver-img-prev" src="https://via.placeholder.com/150" class="w-[85px] h-[85px] object-cover rounded-lg border-2 border-blue-300 bg-white shadow-sm">
                     </div>
                     <div class="flex-1 space-y-2">
-                        <input id="title" type="text" placeholder="Travels Title" class="w-full p-2 border rounded text-sm font-bold">
+                        <input id="title" type="text" placeholder="Travels Title (e.g. BHASKAR TRAVELS)" class="w-full p-2 border rounded text-sm font-bold">
                         <input id="dImg" type="text" oninput="document.getElementById('driver-img-prev').src=this.value" placeholder="Paste Driver Photo URL" class="w-full p-2 border rounded text-[11px] text-blue-600">
                     </div>
                 </div>
@@ -38,16 +38,18 @@
                     <input id="dName" type="text" placeholder="Driver Name" class="w-full p-2 border rounded text-sm">
                     <div class="grid grid-cols-2 gap-2">
                         <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-2 border rounded text-sm">
-                        <input id="tModel" type="text" placeholder="Taxi Model (Sumo, etc)" class="w-full p-2 border rounded text-sm">
+                        <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-2 border rounded text-sm">
                     </div>
-                    <input id="phone" type="text" placeholder="WhatsApp Number" class="w-full p-2 border rounded text-sm">
+                    <div class="relative">
+                        <label class="text-[10px] font-bold text-blue-600 uppercase ml-1">WhatsApp Phone Number:</label>
+                        <input id="phone" type="text" placeholder="910000000000" class="w-full p-2 border-2 border-blue-200 rounded text-sm font-bold">
+                    </div>
                     <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded font-bold uppercase shadow-lg mt-2">Update Driver Profile</button>
                 </div>
             </div>
 
             <div class="bg-green-50 p-4 rounded-xl border-2 border-green-200">
                 <h2 class="text-xs font-bold text-green-700 uppercase mb-3">Add New Tour Package</h2>
-                
                 <div class="flex gap-3 items-center mb-3">
                     <div class="shrink-0">
                         <img id="pkg-img-prev" src="https://via.placeholder.com/150" class="w-[85px] h-[85px] object-cover rounded-lg border-2 border-green-300 bg-white shadow-sm">
@@ -57,7 +59,6 @@
                         <input id="pImg" type="text" oninput="document.getElementById('pkg-img-prev').src=this.value" placeholder="Paste Tour Image URL" class="w-full p-2 border rounded text-[11px] text-green-700">
                     </div>
                 </div>
-
                 <div class="space-y-2">
                     <textarea id="pDesc" placeholder="Describe the tour locations..." class="w-full p-2 border rounded text-sm h-20"></textarea>
                     <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold uppercase shadow-lg">Add to Website</button>
@@ -110,11 +111,11 @@
                 document.getElementById('phone').value = d.phone || "";
                 document.getElementById('dImg').value = d.driverImg || "";
                 document.getElementById('driver-img-prev').src = d.driverImg || "https://via.placeholder.com/150";
-            });
+            }, { onlyOnce: true });
 
             onValue(ref(db, id + '/packages'), (snap) => {
                 const list = document.getElementById('pkg-list');
-                list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase">Manage Existing Tours:</h3>`;
+                list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase">Existing Tours:</h3>`;
                 snap.forEach(c => {
                     list.innerHTML += `<div class="bg-white p-2 border rounded flex justify-between items-center shadow-sm">
                         <span class="text-xs font-bold truncate">${c.val().title}</span>
@@ -133,7 +134,7 @@
                 taxiModel: document.getElementById('tModel').value,
                 phone: document.getElementById('phone').value,
                 driverImg: document.getElementById('dImg').value
-            }).then(() => alert("Saved Driver Details!"));
+            }).then(() => alert("Profile Updated Successfully!"));
         };
 
         window.addPkg = () => {
