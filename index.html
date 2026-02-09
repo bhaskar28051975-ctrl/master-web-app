@@ -83,7 +83,6 @@
     </div>
 
     <script type="text/javascript">
-        // GLOBAL FUNCTIONS - VIEW DETAILS FIX
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element');
         }
@@ -128,8 +127,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const TAXI_ID = 'taxi1'; 
+        // AUTO-DETECT DRIVER ID FROM URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const TAXI_ID = urlParams.get('id') || 'taxi1'; 
+        console.log("Loading data for:", TAXI_ID);
 
+        // Load Settings
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
@@ -142,11 +145,12 @@
             }
         });
 
+        // Load Packages
         onValue(ref(db, TAXI_ID + '/packages'), (snap) => {
-            const container = document.getElementById('package-container'); container.innerHTML = "";
+            const container = document.getElementById('package-container'); 
+            container.innerHTML = "";
             snap.forEach((child) => {
                 const pkg = child.val();
-                // Safe encoding for titles and descriptions with apostrophes
                 const safeT = encodeURIComponent(pkg.title);
                 const safeD = encodeURIComponent(pkg.desc);
                 
@@ -159,7 +163,7 @@
                             <div class="flex gap-3">
                                 <button onclick="openPop('${safeT}', '${safeD}', '${pkg.img}')" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] uppercase shadow-md notranslate">VIEW DETAILS</button>
-                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\\D/g,'')}" 
+                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] text-center uppercase shadow-md notranslate">WHATSAPP</a>
                             </div>
                         </div>
