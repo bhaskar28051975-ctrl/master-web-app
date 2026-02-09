@@ -8,9 +8,9 @@
 </head>
 <body class="bg-slate-900 p-3 min-h-screen">
 
-    <div id="login-box" class="max-w-[400px] mx-auto bg-white rounded-2xl p-6 mt-10 shadow-2xl">
-        <h2 class="text-center font-black text-blue-700 uppercase mb-4">Fleet Manager Login</h2>
-        <input id="pass-input" type="password" placeholder="Enter Password" class="w-full p-3 border rounded mb-4">
+    <div id="login-box" class="max-w-[400px] mx-auto bg-white rounded-2xl p-6 mt-10 shadow-2xl text-center">
+        <h2 class="font-black text-blue-700 uppercase mb-4">Fleet Manager Login</h2>
+        <input id="pass-input" type="password" placeholder="Enter Password" class="w-full p-3 border rounded mb-4 text-center">
         <button onclick="checkPass()" class="w-full bg-blue-600 text-white py-3 rounded font-bold uppercase">Unlock Fleet</button>
     </div>
 
@@ -21,45 +21,26 @@
         </div>
 
         <div class="p-4 space-y-6">
-            <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 shadow-sm">
-                <h2 id="current-taxi-label" class="text-sm font-black text-blue-800 uppercase underline mb-3">Profile Settings</h2>
-                
+            <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
+                <h2 id="current-taxi-label" class="text-sm font-black text-blue-800 uppercase underline mb-3 text-center">Profile Settings</h2>
                 <div class="flex gap-3 items-center mb-4">
-                    <div class="shrink-0 text-center">
-                        <img id="driver-img-prev" src="https://via.placeholder.com/150" class="w-[85px] h-[85px] object-cover rounded-lg border-2 border-blue-300 bg-white">
-                        <p class="text-[9px] font-bold mt-1 text-blue-400">PREVIEW</p>
-                    </div>
-                    <div class="flex-1 space-y-2">
-                        <label class="text-[10px] font-bold text-blue-600 uppercase">Driver Photo URL:</label>
-                        <input id="dImg" type="text" oninput="document.getElementById('driver-img-prev').src=this.value" placeholder="Paste Image Link" class="w-full p-2 border rounded text-[11px]">
-                    </div>
+                    <img id="driver-img-prev" src="https://via.placeholder.com/150" class="w-[70px] h-[70px] object-cover rounded-lg border-2 border-blue-300">
+                    <input id="dImg" type="text" oninput="document.getElementById('driver-img-prev').src=this.value" placeholder="Driver Image Link" class="flex-1 p-2 border rounded text-[11px]">
                 </div>
-
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-blue-600 uppercase ml-1">Main Header Title:</label>
-                        <input id="title" type="text" placeholder="e.g. BHASKAR TRAVELS" class="w-full p-2 border-2 border-blue-200 rounded font-bold text-blue-900">
+                <div class="space-y-2">
+                    <input id="title" type="text" placeholder="Header Title" class="w-full p-2 border rounded font-bold">
+                    <input id="phone" type="text" placeholder="WhatsApp Number" class="w-full p-2 border rounded">
+                    <input id="dName" type="text" placeholder="Driver Name" class="w-full p-2 border rounded">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input id="tNo" type="text" placeholder="Taxi No" class="p-2 border rounded">
+                        <input id="tModel" type="text" placeholder="Model" class="p-2 border rounded">
                     </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-blue-600 uppercase ml-1">WhatsApp Phone Number:</label>
-                        <input id="phone" type="text" placeholder="e.g. 919876543210" class="w-full p-2 border-2 border-blue-200 rounded font-bold">
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-2">
-                        <input id="dName" type="text" placeholder="Driver Name" class="w-full p-2 border rounded text-sm">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input id="tNo" type="text" placeholder="Taxi Number" class="w-full p-2 border rounded text-sm">
-                            <input id="tModel" type="text" placeholder="Taxi Model" class="w-full p-2 border rounded text-sm">
-                        </div>
-                    </div>
-                    
-                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-lg font-black uppercase shadow-lg active:scale-95 transition-transform">Save All Settings</button>
+                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-black uppercase">Save Driver Info</button>
                 </div>
             </div>
 
             <div class="bg-green-50 p-4 rounded-xl border-2 border-green-200 shadow-sm">
-                <h2 id="pkg-form-title" class="text-xs font-black text-green-700 uppercase mb-3">Add New Tour Package</h2>
+                <h2 id="pkg-form-title" class="text-xs font-black text-green-700 uppercase mb-3 text-center">Add New Tour Package</h2>
                 <input type="hidden" id="edit-pkg-id">
                 <div class="space-y-2">
                     <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-2 border rounded font-bold text-sm">
@@ -67,184 +48,174 @@
                     <textarea id="pDesc" placeholder="Describe the tour..." class="w-full p-2 border rounded text-sm h-20"></textarea>
                     
                     <div id="pkg-buttons" class="flex gap-2">
-                        <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-3 rounded font-bold uppercase active:scale-95 transition-transform">Add to Website</button>
-                        <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-3 rounded font-bold uppercase">Update Package</button>
-                        <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-gray-500 text-white px-4 py-3 rounded font-bold uppercase">X</button>
+                        <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-3 rounded font-bold uppercase">Add Tour</button>
+                        <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-3 rounded font-bold uppercase">Update</button>
+                        <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-gray-500 text-white px-4 py-3 rounded font-bold">X</button>
                     </div>
                 </div>
             </div>
 
             <div id="pkg-list" class="space-y-3 pb-10">
-                <h3 class="text-xs font-bold text-gray-400 uppercase">Manage Existing Tours:</h3>
+                <h3 class="text-xs font-bold text-gray-400 uppercase text-center">Manage Your Tours:</h3>
             </div>
         </div>
     </div>
 
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update, push, onValue, remove, set, get, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, update, push, onValue, remove, set, get, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
-        authDomain: "master-web-app-d8d1b.firebaseapp.com",
-        projectId: "master-web-app-d8d1b",
-        databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
-        appId: "1:460731698074:web:40ad4f12c5fb3126874823"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
+            authDomain: "master-web-app-d8d1b.firebaseapp.com",
+            projectId: "master-web-app-d8d1b",
+            databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
+            appId: "1:460731698074:web:40ad4f12c5fb3126874823"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    const selector = document.getElementById('taxi-selector');
-    for(let i=1; i<=20; i++) {
-        let opt = document.createElement('option'); opt.value = 'taxi' + i; opt.innerHTML = 'MANAGE TAXI ' + i;
-        selector.appendChild(opt);
-    }
+        const selector = document.getElementById('taxi-selector');
+        for(let i=1; i<=20; i++) {
+            let opt = document.createElement('option'); opt.value = 'taxi' + i; opt.innerHTML = 'MANAGE TAXI ' + i;
+            selector.appendChild(opt);
+        }
 
-    window.checkPass = () => {
-        if(document.getElementById('pass-input').value === "1234") {
-            document.getElementById('login-box').classList.add('hidden');
-            document.getElementById('admin-content').classList.remove('hidden');
-            window.loadData();
-        } else { alert("Wrong Password"); }
-    };
+        window.checkPass = () => {
+            if(document.getElementById('pass-input').value === "1234") {
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                window.loadData();
+            } else { alert("Wrong Password"); }
+        };
 
-    window.loadData = () => {
-        const id = document.getElementById('taxi-selector').value;
-        document.getElementById('current-taxi-label').innerText = "Editing: " + id.toUpperCase();
-        
-        onValue(ref(db, id + '/settings'), (snap) => {
-            const d = snap.val() || {};
-            document.getElementById('title').value = d.title || "";
-            document.getElementById('dName').value = d.driverName || "";
-            document.getElementById('tNo').value = d.taxiNo || "";
-            document.getElementById('tModel').value = d.taxiModel || "";
-            document.getElementById('phone').value = d.phone || "";
-            document.getElementById('dImg').value = d.driverImg || "";
-            document.getElementById('driver-img-prev').src = d.driverImg || "https://via.placeholder.com/150";
-        }, { onlyOnce: true });
-
-        // NOTICE: We now query by 'sortOrder' to keep the list organized
-        const pkgRef = query(ref(db, id + '/packages'), orderByChild('sortOrder'));
-        onValue(pkgRef, (snap) => {
-            const list = document.getElementById('pkg-list');
-            list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase">Manage Existing Tours:</h3>`;
+        window.loadData = () => {
+            const id = document.getElementById('taxi-selector').value;
+            document.getElementById('current-taxi-label').innerText = "Editing: " + id.toUpperCase();
             
-            let pkgs = [];
-            snap.forEach(c => { pkgs.push({key: c.key, ...c.val()}); });
+            onValue(ref(db, id + '/settings'), (snap) => {
+                const d = snap.val() || {};
+                document.getElementById('title').value = d.title || "";
+                document.getElementById('dName').value = d.driverName || "";
+                document.getElementById('tNo').value = d.taxiNo || "";
+                document.getElementById('tModel').value = d.taxiModel || "";
+                document.getElementById('phone').value = d.phone || "";
+                document.getElementById('dImg').value = d.driverImg || "";
+                document.getElementById('driver-img-prev').src = d.driverImg || "https://via.placeholder.com/150";
+            }, { onlyOnce: true });
 
-            pkgs.forEach((p, index) => {
-                const safeData = btoa(encodeURIComponent(JSON.stringify(p)));
-                list.innerHTML += `
-                <div class="bg-white p-3 border rounded-lg shadow-sm border-l-4 border-green-500 mb-2">
-                    <div class="flex justify-between items-center">
-                        <span class="font-black text-blue-900 uppercase text-xs truncate w-1/2">${p.title}</span>
-                        <div class="flex gap-2">
-                            ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-blue-600 text-white font-bold text-[10px] px-3 py-2 rounded shadow">↑ UP</button>` : ''}
-                            <button onclick="editPkg('${p.key}', '${safeData}')" class="bg-orange-500 text-white font-bold text-[10px] px-3 py-2 rounded shadow">EDIT</button>
-                            <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white font-bold text-[10px] px-3 py-2 rounded shadow">DEL</button>
+            const pkgRef = query(ref(db, id + '/packages'), orderByChild('sortOrder'));
+            onValue(pkgRef, (snap) => {
+                const list = document.getElementById('pkg-list');
+                list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase text-center">Manage Your Tours:</h3>`;
+                let pkgs = [];
+                snap.forEach(c => { pkgs.push({key: c.key, ...c.val()}); });
+
+                pkgs.forEach((p, index) => {
+                    const safeData = btoa(encodeURIComponent(JSON.stringify(p)));
+                    list.innerHTML += `
+                    <div class="bg-white p-3 border rounded-lg shadow-sm border-l-4 border-blue-500 mb-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-black text-blue-900 uppercase text-[11px] truncate w-1/2">${p.title}</span>
+                            <div class="flex gap-1">
+                                ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-blue-600 text-white text-[10px] px-2 py-2 rounded">↑ UP</button>` : ''}
+                                <button onclick="editPkg('${p.key}', '${safeData}')" class="bg-orange-500 text-white text-[10px] px-2 py-2 rounded">EDIT</button>
+                                <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white text-[10px] px-2 py-2 rounded">DEL</button>
+                            </div>
                         </div>
-                    </div>
-                </div>`;
+                    </div>`;
+                });
             });
-        });
-    };
+        };
 
-    // FIXED MOVEMENT: Swaps 'sortOrder' values instead of keys
-    window.movePkg = async (key, index) => {
-        const id = document.getElementById('taxi-selector').value;
-        const dbRef = ref(db, id + '/packages');
-        const snapshot = await get(query(dbRef, orderByChild('sortOrder')));
-        
-        if (snapshot.exists()) {
-            let pkgs = [];
-            snapshot.forEach(c => { pkgs.push({key: c.key, data: c.val()}); });
+        // MOVEMENT LOGIC WITH FORCE RELOAD
+        window.movePkg = async (key, index) => {
+            const id = document.getElementById('taxi-selector').value;
+            const dbRef = ref(db, id + '/packages');
+            const snapshot = await get(query(dbRef, orderByChild('sortOrder')));
             
-            if (index > 0) {
+            if (snapshot.exists()) {
+                let pkgs = [];
+                snapshot.forEach(c => { pkgs.push({key: c.key, data: c.val()}); });
+                
                 const currentPkg = pkgs[index];
                 const abovePkg = pkgs[index - 1];
 
-                // Swap their order numbers
-                const currentOrder = currentPkg.data.sortOrder || index;
-                const aboveOrder = abovePkg.data.sortOrder || (index - 1);
-
                 const updates = {};
-                updates[`/${currentPkg.key}/sortOrder`] = aboveOrder;
-                updates[`/${abovePkg.key}/sortOrder`] = currentOrder;
+                updates[`/${currentPkg.key}/sortOrder`] = index - 1;
+                updates[`/${abovePkg.key}/sortOrder`] = index;
 
                 await update(dbRef, updates);
-                console.log("Positions Swapped!");
+                // This reload is the "Magic Fix" - it prevents the button from sticking
+                location.reload(); 
             }
-        }
-    };
+        };
 
-    window.addPkg = async () => {
-        const id = document.getElementById('taxi-selector').value;
-        const pkgRef = ref(db, id + '/packages');
-        
-        // Get count to set the next sortOrder
-        const snap = await get(pkgRef);
-        const orderCount = snap.exists() ? Object.keys(snap.val()).length : 0;
+        window.addPkg = async () => {
+            const id = document.getElementById('taxi-selector').value;
+            const pkgRef = ref(db, id + '/packages');
+            const snap = await get(pkgRef);
+            const nextOrder = snap.exists() ? Object.keys(snap.val()).length : 0;
 
-        push(pkgRef, {
-            title: document.getElementById('pTitle').value,
-            desc: document.getElementById('pDesc').value,
-            img: document.getElementById('pImg').value || "https://via.placeholder.com/400x200",
-            sortOrder: orderCount // Sets order at the end of the list
-        }).then(() => { alert("Added!"); cancelEdit(); });
-    };
+            push(pkgRef, {
+                title: document.getElementById('pTitle').value,
+                desc: document.getElementById('pDesc').value,
+                img: document.getElementById('pImg').value || "https://via.placeholder.com/400x200",
+                sortOrder: nextOrder
+            }).then(() => { alert("Added!"); cancelEdit(); });
+        };
 
-    // Keep saveSet, editPkg, updatePkg, cancelEdit, and delPkg from the previous version...
-    window.saveSet = () => {
-        const id = document.getElementById('taxi-selector').value;
-        update(ref(db, id + '/settings'), {
-            title: document.getElementById('title').value,
-            driverName: document.getElementById('dName').value,
-            taxiNo: document.getElementById('tNo').value,
-            taxiModel: document.getElementById('tModel').value,
-            phone: document.getElementById('phone').value,
-            driverImg: document.getElementById('dImg').value
-        }).then(() => alert("Saved!"));
-    };
+        window.saveSet = () => {
+            const id = document.getElementById('taxi-selector').value;
+            update(ref(db, id + '/settings'), {
+                title: document.getElementById('title').value,
+                driverName: document.getElementById('dName').value,
+                taxiNo: document.getElementById('tNo').value,
+                taxiModel: document.getElementById('tModel').value,
+                phone: document.getElementById('phone').value,
+                driverImg: document.getElementById('dImg').value
+            }).then(() => alert("Saved!"));
+        };
 
-    window.editPkg = (key, dataB64) => {
-        const data = JSON.parse(decodeURIComponent(atob(dataB64)));
-        document.getElementById('edit-pkg-id').value = key;
-        document.getElementById('pTitle').value = data.title;
-        document.getElementById('pImg').value = data.img;
-        document.getElementById('pDesc').value = data.desc;
-        document.getElementById('pkg-form-title').innerText = "Editing Mode";
-        document.getElementById('btn-add').classList.add('hidden');
-        document.getElementById('btn-update').classList.remove('hidden');
-        document.getElementById('btn-cancel').classList.remove('hidden');
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    };
+        window.editPkg = (key, dataB64) => {
+            const data = JSON.parse(decodeURIComponent(atob(dataB64)));
+            document.getElementById('edit-pkg-id').value = key;
+            document.getElementById('pTitle').value = data.title;
+            document.getElementById('pImg').value = data.img;
+            document.getElementById('pDesc').value = data.desc;
+            document.getElementById('pkg-form-title').innerText = "Editing Mode";
+            document.getElementById('btn-add').classList.add('hidden');
+            document.getElementById('btn-update').classList.remove('hidden');
+            document.getElementById('btn-cancel').classList.remove('hidden');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        };
 
-    window.updatePkg = () => {
-        const id = document.getElementById('taxi-selector').value;
-        const key = document.getElementById('edit-pkg-id').value;
-        update(ref(db, id + '/packages/' + key), {
-            title: document.getElementById('pTitle').value,
-            desc: document.getElementById('pDesc').value,
-            img: document.getElementById('pImg').value
-        }).then(() => { alert("Updated!"); cancelEdit(); });
-    };
+        window.updatePkg = () => {
+            const id = document.getElementById('taxi-selector').value;
+            const key = document.getElementById('edit-pkg-id').value;
+            update(ref(db, id + '/packages/' + key), {
+                title: document.getElementById('pTitle').value,
+                desc: document.getElementById('pDesc').value,
+                img: document.getElementById('pImg').value
+            }).then(() => { alert("Updated!"); cancelEdit(); });
+        };
 
-    window.cancelEdit = () => {
-        document.getElementById('edit-pkg-id').value = "";
-        document.getElementById('pTitle').value = "";
-        document.getElementById('pImg').value = "";
-        document.getElementById('pDesc').value = "";
-        document.getElementById('pkg-form-title').innerText = "Add New Tour Package";
-        document.getElementById('btn-add').classList.remove('hidden');
-        document.getElementById('btn-update').classList.add('hidden');
-        document.getElementById('btn-cancel').classList.add('hidden');
-    };
+        window.cancelEdit = () => {
+            document.getElementById('edit-pkg-id').value = "";
+            document.getElementById('pTitle').value = "";
+            document.getElementById('pImg').value = "";
+            document.getElementById('pDesc').value = "";
+            document.getElementById('pkg-form-title').innerText = "Add New Tour Package";
+            document.getElementById('btn-add').classList.remove('hidden');
+            document.getElementById('btn-update').classList.add('hidden');
+            document.getElementById('btn-cancel').classList.add('hidden');
+        };
 
-    window.delPkg = (key) => {
-        const id = document.getElementById('taxi-selector').value;
-        if(confirm("Delete this?")) remove(ref(db, id + '/packages/' + key));
-    };
-</script>
+        window.delPkg = (key) => {
+            const id = document.getElementById('taxi-selector').value;
+            if(confirm("Delete this?")) remove(ref(db, id + '/packages/' + key));
+        };
+    </script>
 </body>
 </html>
