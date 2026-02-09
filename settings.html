@@ -81,154 +81,170 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, update, push, onValue, remove, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, update, push, onValue, remove, set, get, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
-            authDomain: "master-web-app-d8d1b.firebaseapp.com",
-            projectId: "master-web-app-d8d1b",
-            databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
-            appId: "1:460731698074:web:40ad4f12c5fb3126874823"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
+        authDomain: "master-web-app-d8d1b.firebaseapp.com",
+        projectId: "master-web-app-d8d1b",
+        databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
+        appId: "1:460731698074:web:40ad4f12c5fb3126874823"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        const selector = document.getElementById('taxi-selector');
-        for(let i=1; i<=20; i++) {
-            let opt = document.createElement('option'); opt.value = 'taxi' + i; opt.innerHTML = 'MANAGE TAXI ' + i;
-            selector.appendChild(opt);
-        }
+    const selector = document.getElementById('taxi-selector');
+    for(let i=1; i<=20; i++) {
+        let opt = document.createElement('option'); opt.value = 'taxi' + i; opt.innerHTML = 'MANAGE TAXI ' + i;
+        selector.appendChild(opt);
+    }
 
-        window.checkPass = () => {
-            if(document.getElementById('pass-input').value === "1234") {
-                document.getElementById('login-box').classList.add('hidden');
-                document.getElementById('admin-content').classList.remove('hidden');
-                window.loadData();
-            } else { alert("Wrong Password"); }
-        };
+    window.checkPass = () => {
+        if(document.getElementById('pass-input').value === "1234") {
+            document.getElementById('login-box').classList.add('hidden');
+            document.getElementById('admin-content').classList.remove('hidden');
+            window.loadData();
+        } else { alert("Wrong Password"); }
+    };
 
-        window.loadData = () => {
-            const id = document.getElementById('taxi-selector').value;
-            document.getElementById('current-taxi-label').innerText = "Editing: " + id.toUpperCase();
+    window.loadData = () => {
+        const id = document.getElementById('taxi-selector').value;
+        document.getElementById('current-taxi-label').innerText = "Editing: " + id.toUpperCase();
+        
+        onValue(ref(db, id + '/settings'), (snap) => {
+            const d = snap.val() || {};
+            document.getElementById('title').value = d.title || "";
+            document.getElementById('dName').value = d.driverName || "";
+            document.getElementById('tNo').value = d.taxiNo || "";
+            document.getElementById('tModel').value = d.taxiModel || "";
+            document.getElementById('phone').value = d.phone || "";
+            document.getElementById('dImg').value = d.driverImg || "";
+            document.getElementById('driver-img-prev').src = d.driverImg || "https://via.placeholder.com/150";
+        }, { onlyOnce: true });
+
+        // NOTICE: We now query by 'sortOrder' to keep the list organized
+        const pkgRef = query(ref(db, id + '/packages'), orderByChild('sortOrder'));
+        onValue(pkgRef, (snap) => {
+            const list = document.getElementById('pkg-list');
+            list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase">Manage Existing Tours:</h3>`;
             
-            onValue(ref(db, id + '/settings'), (snap) => {
-                const d = snap.val() || {};
-                document.getElementById('title').value = d.title || "";
-                document.getElementById('dName').value = d.driverName || "";
-                document.getElementById('tNo').value = d.taxiNo || "";
-                document.getElementById('tModel').value = d.taxiModel || "";
-                document.getElementById('phone').value = d.phone || "";
-                document.getElementById('dImg').value = d.driverImg || "";
-                document.getElementById('driver-img-prev').src = d.driverImg || "https://via.placeholder.com/150";
-            }, { onlyOnce: true });
+            let pkgs = [];
+            snap.forEach(c => { pkgs.push({key: c.key, ...c.val()}); });
 
-            onValue(ref(db, id + '/packages'), (snap) => {
-                const list = document.getElementById('pkg-list');
-                list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase">Manage Existing Tours:</h3>`;
-                
-                let pkgs = [];
-                snap.forEach(c => { pkgs.push({key: c.key, ...c.val()}); });
-
-                pkgs.forEach((p, index) => {
-                    const safeData = btoa(encodeURIComponent(JSON.stringify(p)));
-                    list.innerHTML += `
-                    <div class="bg-white p-3 border rounded-lg shadow-sm border-l-4 border-green-500 mb-2">
-                        <div class="flex justify-between items-center">
-                            <span class="font-black text-blue-900 uppercase text-xs truncate w-1/2">${p.title}</span>
-                            <div class="flex gap-2">
-                                ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-blue-100 text-blue-700 font-bold text-[10px] px-2 py-1 rounded border border-blue-300">↑ UP</button>` : ''}
-                                <button onclick="editPkg('${p.key}', '${safeData}')" class="bg-orange-100 text-orange-700 font-bold text-[10px] px-2 py-1 rounded border border-orange-300">EDIT</button>
-                                <button onclick="delPkg('${p.key}')" class="bg-red-100 text-red-700 font-bold text-[10px] px-2 py-1 rounded border border-red-300">DEL</button>
-                            </div>
+            pkgs.forEach((p, index) => {
+                const safeData = btoa(encodeURIComponent(JSON.stringify(p)));
+                list.innerHTML += `
+                <div class="bg-white p-3 border rounded-lg shadow-sm border-l-4 border-green-500 mb-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-black text-blue-900 uppercase text-xs truncate w-1/2">${p.title}</span>
+                        <div class="flex gap-2">
+                            ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-blue-600 text-white font-bold text-[10px] px-3 py-2 rounded shadow">↑ UP</button>` : ''}
+                            <button onclick="editPkg('${p.key}', '${safeData}')" class="bg-orange-500 text-white font-bold text-[10px] px-3 py-2 rounded shadow">EDIT</button>
+                            <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white font-bold text-[10px] px-3 py-2 rounded shadow">DEL</button>
                         </div>
-                    </div>`;
-                });
+                    </div>
+                </div>`;
             });
-        };
+        });
+    };
 
-        window.movePkg = async (key, index) => {
-            const id = document.getElementById('taxi-selector').value;
-            const dbRef = ref(db, id + '/packages');
-            const snapshot = await get(dbRef);
+    // FIXED MOVEMENT: Swaps 'sortOrder' values instead of keys
+    window.movePkg = async (key, index) => {
+        const id = document.getElementById('taxi-selector').value;
+        const dbRef = ref(db, id + '/packages');
+        const snapshot = await get(query(dbRef, orderByChild('sortOrder')));
+        
+        if (snapshot.exists()) {
+            let pkgs = [];
+            snapshot.forEach(c => { pkgs.push({key: c.key, data: c.val()}); });
             
-            if (snapshot.exists()) {
-                let pkgs = [];
-                snapshot.forEach(c => { pkgs.push({key: c.key, data: c.val()}); });
-                
-                if (index > 0) {
-                    const temp = pkgs[index];
-                    pkgs[index] = pkgs[index - 1];
-                    pkgs[index - 1] = temp;
+            if (index > 0) {
+                const currentPkg = pkgs[index];
+                const abovePkg = pkgs[index - 1];
 
-                    const updatedList = {};
-                    pkgs.forEach(item => { updatedList[item.key] = item.data; });
-                    await set(dbRef, updatedList);
-                }
+                // Swap their order numbers
+                const currentOrder = currentPkg.data.sortOrder || index;
+                const aboveOrder = abovePkg.data.sortOrder || (index - 1);
+
+                const updates = {};
+                updates[`/${currentPkg.key}/sortOrder`] = aboveOrder;
+                updates[`/${abovePkg.key}/sortOrder`] = currentOrder;
+
+                await update(dbRef, updates);
+                console.log("Positions Swapped!");
             }
-        };
+        }
+    };
 
-        window.saveSet = () => {
-            const id = document.getElementById('taxi-selector').value;
-            update(ref(db, id + '/settings'), {
-                title: document.getElementById('title').value,
-                driverName: document.getElementById('dName').value,
-                taxiNo: document.getElementById('tNo').value,
-                taxiModel: document.getElementById('tModel').value,
-                phone: document.getElementById('phone').value,
-                driverImg: document.getElementById('dImg').value
-            }).then(() => alert("Saved!"));
-        };
+    window.addPkg = async () => {
+        const id = document.getElementById('taxi-selector').value;
+        const pkgRef = ref(db, id + '/packages');
+        
+        // Get count to set the next sortOrder
+        const snap = await get(pkgRef);
+        const orderCount = snap.exists() ? Object.keys(snap.val()).length : 0;
 
-        window.addPkg = () => {
-            const id = document.getElementById('taxi-selector').value;
-            push(ref(db, id + '/packages'), {
-                title: document.getElementById('pTitle').value,
-                desc: document.getElementById('pDesc').value,
-                img: document.getElementById('pImg').value || "https://via.placeholder.com/400x200"
-            }).then(() => { alert("Added!"); cancelEdit(); });
-        };
+        push(pkgRef, {
+            title: document.getElementById('pTitle').value,
+            desc: document.getElementById('pDesc').value,
+            img: document.getElementById('pImg').value || "https://via.placeholder.com/400x200",
+            sortOrder: orderCount // Sets order at the end of the list
+        }).then(() => { alert("Added!"); cancelEdit(); });
+    };
 
-        window.editPkg = (key, dataB64) => {
-            const data = JSON.parse(decodeURIComponent(atob(dataB64)));
-            document.getElementById('edit-pkg-id').value = key;
-            document.getElementById('pTitle').value = data.title;
-            document.getElementById('pImg').value = data.img;
-            document.getElementById('pDesc').value = data.desc;
-            
-            document.getElementById('pkg-form-title').innerText = "Editing Mode";
-            document.getElementById('btn-add').classList.add('hidden');
-            document.getElementById('btn-update').classList.remove('hidden');
-            document.getElementById('btn-cancel').classList.remove('hidden');
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        };
+    // Keep saveSet, editPkg, updatePkg, cancelEdit, and delPkg from the previous version...
+    window.saveSet = () => {
+        const id = document.getElementById('taxi-selector').value;
+        update(ref(db, id + '/settings'), {
+            title: document.getElementById('title').value,
+            driverName: document.getElementById('dName').value,
+            taxiNo: document.getElementById('tNo').value,
+            taxiModel: document.getElementById('tModel').value,
+            phone: document.getElementById('phone').value,
+            driverImg: document.getElementById('dImg').value
+        }).then(() => alert("Saved!"));
+    };
 
-        window.updatePkg = () => {
-            const id = document.getElementById('taxi-selector').value;
-            const key = document.getElementById('edit-pkg-id').value;
-            update(ref(db, id + '/packages/' + key), {
-                title: document.getElementById('pTitle').value,
-                desc: document.getElementById('pDesc').value,
-                img: document.getElementById('pImg').value
-            }).then(() => { alert("Updated!"); cancelEdit(); });
-        };
+    window.editPkg = (key, dataB64) => {
+        const data = JSON.parse(decodeURIComponent(atob(dataB64)));
+        document.getElementById('edit-pkg-id').value = key;
+        document.getElementById('pTitle').value = data.title;
+        document.getElementById('pImg').value = data.img;
+        document.getElementById('pDesc').value = data.desc;
+        document.getElementById('pkg-form-title').innerText = "Editing Mode";
+        document.getElementById('btn-add').classList.add('hidden');
+        document.getElementById('btn-update').classList.remove('hidden');
+        document.getElementById('btn-cancel').classList.remove('hidden');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    };
 
-        window.cancelEdit = () => {
-            document.getElementById('edit-pkg-id').value = "";
-            document.getElementById('pTitle').value = "";
-            document.getElementById('pImg').value = "";
-            document.getElementById('pDesc').value = "";
-            document.getElementById('pkg-form-title').innerText = "Add New Tour Package";
-            document.getElementById('btn-add').classList.remove('hidden');
-            document.getElementById('btn-update').classList.add('hidden');
-            document.getElementById('btn-cancel').classList.add('hidden');
-        };
+    window.updatePkg = () => {
+        const id = document.getElementById('taxi-selector').value;
+        const key = document.getElementById('edit-pkg-id').value;
+        update(ref(db, id + '/packages/' + key), {
+            title: document.getElementById('pTitle').value,
+            desc: document.getElementById('pDesc').value,
+            img: document.getElementById('pImg').value
+        }).then(() => { alert("Updated!"); cancelEdit(); });
+    };
 
-        window.delPkg = (key) => {
-            const id = document.getElementById('taxi-selector').value;
-            if(confirm("Delete this?")) remove(ref(db, id + '/packages/' + key));
-        };
-    </script>
+    window.cancelEdit = () => {
+        document.getElementById('edit-pkg-id').value = "";
+        document.getElementById('pTitle').value = "";
+        document.getElementById('pImg').value = "";
+        document.getElementById('pDesc').value = "";
+        document.getElementById('pkg-form-title').innerText = "Add New Tour Package";
+        document.getElementById('btn-add').classList.remove('hidden');
+        document.getElementById('btn-update').classList.add('hidden');
+        document.getElementById('btn-cancel').classList.add('hidden');
+    };
+
+    window.delPkg = (key) => {
+        const id = document.getElementById('taxi-selector').value;
+        if(confirm("Delete this?")) remove(ref(db, id + '/packages/' + key));
+    };
+</script>
 </body>
 </html>
