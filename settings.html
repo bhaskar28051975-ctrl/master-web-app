@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fleet Admin - Edit Titles</title>
+    <title>Fleet Admin - Master Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 p-3 min-h-screen">
@@ -15,18 +15,19 @@
     </div>
 
     <div id="admin-content" class="hidden max-w-[500px] mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-10 text-slate-800">
-        <div class="bg-yellow-400 p-4 border-b flex flex-col gap-2">
+        <div class="bg-yellow-400 p-4 border-b flex flex-col gap-2 shadow-inner">
             <label class="font-bold text-xs uppercase text-black">Select Taxi to Manage:</label>
             <select id="taxi-selector" onchange="loadData()" class="w-full p-3 rounded font-black text-blue-900 bg-white border-2 border-blue-900"></select>
         </div>
 
         <div class="p-4 space-y-6">
-            <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-                <h2 id="current-taxi-label" class="text-sm font-black text-blue-800 uppercase underline mb-3">Editing Profile</h2>
+            <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 shadow-sm">
+                <h2 id="current-taxi-label" class="text-sm font-black text-blue-800 uppercase underline mb-3">Profile Settings</h2>
                 
                 <div class="flex gap-3 items-center mb-4">
-                    <div class="shrink-0">
+                    <div class="shrink-0 text-center">
                         <img id="driver-img-prev" src="https://via.placeholder.com/150" class="w-[85px] h-[85px] object-cover rounded-lg border-2 border-blue-300 bg-white">
+                        <p class="text-[9px] font-bold mt-1 text-blue-400">PREVIEW</p>
                     </div>
                     <div class="flex-1 space-y-2">
                         <label class="text-[10px] font-bold text-blue-600 uppercase">Driver Photo URL:</label>
@@ -53,27 +54,35 @@
                         </div>
                     </div>
                     
-                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-lg font-black uppercase shadow-lg mt-2 active:scale-95 transition-transform">Save All Settings</button>
+                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-lg font-black uppercase shadow-lg active:scale-95 transition-transform">Save All Settings</button>
                 </div>
             </div>
 
-            <div class="bg-green-50 p-4 rounded-xl border-2 border-green-200">
-                <h2 class="text-xs font-bold text-green-700 uppercase mb-3">Add Tour Package</h2>
+            <div class="bg-green-50 p-4 rounded-xl border-2 border-green-200 shadow-sm">
+                <h2 id="pkg-form-title" class="text-xs font-black text-green-700 uppercase mb-3">Add New Tour Package</h2>
+                <input type="hidden" id="edit-pkg-id">
                 <div class="space-y-2">
                     <input id="pTitle" type="text" placeholder="Package Title" class="w-full p-2 border rounded font-bold text-sm">
                     <input id="pImg" type="text" placeholder="Tour Image URL" class="w-full p-2 border rounded text-[11px]">
                     <textarea id="pDesc" placeholder="Describe the tour..." class="w-full p-2 border rounded text-sm h-20"></textarea>
-                    <button onclick="addPkg()" class="w-full bg-green-700 text-white py-3 rounded font-bold uppercase active:scale-95 transition-transform">Add to Website</button>
+                    
+                    <div id="pkg-buttons" class="flex gap-2">
+                        <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-3 rounded font-bold uppercase active:scale-95 transition-transform">Add to Website</button>
+                        <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-3 rounded font-bold uppercase">Update Package</button>
+                        <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-gray-500 text-white px-4 py-3 rounded font-bold uppercase">X</button>
+                    </div>
                 </div>
             </div>
 
-            <div id="pkg-list" class="space-y-2 pb-10"></div>
+            <div id="pkg-list" class="space-y-3 pb-10">
+                <h3 class="text-xs font-bold text-gray-400 uppercase">Manage Existing Tours:</h3>
+                </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, update, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
@@ -105,7 +114,6 @@
             const id = document.getElementById('taxi-selector').value;
             document.getElementById('current-taxi-label').innerText = "Editing: " + id.toUpperCase();
             
-            // Fetch Settings
             onValue(ref(db, id + '/settings'), (snap) => {
                 const d = snap.val() || {};
                 document.getElementById('title').value = d.title || "";
@@ -117,14 +125,24 @@
                 document.getElementById('driver-img-prev').src = d.driverImg || "https://via.placeholder.com/150";
             }, { onlyOnce: true });
 
-            // Fetch Packages
             onValue(ref(db, id + '/packages'), (snap) => {
                 const list = document.getElementById('pkg-list');
-                list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase">Active Packages:</h3>`;
-                snap.forEach(c => {
-                    list.innerHTML += `<div class="bg-white p-3 border rounded flex justify-between items-center shadow-sm">
-                        <span class="text-sm font-bold truncate">${c.val().title}</span>
-                        <button onclick="delPkg('${c.key}')" class="text-red-500 font-bold text-xs">DELETE</button>
+                list.innerHTML = `<h3 class="text-xs font-bold text-gray-400 uppercase">Manage Existing Tours:</h3>`;
+                
+                let pkgs = [];
+                snap.forEach(c => { pkgs.push({key: c.key, ...c.val()}); });
+
+                pkgs.forEach((p, index) => {
+                    list.innerHTML += `
+                    <div class="bg-white p-3 border rounded-lg shadow-sm border-l-4 border-green-500">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-black text-blue-900 uppercase text-xs truncate w-2/3">${p.title}</span>
+                            <div class="flex gap-2">
+                                ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index}, 'up')" class="text-blue-500 font-bold text-[10px] border px-1 rounded">↑ UP</button>` : ''}
+                                <button onclick="editPkg('${p.key}', '${btoa(JSON.stringify(p))}')" class="text-orange-500 font-bold text-[10px] border px-1 rounded">EDIT</button>
+                                <button onclick="delPkg('${p.key}')" class="text-red-500 font-bold text-[10px] border px-1 rounded">DEL</button>
+                            </div>
+                        </div>
                     </div>`;
                 });
             });
@@ -139,7 +157,7 @@
                 taxiModel: document.getElementById('tModel').value,
                 phone: document.getElementById('phone').value,
                 driverImg: document.getElementById('dImg').value
-            }).then(() => alert("All settings saved for " + id.toUpperCase()));
+            }).then(() => alert("Saved!"));
         };
 
         window.addPkg = () => {
@@ -147,16 +165,72 @@
             push(ref(db, id + '/packages'), {
                 title: document.getElementById('pTitle').value,
                 desc: document.getElementById('pDesc').value,
-                img: document.getElementById('pImg').value || "https://via.placeholder.com/400x200"
-            }).then(() => { 
-                alert("Tour Package Added!"); 
-                document.getElementById('pTitle').value = ""; document.getElementById('pDesc').value = ""; document.getElementById('pImg').value = "";
-            });
+                img: document.getElementById('pImg').value || "https://via.placeholder.com/400x200",
+                timestamp: Date.now() // Used for ordering
+            }).then(() => { alert("Added!"); cancelEdit(); });
+        };
+
+        window.editPkg = (key, dataB64) => {
+            const data = JSON.parse(atob(dataB64));
+            document.getElementById('edit-pkg-id').value = key;
+            document.getElementById('pTitle').value = data.title;
+            document.getElementById('pImg').value = data.img;
+            document.getElementById('pDesc').value = data.desc;
+            
+            document.getElementById('pkg-form-title').innerText = "Editing Package Mode";
+            document.getElementById('btn-add').classList.add('hidden');
+            document.getElementById('btn-update').classList.remove('hidden');
+            document.getElementById('btn-cancel').classList.remove('hidden');
+            window.scrollTo(0, 200);
+        };
+
+        window.updatePkg = () => {
+            const id = document.getElementById('taxi-selector').value;
+            const key = document.getElementById('edit-pkg-id').value;
+            update(ref(db, id + '/packages/' + key), {
+                title: document.getElementById('pTitle').value,
+                desc: document.getElementById('pDesc').value,
+                img: document.getElementById('pImg').value
+            }).then(() => { alert("Updated!"); cancelEdit(); });
+        };
+
+        window.cancelEdit = () => {
+            document.getElementById('edit-pkg-id').value = "";
+            document.getElementById('pTitle').value = "";
+            document.getElementById('pImg').value = "";
+            document.getElementById('pDesc').value = "";
+            document.getElementById('pkg-form-title').innerText = "Add New Tour Package";
+            document.getElementById('btn-add').classList.remove('hidden');
+            document.getElementById('btn-update').classList.add('hidden');
+            document.getElementById('btn-cancel').classList.add('hidden');
+        };
+
+        // NEW: MOVEMENT LOGIC
+        window.movePkg = async (key, index, direction) => {
+            const id = document.getElementById('taxi-selector').value;
+            // Fetch all packages to rearrange
+            onValue(ref(db, id + '/packages'), (snap) => {
+                let pkgs = [];
+                snap.forEach(c => { pkgs.push({key: c.key, data: c.val()}); });
+                
+                if (direction === 'up' && index > 0) {
+                    const temp = pkgs[index];
+                    pkgs[index] = pkgs[index - 1];
+                    pkgs[index - 1] = temp;
+                }
+
+                // Rewrite the whole list in new order
+                const newObj = {};
+                pkgs.forEach((p, i) => { newObj[p.key] = p.data; });
+                set(ref(db, id + '/packages'), newObj).then(() => {
+                    console.log("Moved Successfully");
+                });
+            }, { onlyOnce: true });
         };
 
         window.delPkg = (key) => {
             const id = document.getElementById('taxi-selector').value;
-            if(confirm("Permanently delete this tour?")) remove(ref(db, id + '/packages/' + key));
+            if(confirm("Delete this?")) remove(ref(db, id + '/packages/' + key));
         };
     </script>
 </body>
