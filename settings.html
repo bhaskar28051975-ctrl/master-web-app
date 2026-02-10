@@ -40,12 +40,12 @@
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <input id="title" type="text" placeholder="Header Title" class="w-full p-3 border rounded-lg font-bold">
-                    <input id="phone" type="text" placeholder="WhatsApp Number" class="w-full p-3 border rounded-lg">
+                    <input id="title" type="text" placeholder="Header Title (e.g. Balaji Travels)" class="w-full p-3 border rounded-lg font-bold">
+                    <input id="phone" type="text" placeholder="WhatsApp Number (with 91)" class="w-full p-3 border rounded-lg">
                     <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded-lg">
                     <div class="grid grid-cols-2 gap-2">
                         <input id="tNo" type="text" placeholder="Taxi No" class="p-3 border rounded-lg">
-                        <input id="tModel" type="text" placeholder="Model" class="p-3 border rounded-lg">
+                        <input id="tModel" type="text" placeholder="Model (e.g. Swift)" class="p-3 border rounded-lg">
                     </div>
                     <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase shadow-lg mt-2">Update Profile</button>
                 </div>
@@ -68,7 +68,7 @@
             </div>
 
             <div id="pkg-list" class="space-y-3 pb-10">
-                <h3 class="text-xs font-bold text-gray-400 uppercase text-center">Active Tour Packages:</h3>
+                <h3 class="text-xs font-bold text-gray-400 uppercase text-center">Loading Packages...</h3>
             </div>
         </div>
     </div>
@@ -118,6 +118,8 @@
         window.loadData = () => {
             const id = document.getElementById('taxi-selector').value;
             document.getElementById('current-taxi-label').innerText = "Editing: " + id.toUpperCase();
+            
+            // Load Settings
             db.ref(id + '/settings').once('value', (snap) => {
                 const d = snap.val() || {};
                 document.getElementById('title').value = d.title || "";
@@ -129,6 +131,7 @@
                 document.getElementById('driver-img-prev').src = d.driverImg || "https://via.placeholder.com/150";
             });
 
+            // Load Packages with Sort Order
             const pkgRef = db.ref(id + '/packages').orderByChild('sortOrder');
             pkgRef.on('value', (snap) => {
                 const list = document.getElementById('pkg-list');
@@ -143,10 +146,10 @@
                         <div class="flex flex-col gap-2">
                             <span class="font-black text-blue-900 uppercase text-[12px] truncate">${p.title}</span>
                             <div class="flex flex-wrap gap-1">
-                                ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-slate-800 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">↑ UP</button>` : ''}
-                                <button onclick="editPkg('${p.key}', '${b64Data}')" class="bg-orange-500 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">EDIT</button>
-                                <button onclick="duplicatePkg('${b64Data}')" class="bg-cyan-600 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">DUPLICATE</button>
-                                <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">DEL</button>
+                                ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-slate-800 text-white text-[9px] px-3 py-2 rounded-lg font-bold">↑ UP</button>` : ''}
+                                <button onclick="editPkg('${p.key}', '${b64Data}')" class="bg-orange-500 text-white text-[9px] px-3 py-2 rounded-lg font-bold">EDIT</button>
+                                <button onclick="duplicatePkg('${b64Data}')" class="bg-cyan-600 text-white text-[9px] px-3 py-2 rounded-lg font-bold">DUPLICATE</button>
+                                <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white text-[9px] px-3 py-2 rounded-lg font-bold">DEL</button>
                             </div>
                         </div>
                     </div>`;
@@ -154,6 +157,7 @@
             });
         };
 
+        // DUPLICATE FUNCTION: Copies a tour to another taxi
         window.duplicatePkg = async (b64Data) => {
             const data = JSON.parse(decodeURIComponent(atob(b64Data)));
             const target = prompt("Copy this tour to which taxi? (Enter 1 to 20):", "1");
@@ -161,23 +165,21 @@
                 const targetPath = 'taxi' + target + '/packages';
                 const snap = await db.ref(targetPath).once('value');
                 data.sortOrder = snap.exists() ? Object.keys(snap.val()).length : 0;
-                if(data.key) delete data.key;
+                if(data.key) delete data.key; // Don't copy the old ID
                 db.ref(targetPath).push(data).then(() => alert(`Successfully copied to TAXI ${target}!`));
             }
         };
 
+        // Other functions (Add, Update, Move, Delete)
         window.movePkg = async (key, index) => {
             const id = document.getElementById('taxi-selector').value;
             const dbRef = db.ref(id + '/packages');
             const snapshot = await dbRef.orderByChild('sortOrder').once('value');
-            if (snapshot.exists()) {
-                let pkgs = []; snapshot.forEach(c => { pkgs.push({key: c.key, data: c.val()}); });
-                const updates = {};
-                updates[pkgs[index].key + '/sortOrder'] = index - 1;
-                updates[pkgs[index - 1].key + '/sortOrder'] = index;
-                await dbRef.update(updates);
-                loadData(); 
-            }
+            let pkgs = []; snapshot.forEach(c => { pkgs.push({key: c.key, data: c.val()}); });
+            const updates = {};
+            updates[pkgs[index].key + '/sortOrder'] = index - 1;
+            updates[pkgs[index - 1].key + '/sortOrder'] = index;
+            await dbRef.update(updates);
         };
 
         window.addPkg = async () => {
@@ -202,7 +204,7 @@
                 taxiModel: document.getElementById('tModel').value,
                 phone: document.getElementById('phone').value,
                 driverImg: document.getElementById('dImg').value
-            }).then(() => alert("Saved Driver Profile!"));
+            }).then(() => alert("Profile Saved!"));
         };
 
         window.editPkg = (key, dataB64) => {
