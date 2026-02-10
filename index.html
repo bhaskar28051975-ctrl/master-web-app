@@ -89,14 +89,21 @@
             document.getElementById('popup-box').classList.add('popup-active');
         }
         function closePopup() { document.getElementById('popup-box').classList.remove('popup-active'); }
+        
         function shareFullWebsite() {
             const siteTitle = document.getElementById('display-title').innerText;
             const url = window.location.href;
-            const message = `*${siteTitle}*\nBook your taxi and tour packages here:\n${url}`;
+            const message = `*${siteTitle}*\nCheck out our taxi and tour packages here:\n${url}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
         }
+
+        // WhatsApp for Specific Tour
+        function bookWhatsApp(tourName) {
+            const phone = document.getElementById('display-phone').innerText.replace(/\D/g,'');
+            const message = `Hello! I am interested in the *${tourName}* tour package. Please provide more details.`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+        }
         
-        // SEARCH LOGIC (CASE INSENSITIVE)
         function searchTours() {
             let filter = document.getElementById('customer-search').value.toLowerCase();
             let cards = document.getElementsByClassName('tour-card');
@@ -156,8 +163,8 @@
                             <div class="flex gap-3">
                                 <button onclick="openPop('${b64Title}', '${b64Desc}', '${pkg.img}')" 
                                     class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[13px] uppercase shadow-md">DETAILS</button>
-                                <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
-                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[13px] text-center uppercase shadow-md flex items-center justify-center">WHATSAPP</a>
+                                <button onclick="bookWhatsApp('${pkg.title.replace(/'/g, "\\'")}')" 
+                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[13px] text-center uppercase shadow-md flex items-center justify-center">WHATSAPP</button>
                             </div>
                         </div>
                     </div>`;
