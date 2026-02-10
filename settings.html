@@ -37,7 +37,7 @@
                         <input id="tNo" type="text" placeholder="Taxi No" class="p-2 border rounded">
                         <input id="tModel" type="text" placeholder="Model" class="p-2 border rounded">
                     </div>
-                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-black uppercase">Save Driver Info</button>
+                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-black uppercase shadow-lg">Save Driver Info</button>
                 </div>
             </div>
 
@@ -50,8 +50,8 @@
                     <textarea id="pDesc" placeholder="Describe the tour..." class="w-full p-2 border rounded text-sm h-20"></textarea>
                     
                     <div id="pkg-buttons" class="flex gap-2">
-                        <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-3 rounded font-bold uppercase">Add Tour</button>
-                        <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-3 rounded font-bold uppercase">Update</button>
+                        <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-3 rounded font-bold uppercase shadow">Add Tour</button>
+                        <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-3 rounded font-bold uppercase shadow">Update</button>
                         <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-gray-500 text-white px-4 py-3 rounded font-bold">X</button>
                     </div>
                 </div>
@@ -66,7 +66,6 @@
     </div>
 
     <script>
-        // CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
             authDomain: "master-web-app-d8d1b.firebaseapp.com",
@@ -78,7 +77,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 1. LOGIN & PERSISTENCE
         window.onload = () => {
             if(localStorage.getItem("fleet_admin_logged_in") === "true") {
                 document.getElementById('login-box').classList.add('hidden');
@@ -110,7 +108,6 @@
             location.reload();
         };
 
-        // 2. DATA LOADING
         window.loadData = () => {
             const id = document.getElementById('taxi-selector').value;
             document.getElementById('current-taxi-label').innerText = "Editing: " + id.toUpperCase();
@@ -126,7 +123,6 @@
                 document.getElementById('driver-img-prev').src = d.driverImg || "https://via.placeholder.com/150";
             });
 
-            // Query by sortOrder
             const pkgRef = db.ref(id + '/packages').orderByChild('sortOrder');
             pkgRef.on('value', (snap) => {
                 const list = document.getElementById('pkg-list');
@@ -135,15 +131,16 @@
                 snap.forEach(c => { pkgs.push({key: c.key, ...c.val()}); });
 
                 pkgs.forEach((p, index) => {
-                    const safeData = btoa(encodeURIComponent(JSON.stringify(p)));
+                    const b64Data = btoa(encodeURIComponent(JSON.stringify(p)));
                     list.innerHTML += `
                     <div class="bg-white p-3 border rounded-lg shadow-sm border-l-4 border-blue-600 mb-2">
-                        <div class="flex justify-between items-center">
-                            <span class="font-black text-blue-900 uppercase text-[11px] truncate w-[140px]">${p.title}</span>
-                            <div class="flex gap-1">
-                                ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-blue-600 text-white text-[10px] px-3 py-2 rounded-md shadow">↑ UP</button>` : ''}
-                                <button onclick="editPkg('${p.key}', '${safeData}')" class="bg-orange-500 text-white text-[10px] px-3 py-2 rounded-md shadow">EDIT</button>
-                                <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white text-[10px] px-3 py-2 rounded-md shadow">DEL</button>
+                        <div class="flex flex-col gap-2">
+                            <span class="font-black text-blue-900 uppercase text-[12px] truncate">${p.title}</span>
+                            <div class="flex flex-wrap gap-1">
+                                ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-gray-800 text-white text-[9px] px-2 py-2 rounded shadow">↑ UP</button>` : ''}
+                                <button onclick="editPkg('${p.key}', '${b64Data}')" class="bg-orange-500 text-white text-[9px] px-2 py-2 rounded shadow">EDIT</button>
+                                <button onclick="duplicatePkg('${b64Data}')" class="bg-cyan-600 text-white text-[9px] px-2 py-2 rounded shadow">COPY TO...</button>
+                                <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white text-[9px] px-2 py-2 rounded shadow">DEL</button>
                             </div>
                         </div>
                     </div>`;
@@ -151,7 +148,31 @@
             });
         };
 
-        // 3. MOVEMENT LOGIC (FIXED)
+        // NEW: DUPLICATE TO ANOTHER TAXI
+        window.duplicatePkg = async (b64Data) => {
+            const data = JSON.parse(decodeURIComponent(atob(b64Data)));
+            const targetTaxiNumber = prompt("Enter target Taxi Number (1 to 20):", "1");
+            
+            if (targetTaxiNumber && targetTaxiNumber >= 1 && targetTaxiNumber <= 20) {
+                const targetPath = 'taxi' + targetTaxiNumber + '/packages';
+                const targetRef = db.ref(targetPath);
+                
+                // Get count for target taxi to maintain order
+                const snap = await targetRef.once('value');
+                const nextOrder = snap.exists() ? Object.keys(snap.val()).length : 0;
+                
+                // Add new sortOrder and remove the old key if it exists in data
+                data.sortOrder = nextOrder;
+                if(data.key) delete data.key;
+
+                targetRef.push(data).then(() => {
+                    alert(`Package copied successfully to TAXI ${targetTaxiNumber}!`);
+                });
+            } else if (targetTaxiNumber) {
+                alert("Invalid Taxi Number. Please enter 1-20.");
+            }
+        };
+
         window.movePkg = async (key, index) => {
             const id = document.getElementById('taxi-selector').value;
             const dbRef = db.ref(id + '/packages');
@@ -160,32 +181,24 @@
             if (snapshot.exists()) {
                 let pkgs = [];
                 snapshot.forEach(c => { pkgs.push({key: c.key, data: c.val()}); });
-                
-                const currentPkg = pkgs[index];
-                const abovePkg = pkgs[index - 1];
-
                 const updates = {};
-                updates[currentPkg.key + '/sortOrder'] = index - 1;
-                updates[abovePkg.key + '/sortOrder'] = index;
-
+                updates[pkgs[index].key + '/sortOrder'] = index - 1;
+                updates[pkgs[index - 1].key + '/sortOrder'] = index;
                 await dbRef.update(updates);
-                // No longer stuck because we are logged in via localStorage!
                 location.reload(); 
             }
         };
 
-        // 4. ADD & UPDATE
         window.addPkg = async () => {
             const id = document.getElementById('taxi-selector').value;
             const pkgRef = db.ref(id + '/packages');
             const snap = await pkgRef.once('value');
             const nextOrder = snap.exists() ? Object.keys(snap.val()).length : 0;
-
             pkgRef.push({
                 title: document.getElementById('pTitle').value,
                 desc: document.getElementById('pDesc').value,
                 img: document.getElementById('pImg').value || "https://via.placeholder.com/400x200",
-                sortOrder: nextOrder // Essential for sorting
+                sortOrder: nextOrder
             }).then(() => { alert("Added!"); cancelEdit(); });
         };
 
@@ -198,7 +211,7 @@
                 taxiModel: document.getElementById('tModel').value,
                 phone: document.getElementById('phone').value,
                 driverImg: document.getElementById('dImg').value
-            }).then(() => alert("Saved!"));
+            }).then(() => alert("Saved Driver Profile!"));
         };
 
         window.editPkg = (key, dataB64) => {
