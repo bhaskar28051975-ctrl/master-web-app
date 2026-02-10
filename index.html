@@ -73,8 +73,8 @@
             else { setTimeout(function() { changeLang(langCode); }, 500); }
         }
         function openPop(t, d, i) {
-            document.getElementById('pop-title').innerText = atob(t);
-            document.getElementById('pop-desc').innerText = atob(d);
+            document.getElementById('pop-title').innerText = decodeURIComponent(escape(atob(t)));
+            document.getElementById('pop-desc').innerText = decodeURIComponent(escape(atob(d)));
             document.getElementById('pop-img').src = i;
             document.getElementById('popup-box').classList.add('popup-active');
         }
@@ -90,7 +90,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
@@ -105,6 +105,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const TAXI_ID = urlParams.get('id') || 'taxi1';
 
+        // Load Header & Settings
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
@@ -117,11 +118,18 @@
             }
         });
 
-        onValue(ref(db, TAXI_ID + '/packages'), (snap) => {
-            const container = document.getElementById('package-container'); container.innerHTML = "";
+        // Load Packages ORDERED BY sortOrder
+        const packageRef = query(ref(db, TAXI_ID + '/packages'), orderByChild('sortOrder'));
+        
+        onValue(packageRef, (snap) => {
+            const container = document.getElementById('package-container'); 
+            container.innerHTML = "";
+            
+            // Using forEach on a sorted query snapshot preserves the order
             snap.forEach((child) => {
                 const pkg = child.val();
-                // Use Base64 encoding to prevent special character breaks
+                
+                // Encoding for safe transmission to the popup
                 const b64Title = btoa(unescape(encodeURIComponent(pkg.title)));
                 const b64Desc = btoa(unescape(encodeURIComponent(pkg.desc)));
                 
