@@ -163,8 +163,6 @@
                 data.sortOrder = snap.exists() ? Object.keys(snap.val()).length : 0;
                 if(data.key) delete data.key;
                 db.ref(targetPath).push(data).then(() => alert(`Successfully copied to TAXI ${target}!`));
-            } else if(target) {
-                alert("Please enter a number between 1 and 20");
             }
         };
 
