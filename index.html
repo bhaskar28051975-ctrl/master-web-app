@@ -17,9 +17,9 @@
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
 
-    <nav class="bg-white border-b p-2 flex justify-between items-center px-4">
-        <span class="text-[10px] font-bold text-gray-400 uppercase">Customer Portal</span>
-        <a href="settings.html" class="text-[10px] font-bold text-blue-600 uppercase border border-blue-600 px-2 py-1 rounded">Admin Login</a>
+    <nav id="master-nav" class="bg-white border-b p-2 flex justify-between items-center px-4 shadow-sm">
+        <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest">Master Web App</span>
+        <a href="settings.html" class="text-[10px] font-bold text-white bg-blue-600 px-3 py-1.5 rounded-lg uppercase shadow-sm">Admin Login</a>
     </nav>
 
     <div id="google_translate_element"></div>
@@ -108,9 +108,16 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const urlParams = new URLSearchParams(window.location.search);
-        const TAXI_ID = urlParams.get('id') || 'taxi1';
+        const TAXI_ID = urlParams.get('id');
 
-        onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
+        // NAVIGATION LOGIC: Hide if ?id= is present
+        if (TAXI_ID) {
+            document.getElementById('master-nav').style.display = 'none';
+        }
+
+        const FINAL_ID = TAXI_ID || 'taxi1';
+
+        onValue(ref(db, FINAL_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
                 document.getElementById('display-title').innerText = data.title || "TRAVELS";
@@ -122,7 +129,7 @@
             }
         });
 
-        const packageRef = query(ref(db, TAXI_ID + '/packages'), orderByChild('sortOrder'));
+        const packageRef = query(ref(db, FINAL_ID + '/packages'), orderByChild('sortOrder'));
         onValue(packageRef, (snap) => {
             const container = document.getElementById('package-container'); container.innerHTML = "";
             snap.forEach((child) => {
