@@ -13,14 +13,14 @@
     <nav class="bg-blue-700 p-4 text-white flex justify-between items-center shadow-lg sticky top-0 z-50">
         <span class="font-black tracking-tighter uppercase">Admin Panel</span>
         <div class="flex gap-4 text-xs font-bold uppercase">
-            <a href="index.html" class="bg-blue-900 px-3 py-1.5 rounded-lg border border-blue-400">Main Home</a>
+            <a href="index.html" class="bg-blue-900 px-3 py-1.5 rounded-lg border border-blue-400">View Site</a>
             <button onclick="logout()" class="text-red-300 font-black">Logout</button>
         </div>
     </nav>
 
     <div id="login-box" class="max-w-[400px] mx-auto bg-white rounded-2xl p-6 mt-10 shadow-2xl text-center">
         <h2 class="font-black text-blue-700 uppercase mb-4 text-xl tracking-tight">Fleet Manager Login</h2>
-        <input id="pass-input" type="password" placeholder="Enter Admin Password" class="w-full p-4 border rounded-xl mb-4 text-center text-xl outline-blue-500">
+        <input id="pass-input" type="password" placeholder="Enter Password" class="w-full p-4 border rounded-xl mb-4 text-center text-xl outline-blue-500">
         <button onclick="checkPass()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold uppercase shadow-lg active:scale-95 transition-transform">Unlock Fleet</button>
     </div>
 
@@ -35,13 +35,12 @@
                 <h2 id="current-taxi-label" class="text-sm font-black text-blue-800 uppercase underline mb-3 text-center">Driver Details</h2>
                 <div class="flex gap-3 items-center mb-4">
                     <img id="driver-img-prev" src="https://via.placeholder.com/150" class="w-[80px] h-[80px] object-cover rounded-xl border-2 border-blue-300 shadow-sm">
-                    <div class="flex-1 space-y-1">
-                        <label class="text-[10px] font-bold text-blue-400 uppercase">Image URL:</label>
-                        <input id="dImg" type="text" oninput="document.getElementById('driver-img-prev').src=this.value" placeholder="Paste Link Here" class="w-full p-2 border rounded text-[11px]">
+                    <div class="flex-1">
+                        <input id="dImg" type="text" oninput="document.getElementById('driver-img-prev').src=this.value" placeholder="Paste Image Link" class="w-full p-2 border rounded text-[11px]">
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <input id="title" type="text" placeholder="Header Title (e.g. Tirumala Travels)" class="w-full p-3 border rounded-lg font-bold">
+                    <input id="title" type="text" placeholder="Header Title" class="w-full p-3 border rounded-lg font-bold">
                     <input id="phone" type="text" placeholder="WhatsApp Number" class="w-full p-3 border rounded-lg">
                     <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded-lg">
                     <div class="grid grid-cols-2 gap-2">
@@ -56,9 +55,9 @@
                 <h2 id="pkg-form-title" class="text-xs font-black text-green-700 uppercase mb-3 text-center">Add New Tour</h2>
                 <input type="hidden" id="edit-pkg-id">
                 <div class="space-y-2">
-                    <input id="pTitle" type="text" placeholder="Tour Name (e.g. Arunachalam Tour)" class="w-full p-3 border rounded-lg font-bold text-sm">
+                    <input id="pTitle" type="text" placeholder="Tour Name" class="w-full p-3 border rounded-lg font-bold text-sm">
                     <input id="pImg" type="text" placeholder="Tour Photo Link" class="w-full p-3 border rounded-lg text-[11px]">
-                    <textarea id="pDesc" placeholder="Describe the tour itinerary..." class="w-full p-3 border rounded-lg text-sm h-24"></textarea>
+                    <textarea id="pDesc" placeholder="Describe the tour..." class="w-full p-3 border rounded-lg text-sm h-24"></textarea>
                     
                     <div id="pkg-buttons" class="flex gap-2">
                         <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-4 rounded-xl font-bold uppercase shadow">Add to List</button>
@@ -144,10 +143,10 @@
                         <div class="flex flex-col gap-2">
                             <span class="font-black text-blue-900 uppercase text-[12px] truncate">${p.title}</span>
                             <div class="flex flex-wrap gap-1">
-                                ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-slate-800 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">↑ MOVE UP</button>` : ''}
+                                ${index > 0 ? `<button onclick="movePkg('${p.key}', ${index})" class="bg-slate-800 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">↑ UP</button>` : ''}
                                 <button onclick="editPkg('${p.key}', '${b64Data}')" class="bg-orange-500 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">EDIT</button>
-                                <button onclick="duplicatePkg('${b64Data}')" class="bg-cyan-600 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">DUPLICATE TO...</button>
-                                <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">DELETE</button>
+                                <button onclick="duplicatePkg('${b64Data}')" class="bg-cyan-600 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">DUPLICATE</button>
+                                <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white text-[9px] px-3 py-2 rounded-lg font-bold shadow">DEL</button>
                             </div>
                         </div>
                     </div>`;
@@ -157,13 +156,15 @@
 
         window.duplicatePkg = async (b64Data) => {
             const data = JSON.parse(decodeURIComponent(atob(b64Data)));
-            const target = prompt("Which taxi do you want to copy this to? (Enter 1-20):", "1");
+            const target = prompt("Copy this tour to which taxi? (Enter 1 to 20):", "1");
             if (target && target >= 1 && target <= 20) {
                 const targetPath = 'taxi' + target + '/packages';
                 const snap = await db.ref(targetPath).once('value');
                 data.sortOrder = snap.exists() ? Object.keys(snap.val()).length : 0;
                 if(data.key) delete data.key;
                 db.ref(targetPath).push(data).then(() => alert(`Successfully copied to TAXI ${target}!`));
+            } else if(target) {
+                alert("Please enter a number between 1 and 20");
             }
         };
 
@@ -177,7 +178,7 @@
                 updates[pkgs[index].key + '/sortOrder'] = index - 1;
                 updates[pkgs[index - 1].key + '/sortOrder'] = index;
                 await dbRef.update(updates);
-                location.reload(); 
+                loadData(); 
             }
         };
 
