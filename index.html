@@ -17,6 +17,11 @@
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
 
+    <nav class="bg-white border-b p-2 flex justify-between items-center px-4">
+        <span class="text-[10px] font-bold text-gray-400 uppercase">Customer Portal</span>
+        <a href="settings.html" class="text-[10px] font-bold text-blue-600 uppercase border border-blue-600 px-2 py-1 rounded">Admin Login</a>
+    </nav>
+
     <div id="google_translate_element"></div>
 
     <button onclick="shareFullWebsite()" class="website-share-btn notranslate shadow-2xl active:scale-95 transition-transform">
@@ -105,7 +110,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const TAXI_ID = urlParams.get('id') || 'taxi1';
 
-        // Load Header & Settings
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
@@ -118,21 +122,13 @@
             }
         });
 
-        // Load Packages ORDERED BY sortOrder
         const packageRef = query(ref(db, TAXI_ID + '/packages'), orderByChild('sortOrder'));
-        
         onValue(packageRef, (snap) => {
-            const container = document.getElementById('package-container'); 
-            container.innerHTML = "";
-            
-            // Using forEach on a sorted query snapshot preserves the order
+            const container = document.getElementById('package-container'); container.innerHTML = "";
             snap.forEach((child) => {
                 const pkg = child.val();
-                
-                // Encoding for safe transmission to the popup
                 const b64Title = btoa(unescape(encodeURIComponent(pkg.title)));
                 const b64Desc = btoa(unescape(encodeURIComponent(pkg.desc)));
-                
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
                         <img src="${pkg.img || 'https://via.placeholder.com/400x200'}" class="w-full h-52 object-cover">
