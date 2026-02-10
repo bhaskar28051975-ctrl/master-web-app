@@ -12,7 +12,7 @@
         .popup-active { display: flex; }
         #google_translate_element, .skiptranslate, .goog-te-banner-frame { display: none !important; }
         body { top: 0px !important; }
-        .website-share-btn { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: #25D366; color: white; padding: 12px 15px; border-radius: 30px 0 0 30px; box-shadow: -2px 5px 15px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; gap: 8px; font-weight: 900; }
+        .website-share-btn { position: fixed; right: 0; top: 60%; transform: translateY(-50%); background: #25D366; color: white; padding: 12px 15px; border-radius: 30px 0 0 30px; box-shadow: -2px 5px 15px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; gap: 8px; font-weight: 900; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
@@ -29,21 +29,26 @@
         SHARE
     </button>
 
-    <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-md">
-        <div class="flex items-center justify-center gap-3">
-            <div class="text-center">
-                <h1 id="display-title" class="title-text uppercase notranslate">LOADING...</h1>
-                <p id="display-phone" class="phone-text text-yellow-300 mt-1 notranslate">---</p>
-            </div>
-        </div>
+    <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-md text-center">
+        <h1 id="display-title" class="title-text uppercase notranslate">LOADING...</h1>
+        <p id="display-phone" class="phone-text text-yellow-300 mt-1 notranslate">---</p>
     </header>
 
-    <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-2 sticky top-0 z-40 shadow-md">
-        <button onclick="changeLang('en')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">English</button>
-        <button onclick="changeLang('te')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">Telugu</button>
-        <button onclick="changeLang('ta')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">Tamil</button>
-        <button onclick="changeLang('kn')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">Kannada</button>
-        <button onclick="changeLang('mr')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase notranslate">Marathi</button>
+    <div class="sticky top-0 z-40 shadow-md">
+        <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-2">
+            <button onclick="changeLang('en')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">English</button>
+            <button onclick="changeLang('te')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">Telugu</button>
+            <button onclick="changeLang('ta')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">Tamil</button>
+            <button onclick="changeLang('kn')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">Kannada</button>
+            <button onclick="changeLang('mr')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">Marathi</button>
+        </div>
+        <div class="bg-gray-100 p-3 border-b">
+            <div class="relative max-w-md mx-auto">
+                <input type="text" id="customer-search" onkeyup="searchTours()" placeholder="Search Tours (e.g. Tirupati, Ooty)..." 
+                       class="w-full p-3 pl-10 rounded-xl border-2 border-blue-200 shadow-inner text-sm outline-none focus:border-blue-500">
+                <span class="absolute left-3 top-3 opacity-40">🔍</span>
+            </div>
+        </div>
     </div>
 
     <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
@@ -90,6 +95,16 @@
             const message = `*${siteTitle}*\nBook your taxi and tour packages here:\n${url}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
         }
+        
+        // SEARCH LOGIC (CASE INSENSITIVE)
+        function searchTours() {
+            let filter = document.getElementById('customer-search').value.toLowerCase();
+            let cards = document.getElementsByClassName('tour-card');
+            for (let i = 0; i < cards.length; i++) {
+                let title = cards[i].getAttribute('data-title').toLowerCase();
+                cards[i].style.display = title.includes(filter) ? "" : "none";
+            }
+        }
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
@@ -110,11 +125,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const TAXI_ID = urlParams.get('id');
 
-        // NAVIGATION LOGIC: Hide if ?id= is present
-        if (TAXI_ID) {
-            document.getElementById('master-nav').style.display = 'none';
-        }
-
+        if (TAXI_ID) { document.getElementById('master-nav').style.display = 'none'; }
         const FINAL_ID = TAXI_ID || 'taxi1';
 
         onValue(ref(db, FINAL_ID + '/settings'), (snap) => {
@@ -137,16 +148,16 @@
                 const b64Title = btoa(unescape(encodeURIComponent(pkg.title)));
                 const b64Desc = btoa(unescape(encodeURIComponent(pkg.desc)));
                 container.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
+                    <div class="tour-card bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200" data-title="${pkg.title}">
                         <img src="${pkg.img || 'https://via.placeholder.com/400x200'}" class="w-full h-52 object-cover">
                         <div class="p-5">
-                            <h2 class="text-[24px] font-black uppercase text-blue-900 mb-2 leading-tight">${pkg.title}</h2>
-                            <p class="text-gray-700 mb-5 line-clamp-3">${pkg.desc}</p>
+                            <h2 class="text-[22px] font-black uppercase text-blue-900 mb-2 leading-tight">${pkg.title}</h2>
+                            <p class="text-gray-700 mb-5 line-clamp-3 text-sm">${pkg.desc}</p>
                             <div class="flex gap-3">
                                 <button onclick="openPop('${b64Title}', '${b64Desc}', '${pkg.img}')" 
-                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] uppercase shadow-md notranslate">VIEW DETAILS</button>
+                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[13px] uppercase shadow-md">DETAILS</button>
                                 <a href="https://wa.me/${document.getElementById('display-phone').innerText.replace(/\D/g,'')}" 
-                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[14px] text-center uppercase shadow-md notranslate">WHATSAPP</a>
+                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[13px] text-center uppercase shadow-md flex items-center justify-center">WHATSAPP</a>
                             </div>
                         </div>
                     </div>`;
