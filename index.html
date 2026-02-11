@@ -12,7 +12,8 @@
         .popup-active { display: flex; }
         #google_translate_element, .skiptranslate, .goog-te-banner-frame { display: none !important; }
         body { top: 0px !important; }
-        .website-share-btn { position: fixed; right: 0; top: 60%; transform: translateY(-50%); background: #25D366; color: white; padding: 12px 15px; border-radius: 30px 0 0 30px; box-shadow: -2px 5px 15px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; gap: 8px; font-weight: 900; }
+        /* Professional Share Button */
+        .website-share-btn { position: fixed; right: 0; top: 60%; transform: translateY(-50%); background: #25D366; color: white; padding: 12px 15px; border-radius: 30px 0 0 30px; box-shadow: -2px 5px 15px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; gap: 8px; font-weight: 900; border: none; cursor: pointer; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
@@ -24,7 +25,7 @@
 
     <div id="google_translate_element"></div>
 
-    <button onclick="shareFullWebsite()" class="website-share-btn notranslate shadow-2xl active:scale-95 transition-transform">
+    <button onclick="shareWithCustomer()" class="website-share-btn notranslate shadow-2xl active:scale-95 transition-transform">
         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.539 2.016 2.126-.54c1.083.58 1.948.893 3.162.893 3.181 0 5.767-2.586 5.768-5.766 0-3.18-2.586-5.766-5.768-5.766z"/></svg>
         SHARE
     </button>
@@ -91,11 +92,18 @@
         }
         function closePopup() { document.getElementById('popup-box').classList.remove('popup-active'); }
         
-        function shareFullWebsite() {
-            const siteTitle = document.getElementById('display-title').innerText;
-            const url = window.location.href;
-            const message = `*${siteTitle}*\nBook taxi/tour packages here:\n${url}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        // NEW IMPROVED SHARE LOGIC
+        function shareWithCustomer() {
+            const customerNo = prompt("Enter Customer WhatsApp Number\n(Include 91 at start, e.g. 919876543210):", "91");
+            
+            if (customerNo && customerNo.length >= 12) {
+                const siteTitle = document.getElementById('display-title').innerText;
+                const url = window.location.href;
+                const message = `*${siteTitle}*\n\nHello! Here are our tour packages and taxi details. You can view them here:\n${url}`;
+                window.open(`https://wa.me/${customerNo}?text=${encodeURIComponent(message)}`, '_blank');
+            } else if (customerNo !== null) {
+                alert("Please enter a valid 10-digit number starting with 91.");
+            }
         }
 
         function bookWhatsApp(tourName) {
