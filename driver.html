@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRIVER DASHBOARD - BHASKAR TRAVELS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .online-glow { box-shadow: 0 0 15px #22c55e; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-6">
+
+    <div id="login-card" class="bg-white text-slate-900 p-8 rounded-3xl shadow-2xl w-full max-w-sm">
+        <h2 class="text-2xl font-black text-center mb-6 uppercase tracking-tight">Driver Login</h2>
+        <input id="driver-id" type="text" placeholder="Enter Taxi ID (e.g. taxi3)" class="w-full p-4 border-2 rounded-2xl mb-4 font-bold text-center outline-none focus:border-blue-600">
+        <button onclick="loginDriver()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase shadow-lg">Login to Duty</button>
+    </div>
+
+    <div id="duty-card" class="hidden bg-white text-slate-900 p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center">
+        <div class="mb-4">
+            <span id="status-badge" class="bg-red-100 text-red-600 px-4 py-2 rounded-full font-black text-xs uppercase">Offline</span>
+        </div>
+        <h2 id="welcome-msg" class="text-xl font-black uppercase mb-6">Hello Driver</h2>
+        
+        <button id="toggle-btn" onclick="toggleDuty()" class="w-24 h-24 rounded-full bg-red-600 text-white font-black text-sm uppercase shadow-xl border-8 border-gray-100 mb-6 transition-all">
+            GO LIVE
+        </button>
+
+        <p class="text-xs text-gray-500 font-bold mb-4">మీరు "GO LIVE" నొక్కినప్పుడు మాత్రమే మీ లొకేషన్ ఆఫీస్ మ్యాప్‌లో కనిపిస్తుంది.</p>
+        <button onclick="location.reload()" class="text-[10px] text-blue-600 font-bold uppercase underline">Logout</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
+            authDomain: "master-web-app-d8d1b.firebaseapp.com",
+            databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
+            projectId: "master-web-app-d8d1b",
+            appId: "1:460731698074:web:40ad4f12c5fb3126874823"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let currentTaxiId = "";
+        let isOnline = false;
+        let watchId = null;
+
+        window.loginDriver = () => {
+            const id = document.getElementById('driver-id').value.trim().toLowerCase();
+            if(id) {
+                currentTaxiId = id;
+                document.getElementById('login-card').classList.add('hidden');
+                document.getElementById('duty-card').classList.remove('hidden');
+                document.getElementById('welcome-msg').innerText = "TAXI: " + id;
+            } else { alert("Please enter valid Taxi ID"); }
+        }
+
+        window.toggleDuty = () => {
+            const btn = document.getElementById('toggle-btn');
+            const badge = document.getElementById('status-badge');
+
+            if(!isOnline) {
+                // పర్మిషన్ అడగడం
+                if (navigator.geolocation) {
+                    watchId = navigator.geolocation.watchPosition((pos) => {
+                        update(ref(db, currentTaxiId + '/location'), {
+                            lat: pos.coords.latitude,
+                            lng: pos.coords.longitude,
+                            lastSeen: Date.now()
+                        });
+                        
+                        // UI మార్పు
+                        isOnline = true;
+                        btn.innerText = "ONLINE";
+                        btn.classList.replace('bg-red-600', 'bg-green-500');
+                        btn.classList.add('online-glow');
+                        badge.innerText = "LIVE NOW";
+                        badge.classList.replace('bg-red-100', 'bg-green-100');
+                        badge.classList.replace('text-red-600', 'text-green-600');
+                    }, (err) => {
+                        alert("దయచేసి మీ ఫోన్‌లో లొకేషన్ పర్మిషన్ 'Allow' చేయండి.");
+                    }, { enableHighAccuracy: true });
+                }
+            } else {
+                // ఆఫ్‌లైన్ చేయడం
+                navigator.geolocation.clearWatch(watchId);
+                isOnline = false;
+                btn.innerText = "GO LIVE";
+                btn.classList.replace('bg-green-500', 'bg-red-600');
+                btn.classList.remove('online-glow');
+                badge.innerText = "OFFLINE";
+                badge.classList.replace('bg-green-100', 'bg-red-100');
+                badge.classList.replace('text-green-600', 'text-red-600');
+            }
+        }
+    </script>
+</body>
+</html>
