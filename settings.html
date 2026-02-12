@@ -3,63 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin - Taxi/Auto Control</title>
+    <title>Admin - Bhaskar Travels Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body class="bg-slate-900 min-h-screen">
 
-    <nav class="bg-blue-700 p-4 text-white flex justify-between items-center sticky top-0 z-50">
-        <span class="font-black uppercase">Admin Panel</span>
-        <button onclick="logout()" class="text-xs font-bold text-red-200">LOGOUT</button>
+    <nav class="bg-blue-700 p-4 text-white flex justify-between items-center sticky top-0 z-50 shadow-lg">
+        <span class="font-black uppercase tracking-tighter">Bhaskar Travels Admin</span>
+        <button onclick="logout()" class="text-xs font-bold bg-red-600 px-3 py-1 rounded-lg text-white">LOGOUT</button>
     </nav>
 
-    <div id="login-box" class="max-w-[400px] mx-auto bg-white rounded-2xl p-6 mt-10 text-center">
-        <input id="pass-input" type="password" placeholder="Password" class="w-full p-4 border rounded-xl mb-4 text-center">
-        <button onclick="checkPass()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold uppercase">Unlock</button>
+    <div id="login-box" class="max-w-[400px] mx-auto bg-white rounded-2xl p-6 mt-10 text-center shadow-2xl">
+        <h2 class="font-black mb-4 text-slate-800">ADMIN ACCESS</h2>
+        <input id="pass-input" type="password" placeholder="Enter Password" class="w-full p-4 border rounded-xl mb-4 text-center text-2xl tracking-widest">
+        <button onclick="checkPass()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold uppercase hover:bg-blue-700">Unlock System</button>
     </div>
 
-    <div id="admin-content" class="hidden max-w-[500px] mx-auto bg-white mb-10">
-        <div class="bg-yellow-400 p-4 border-b">
-            <select id="taxi-selector" onchange="loadData()" class="w-full p-4 rounded-xl font-black text-blue-900 border-2 border-blue-900"></select>
+    <div id="admin-content" class="hidden max-w-[500px] mx-auto bg-slate-100 min-h-screen mb-10 shadow-xl">
+        
+        <div class="bg-yellow-400 p-4 border-b-4 border-yellow-500 sticky top-[60px] z-40">
+            <select id="taxi-selector" onchange="loadData()" class="w-full p-4 rounded-xl font-black text-blue-900 border-2 border-blue-900 shadow-md"></select>
+            
+            <div class="mt-3 flex justify-between items-center bg-white p-3 rounded-xl border-2 border-blue-900">
+                <span class="font-bold text-sm">UNIT ACCESS STATUS:</span>
+                <button id="status-toggle-btn" onclick="toggleUnitStatus()" class="px-6 py-2 rounded-lg font-black text-xs uppercase shadow-md transition-all">
+                    Loading...
+                </button>
+            </div>
         </div>
 
         <div class="p-4 space-y-6">
-            <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-                <h2 class="text-center font-black text-blue-800 uppercase mb-4">Vehicle & Driver</h2>
+            <div class="bg-white p-5 rounded-2xl border-b-4 border-blue-600 shadow-sm">
+                <h2 class="text-center font-black text-blue-800 uppercase mb-4 flex items-center justify-center gap-2">
+                    <span>🚖</span> Vehicle & Driver Profile
+                </h2>
                 <div class="space-y-3">
-                    <input id="title" type="text" placeholder="Travels Title" class="w-full p-3 border rounded-lg">
-                    <input id="phone" type="text" placeholder="WhatsApp Number" class="w-full p-3 border rounded-lg">
-                    <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded-lg">
+                    <input id="title" type="text" placeholder="Travels Title (e.g. Bhaskar Travels)" class="w-full p-3 border rounded-lg font-semibold">
+                    <input id="phone" type="text" placeholder="WhatsApp Number (91...)" class="w-full p-3 border rounded-lg font-semibold">
+                    <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded-lg font-semibold">
                     
                     <div class="grid grid-cols-2 gap-2">
-                        <select id="vType" class="p-3 border rounded-lg font-bold bg-white">
+                        <select id="vType" class="p-3 border rounded-lg font-bold bg-slate-50">
                             <option value="Taxi">TAXI</option>
                             <option value="Auto">AUTO</option>
+                            <option value="Innova">INNOVA</option>
+                            <option value="Bus">BUS</option>
                         </select>
-                        <input id="tNo" type="text" placeholder="Number Plate" class="p-3 border rounded-lg">
+                        <input id="tNo" type="text" placeholder="Number Plate (AP39...)" class="p-3 border rounded-lg font-bold text-blue-700">
                     </div>
                     
-                    <input id="tModel" type="text" placeholder="Model (Swift, Desire, etc.)" class="w-full p-3 border rounded-lg">
-                    <input id="dImg" type="text" placeholder="Driver Image Link" class="w-full p-3 border rounded-lg">
-                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase">Update Profile</button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input id="tModel" type="text" placeholder="Model (Swift, Crysta)" class="p-3 border rounded-lg">
+                        <input id="tCapacity" type="number" placeholder="Capacity (e.g. 7)" class="p-3 border rounded-lg">
+                    </div>
+
+                    <input id="dImg" type="text" placeholder="Driver Photo Link" class="w-full p-3 border rounded-lg text-xs">
+                    
+                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase shadow-lg active:scale-95 transition-transform">Update Profile</button>
                 </div>
             </div>
 
-            <div class="bg-green-50 p-4 rounded-xl border-2 border-green-200">
+            <div class="bg-white p-5 rounded-2xl border-b-4 border-green-600 shadow-sm">
+                <h2 class="text-center font-black text-green-800 uppercase mb-4">Tour Packages</h2>
                 <input type="hidden" id="edit-pkg-id">
-                <input id="pTitle" type="text" placeholder="Tour Name" class="w-full p-3 border rounded-lg mb-2">
-                <input id="pImg" type="text" placeholder="Image Link" class="w-full p-3 border rounded-lg mb-2">
-                <textarea id="pDesc" placeholder="Description" class="w-full p-3 border rounded-lg h-24 mb-2"></textarea>
+                <input id="pTitle" type="text" placeholder="Tour Name (e.g. Ooty 2D/1N)" class="w-full p-3 border rounded-lg mb-2 font-bold">
+                <input id="pImg" type="text" placeholder="Tour Image Link" class="w-full p-3 border rounded-lg mb-2 text-xs">
+                <textarea id="pDesc" placeholder="Tour Description / Itinerary" class="w-full p-3 border rounded-lg h-24 mb-2 text-sm"></textarea>
+                
                 <div class="flex gap-2">
-                    <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-3 rounded-xl font-bold">ADD</button>
-                    <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold">SAVE</button>
-                    <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-gray-500 text-white px-4 rounded-xl font-bold">✕</button>
+                    <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-4 rounded-xl font-bold uppercase shadow-md">Add Package</button>
+                    <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-4 rounded-xl font-bold uppercase shadow-md">Save Changes</button>
+                    <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-slate-500 text-white px-6 rounded-xl font-bold">✕</button>
                 </div>
             </div>
 
-            <div id="pkg-list" class="space-y-2"></div>
+            <div id="pkg-list" class="space-y-2 pb-10"></div>
         </div>
     </div>
 
@@ -74,58 +94,93 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let currentUnitStatus = "active";
+
         window.onload = () => {
             if(localStorage.getItem("fleet_admin_logged_in") === "true") {
                 document.getElementById('login-box').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
-                loadData();
-            }
-            const selector = document.getElementById('taxi-selector');
-            for(let i=1; i<=20; i++) {
-                let opt = document.createElement('option'); opt.value = 'taxi' + i; opt.innerHTML = 'MANAGE UNIT ' + i;
-                selector.appendChild(opt);
+                setupSelector();
             }
         };
+
+        function setupSelector() {
+            const selector = document.getElementById('taxi-selector');
+            for(let i=1; i<=20; i++) {
+                let opt = document.createElement('option'); 
+                opt.value = 'taxi' + i; 
+                opt.innerHTML = '🚖 UNIT ' + i.toString().padStart(2, '0');
+                selector.appendChild(opt);
+            }
+            loadData();
+        }
 
         window.checkPass = () => {
             if(document.getElementById('pass-input').value === "1234") {
                 localStorage.setItem("fleet_admin_logged_in", "true");
                 location.reload();
-            } else { alert("Wrong Password"); }
+            } else { alert("❌ Wrong Admin Password"); }
         };
 
         window.logout = () => { localStorage.removeItem("fleet_admin_logged_in"); location.reload(); };
 
         window.loadData = () => {
             const id = document.getElementById('taxi-selector').value;
-            db.ref(id + '/settings').once('value', (snap) => {
+            
+            // Load Settings & Status
+            db.ref(id + '/settings').on('value', (snap) => {
                 const d = snap.val() || {};
                 document.getElementById('title').value = d.title || "";
                 document.getElementById('dName').value = d.driverName || "";
                 document.getElementById('vType').value = d.vehicleType || "Taxi";
                 document.getElementById('tNo').value = d.taxiNo || "";
                 document.getElementById('tModel').value = d.taxiModel || "";
+                document.getElementById('tCapacity').value = d.capacity || "";
                 document.getElementById('phone').value = d.phone || "";
                 document.getElementById('dImg').value = d.driverImg || "";
+                
+                // Update Status Button
+                currentUnitStatus = d.status || "active";
+                const sBtn = document.getElementById('status-toggle-btn');
+                if(currentUnitStatus === "active") {
+                    sBtn.innerHTML = "🟢 ACTIVE";
+                    sBtn.className = "px-6 py-2 rounded-lg font-black text-xs bg-green-100 text-green-700 border-2 border-green-700 uppercase";
+                } else {
+                    sBtn.innerHTML = "🔴 INACTIVE";
+                    sBtn.className = "px-6 py-2 rounded-lg font-black text-xs bg-red-100 text-red-700 border-2 border-red-700 uppercase";
+                }
             });
 
+            // Load Packages
             db.ref(id + '/packages').orderByChild('sortOrder').on('value', (snap) => {
                 const list = document.getElementById('pkg-list'); list.innerHTML = "";
                 let pkgs = []; snap.forEach(c => { pkgs.push({key: c.key, ...c.val()}); });
                 pkgs.forEach((p, idx) => {
                     const b64 = btoa(encodeURIComponent(JSON.stringify(p)));
                     list.innerHTML += `
-                    <div class="bg-white p-3 border rounded shadow-sm flex justify-between items-center">
-                        <span class="font-bold text-xs truncate w-1/2">${p.title}</span>
+                    <div class="bg-white p-3 border-l-4 border-blue-600 rounded shadow-sm flex justify-between items-center animate-in slide-in-from-left duration-300">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-xs text-slate-800">${p.title}</span>
+                            <span class="text-[9px] text-slate-400">Order: ${idx + 1}</span>
+                        </div>
                         <div class="flex gap-1">
-                            ${idx > 0 ? `<button onclick="movePkg('${p.key}', ${idx})" class="bg-gray-200 p-1 rounded text-[10px]">↑</button>` : ''}
-                            <button onclick="editPkg('${p.key}', '${b64}')" class="bg-orange-500 text-white p-1 px-2 rounded text-[10px]">EDIT</button>
-                            <button onclick="duplicatePkg('${b64}')" class="bg-cyan-600 text-white p-1 px-2 rounded text-[10px]">COPY</button>
-                            <button onclick="delPkg('${p.key}')" class="bg-red-500 text-white p-1 px-2 rounded text-[10px]">DEL</button>
+                            ${idx > 0 ? `<button onclick="movePkg('${p.key}', ${idx})" class="bg-slate-100 p-2 rounded text-[10px] border">↑</button>` : ''}
+                            <button onclick="editPkg('${p.key}', '${b64}')" class="bg-orange-500 text-white px-3 py-2 rounded text-[10px] font-bold">EDIT</button>
+                            <button onclick="delPkg('${p.key}')" class="bg-red-100 text-red-600 px-3 py-2 rounded text-[10px] font-bold">DEL</button>
                         </div>
                     </div>`;
                 });
             });
+        };
+
+        window.toggleUnitStatus = () => {
+            const id = document.getElementById('taxi-selector').value;
+            const newStatus = currentUnitStatus === "active" ? "inactive" : "active";
+            const confirmMsg = newStatus === "inactive" ? "Stop access for this driver?" : "Re-activate access for this driver?";
+            
+            if(confirm(confirmMsg)) {
+                db.ref(id + '/settings/status').set(newStatus);
+            }
         };
 
         window.saveSet = () => {
@@ -136,21 +191,10 @@
                 vehicleType: document.getElementById('vType').value,
                 taxiNo: document.getElementById('tNo').value,
                 taxiModel: document.getElementById('tModel').value,
+                capacity: document.getElementById('tCapacity').value,
                 phone: document.getElementById('phone').value,
                 driverImg: document.getElementById('dImg').value
-            }).then(() => alert("Profile Saved!"));
-        };
-
-        window.duplicatePkg = async (b64) => {
-            const data = JSON.parse(decodeURIComponent(atob(b64)));
-            const target = prompt("Copy to which Unit # (1-20)?", "1");
-            if (target >= 1 && target <= 20) {
-                const path = 'taxi' + target + '/packages';
-                const s = await db.ref(path).once('value');
-                data.sortOrder = s.exists() ? Object.keys(s.val()).length : 0;
-                if(data.key) delete data.key;
-                db.ref(path).push(data).then(() => alert("Copied to Unit " + target));
-            }
+            }).then(() => alert("✅ Driver Profile Updated Successfully!"));
         };
 
         window.addPkg = async () => {
@@ -160,9 +204,9 @@
             ref.push({
                 title: document.getElementById('pTitle').value,
                 desc: document.getElementById('pDesc').value,
-                img: document.getElementById('pImg').value || "https://via.placeholder.com/400x200",
+                img: document.getElementById('pImg').value || "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400",
                 sortOrder: snap.exists() ? Object.keys(snap.val()).length : 0
-            }).then(() => { alert("Added!"); cancelEdit(); });
+            }).then(() => { alert("🚀 New Package Added!"); cancelEdit(); });
         };
 
         window.editPkg = (key, b64) => {
@@ -174,7 +218,7 @@
             document.getElementById('btn-add').classList.add('hidden');
             document.getElementById('btn-update').classList.remove('hidden');
             document.getElementById('btn-cancel').classList.remove('hidden');
-            window.scrollTo(0,0);
+            window.scrollTo({ top: 300, behavior: 'smooth' });
         };
 
         window.updatePkg = () => {
@@ -184,7 +228,7 @@
                 title: document.getElementById('pTitle').value,
                 desc: document.getElementById('pDesc').value,
                 img: document.getElementById('pImg').value
-            }).then(() => { alert("Updated!"); cancelEdit(); });
+            }).then(() => { alert("✨ Package Updated!"); cancelEdit(); });
         };
 
         window.cancelEdit = () => {
@@ -210,7 +254,7 @@
 
         window.delPkg = (k) => {
             const id = document.getElementById('taxi-selector').value;
-            if(confirm("Delete?")) db.ref(id + '/packages/' + k).remove();
+            if(confirm("🗑 Delete this package permanently?")) db.ref(id + '/packages/' + k).remove();
         };
     </script>
 </body>
