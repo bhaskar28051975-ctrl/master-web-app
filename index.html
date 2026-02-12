@@ -13,8 +13,11 @@
         #google_translate_element, .skiptranslate, .goog-te-banner-frame { display: none !important; }
         body { top: 0px !important; }
         .website-share-btn { position: fixed; right: 0; top: 60%; transform: translateY(-50%); background: #25D366; color: white; padding: 12px 15px; border-radius: 30px 0 0 30px; box-shadow: -2px 5px 15px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; gap: 8px; font-weight: 900; border: none; cursor: pointer; }
-        /* ఇన్-యాక్టివ్ స్క్రీన్ స్టైల్ */
         #inactive-screen { display: none; position: fixed; inset: 0; background: #0f172a; color: white; z-index: 1000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        /* Live Tracking Badge */
+        #live-indicator { position: fixed; bottom: 85px; right: 20px; background: rgba(0,0,0,0.7); color: #22c55e; padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; z-index: 99; border: 1px solid #22c55e; display: none; }
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
@@ -27,6 +30,8 @@
             <p class="text-[10px] text-gray-400 uppercase tracking-widest">Bhaskar Travels Control System</p>
         </div>
     </div>
+
+    <div id="live-indicator"><span class="blink">●</span> GPS LIVE</div>
 
     <nav id="master-nav" class="bg-white border-b p-2 flex justify-between items-center px-4 shadow-sm">
         <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest">Master Web App</span>
@@ -134,7 +139,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, query, orderByChild, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
@@ -151,11 +156,30 @@
 
         if (urlParams.get('id')) { document.getElementById('master-nav').style.display = 'none'; }
 
-        // LOAD SETTINGS WITH STATUS CHECK & CAPACITY
+        // --- LIVE LOCATION TRACKING ---
+        function startLiveTracking() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.watchPosition((pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+
+                    update(ref(db, TAXI_ID + '/location'), {
+                        lat: lat,
+                        lng: lng,
+                        lastSeen: Date.now()
+                    });
+                    document.getElementById('live-indicator').style.display = 'block';
+                }, (err) => {
+                    console.error("Location Permission Denied");
+                }, { enableHighAccuracy: true });
+            }
+        }
+        startLiveTracking();
+
+        // LOAD SETTINGS
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
-                // Status Check
                 if(data.status === "inactive") {
                     document.getElementById('inactive-screen').style.display = 'flex';
                     document.body.style.overflow = 'hidden';
@@ -163,18 +187,14 @@
                     document.getElementById('inactive-screen').style.display = 'none';
                     document.body.style.overflow = 'auto';
                 }
-
                 document.getElementById('display-title').innerText = data.title || "TRAVELS";
                 document.getElementById('display-phone').innerText = data.phone || "";
                 document.getElementById('display-driver-name').innerText = data.driverName || "DRIVER";
                 document.getElementById('v-type').innerText = data.vehicleType || "Taxi";
                 document.getElementById('v-no').innerText = data.taxiNo || "";
                 document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "---");
-                
-                // DISPLAY CAPACITY (Update)
                 const cap = data.capacity || "---";
                 document.getElementById('display-capacity').innerText = "Capacity: " + cap + " Seater";
-
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
             }
         });
