@@ -7,6 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        .gallery-input-row { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body class="bg-slate-900 min-h-screen">
 
@@ -16,18 +20,17 @@
     </nav>
 
     <div id="login-box" class="max-w-[400px] mx-auto bg-white rounded-2xl p-6 mt-10 text-center shadow-2xl">
-        <h2 class="font-black mb-4 text-slate-800">ADMIN ACCESS</h2>
-        <input id="pass-input" type="password" placeholder="Enter Password" class="w-full p-4 border rounded-xl mb-4 text-center text-2xl tracking-widest">
-        <button onclick="checkPass()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold uppercase hover:bg-blue-700">Unlock System</button>
+        <h2 class="font-black mb-4 text-slate-800 uppercase">Admin Access</h2>
+        <input id="pass-input" type="password" placeholder="Enter Password" class="w-full p-4 border rounded-xl mb-4 text-center text-2xl tracking-widest outline-none border-blue-200">
+        <button onclick="checkPass()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold uppercase hover:bg-blue-700 transition-all">Unlock System</button>
     </div>
 
     <div id="admin-content" class="hidden max-w-[500px] mx-auto bg-slate-100 min-h-screen mb-10 shadow-xl pb-24">
         
         <div class="bg-yellow-400 p-4 border-b-4 border-yellow-500 sticky top-[60px] z-40">
-            <select id="taxi-selector" onchange="loadData()" class="w-full p-4 rounded-xl font-black text-blue-900 border-2 border-blue-900 shadow-md"></select>
-            
+            <select id="taxi-selector" onchange="loadData()" class="w-full p-4 rounded-xl font-black text-blue-900 border-2 border-blue-900 shadow-md outline-none bg-white"></select>
             <div class="mt-3 flex justify-between items-center bg-white p-3 rounded-xl border-2 border-blue-900">
-                <span class="font-bold text-sm">UNIT ACCESS STATUS:</span>
+                <span class="font-bold text-sm">UNIT STATUS:</span>
                 <button id="status-toggle-btn" onclick="toggleUnitStatus()" class="px-6 py-2 rounded-lg font-black text-xs uppercase shadow-md transition-all">Loading...</button>
             </div>
         </div>
@@ -37,9 +40,8 @@
                 <h2 class="text-center font-black text-blue-800 uppercase mb-4">🚖 Vehicle & Driver Profile</h2>
                 <div class="space-y-3">
                     <input id="title" type="text" placeholder="Travels Title" class="w-full p-3 border rounded-lg font-semibold">
-                    <input id="phone" type="text" placeholder="WhatsApp Number (91...)" class="w-full p-3 border rounded-lg font-semibold">
+                    <input id="phone" type="text" placeholder="WhatsApp (91...)" class="w-full p-3 border rounded-lg font-semibold">
                     <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded-lg font-semibold">
-                    
                     <div class="grid grid-cols-2 gap-2">
                         <select id="vType" class="p-3 border rounded-lg font-bold bg-slate-50">
                             <option value="Taxi">TAXI</option><option value="Auto">AUTO</option>
@@ -47,36 +49,37 @@
                         </select>
                         <input id="tNo" type="text" placeholder="Number Plate" class="p-3 border rounded-lg font-bold text-blue-700">
                     </div>
-                    
                     <div class="flex gap-2">
                         <input id="dImg" type="text" placeholder="Driver Photo Link" class="flex-1 p-3 border rounded-lg text-xs">
-                        <label class="bg-blue-100 text-blue-700 px-4 py-3 rounded-lg font-bold text-xs cursor-pointer flex items-center">
-                            📸 UPLOAD <input type="file" class="hidden" onchange="uploadImg(this, 'dImg')">
+                        <label class="bg-blue-100 text-blue-700 px-4 py-3 rounded-lg font-bold text-xs cursor-pointer flex items-center shadow-sm">
+                            📸 PHOTO <input type="file" class="hidden" onchange="uploadImg(this, 'dImg')">
                         </label>
                     </div>
-                    
-                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase shadow-lg">Update Profile</button>
+                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase shadow-lg active:scale-95 transition-all">Update Profile</button>
                 </div>
             </div>
 
             <div class="bg-white p-5 rounded-2xl border-b-4 border-green-600 shadow-sm">
-                <h2 class="text-center font-black text-green-800 uppercase mb-4">Tour Packages</h2>
+                <h2 class="text-center font-black text-green-800 uppercase mb-4">Add Tour Package</h2>
                 <input type="hidden" id="edit-pkg-id">
-                <input id="pTitle" type="text" placeholder="Tour Name" class="w-full p-3 border rounded-lg mb-2 font-bold">
+                <input id="pTitle" type="text" placeholder="Package Name (e.g. Ooty Trip)" class="w-full p-3 border rounded-lg mb-4 font-bold">
                 
-                <div class="flex gap-2 mb-2">
-                    <input id="pImg" type="text" placeholder="Tour Image Link" class="flex-1 p-3 border rounded-lg text-xs">
-                    <label class="bg-green-100 text-green-700 px-4 py-3 rounded-lg font-bold text-xs cursor-pointer flex items-center">
-                        🖼️ PHOTO <input type="file" class="hidden" onchange="uploadImg(this, 'pImg')">
+                <div class="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-300 mb-4">
+                    <p class="text-[10px] font-black text-slate-500 uppercase mb-2">Package Photo Gallery</p>
+                    <label class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-sm cursor-pointer flex items-center justify-center gap-2 mb-3 shadow-md">
+                        <span>➕ ADD TRIP PHOTO</span>
+                        <input type="file" class="hidden" onchange="uploadToGallery(this)">
                     </label>
+                    <div id="gallery-links" class="space-y-2"></div>
+                    <p id="gallery-empty-msg" class="text-[10px] text-center text-slate-400 mt-2 italic">No photos added yet</p>
                 </div>
 
-                <textarea id="pDesc" placeholder="Tour Description" class="w-full p-3 border rounded-lg h-24 mb-2 text-sm"></textarea>
+                <textarea id="pDesc" placeholder="Tour Itinerary / Description..." class="w-full p-3 border rounded-lg h-32 mb-4 text-sm"></textarea>
                 
                 <div class="flex gap-2">
-                    <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-4 rounded-xl font-bold uppercase">Add Package</button>
-                    <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-4 rounded-xl font-bold uppercase">Save Changes</button>
-                    <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-slate-500 text-white px-6 rounded-xl font-bold">✕</button>
+                    <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-4 rounded-xl font-bold uppercase shadow-md">Add Package</button>
+                    <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-4 rounded-xl font-bold uppercase shadow-md">Update Package</button>
+                    <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-slate-500 text-white px-6 rounded-xl font-bold italic">✕</button>
                 </div>
             </div>
 
@@ -84,13 +87,14 @@
         </div>
     </div>
 
-    <div id="bottom-bar" class="hidden fixed bottom-0 left-0 right-0 bg-white p-4 border-t flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.1)] z-50">
-        <button onclick="openLive()" class="flex-1 bg-blue-800 text-white py-3 rounded-xl font-black uppercase text-sm flex items-center justify-center gap-2">
-            🚀 VIEW LIVE UNIT LINK
+    <div id="bottom-bar" class="hidden fixed bottom-0 left-0 right-0 bg-white p-4 border-t flex gap-3 shadow-[0_-5px_20px_rgba(0,0,0,0.15)] z-50">
+        <button onclick="openLive()" class="flex-1 bg-blue-800 text-white py-4 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-2 tracking-widest">
+            🚀 VIEW LIVE CUSTOMER PAGE
         </button>
     </div>
 
     <script>
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
             authDomain: "master-web-app-d8d1b.firebaseapp.com",
@@ -112,39 +116,70 @@
             }
         };
 
-        // IMAGE UPLOAD FUNCTION (Imgur API)
+        // IMAGE UPLOAD (IMGUR)
         async function uploadImg(input, targetId) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const btn = input.parentElement;
-            const originalText = btn.innerHTML;
+            const file = input.files[0]; if (!file) return;
+            const btn = input.parentElement; const oldText = btn.innerHTML;
             btn.innerHTML = "⏳...";
-            
-            const formData = new FormData();
-            formData.append("image", file);
-
+            const formData = new FormData(); formData.append("image", file);
             try {
-                // Using a free anonymous upload client ID
                 const res = await fetch("https://api.imgur.com/3/image", {
                     method: "POST",
                     headers: { Authorization: "Client-ID 546c25a59c58ad7" },
                     body: formData
                 });
                 const data = await res.json();
-                if(data.success) {
-                    document.getElementById(targetId).value = data.data.link;
-                    alert("✅ Image Uploaded!");
-                }
-            } catch (e) { alert("❌ Upload Failed"); }
-            btn.innerHTML = originalText;
+                if(data.success) { document.getElementById(targetId).value = data.data.link; alert("✅ Photo Uploaded!"); }
+            } catch (e) { alert("Upload Failed"); }
+            btn.innerHTML = oldText;
         }
 
+        // GALLERY MANAGEMENT
+        function addImageRow(url = "") {
+            const container = document.getElementById('gallery-links');
+            const rowId = 'row-' + Date.now() + Math.random().toString(16).slice(2);
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = "gallery-input-row flex gap-2";
+            div.innerHTML = `
+                <input type="text" value="${url}" placeholder="Image Link" class="gallery-input flex-1 p-2 border rounded-lg text-[10px] bg-white outline-none focus:border-blue-400">
+                <button onclick="document.getElementById('${rowId}').remove(); checkGalleryEmpty();" class="bg-red-50 text-red-500 px-3 rounded-lg font-bold text-xs border border-red-200">✕</button>
+            `;
+            container.appendChild(div);
+            checkGalleryEmpty();
+        }
+
+        function checkGalleryEmpty() {
+            const container = document.getElementById('gallery-links');
+            document.getElementById('gallery-empty-msg').style.display = container.children.length > 0 ? 'none' : 'block';
+        }
+
+        async function uploadToGallery(input) {
+            const file = input.files[0]; if (!file) return;
+            const label = input.parentElement; const oldText = label.innerHTML;
+            label.innerHTML = "⏳ Uploading...";
+            const formData = new FormData(); formData.append("image", file);
+            try {
+                const res = await fetch("https://api.imgur.com/3/image", {
+                    method: "POST",
+                    headers: { Authorization: "Client-ID 546c25a59c58ad7" },
+                    body: formData
+                });
+                const data = await res.json();
+                if(data.success) addImageRow(data.data.link);
+            } catch (e) { alert("Upload Failed"); }
+            label.innerHTML = oldText;
+        }
+
+        function getGalleryData() {
+            return Array.from(document.querySelectorAll('.gallery-input')).map(inp => inp.value).filter(v => v !== "");
+        }
+
+        // CORE LOGIC
         function setupSelector() {
             const selector = document.getElementById('taxi-selector');
             for(let i=1; i<=20; i++) {
-                let opt = document.createElement('option'); 
-                opt.value = 'taxi' + i; 
+                let opt = document.createElement('option'); opt.value = 'taxi' + i; 
                 opt.innerHTML = '🚖 UNIT ' + i.toString().padStart(2, '0');
                 selector.appendChild(opt);
             }
@@ -153,15 +188,13 @@
 
         window.openLive = () => {
             const id = document.getElementById('taxi-selector').value;
-            const liveUrl = `https://bhaskar28051975-ctrl.github.io/bhaskar-travels/?id=${id}`;
-            window.open(liveUrl, '_blank');
+            window.open(`https://bhaskar28051975-ctrl.github.io/bhaskar-travels/?id=${id}`, '_blank');
         };
 
         window.checkPass = () => {
             if(document.getElementById('pass-input').value === "1234") {
-                localStorage.setItem("fleet_admin_logged_in", "true");
-                location.reload();
-            } else { alert("❌ Wrong Admin Password"); }
+                localStorage.setItem("fleet_admin_logged_in", "true"); location.reload();
+            } else alert("❌ Wrong Password");
         };
 
         window.logout = () => { localStorage.removeItem("fleet_admin_logged_in"); location.reload(); };
@@ -180,41 +213,26 @@
                 document.getElementById('dImg').value = d.driverImg || "";
                 currentUnitStatus = d.status || "active";
                 const sBtn = document.getElementById('status-toggle-btn');
-                if(currentUnitStatus === "active") {
-                    sBtn.innerHTML = "🟢 ACTIVE";
-                    sBtn.className = "px-6 py-2 rounded-lg font-black text-xs bg-green-100 text-green-700 border-2 border-green-700 uppercase";
-                } else {
-                    sBtn.innerHTML = "🔴 INACTIVE";
-                    sBtn.className = "px-6 py-2 rounded-lg font-black text-xs bg-red-100 text-red-700 border-2 border-red-700 uppercase";
-                }
+                sBtn.innerHTML = currentUnitStatus === "active" ? "🟢 ACTIVE" : "🔴 INACTIVE";
+                sBtn.className = currentUnitStatus === "active" ? 
+                    "px-6 py-2 rounded-lg font-black text-xs bg-green-100 text-green-700 border-2 border-green-700 uppercase" : 
+                    "px-6 py-2 rounded-lg font-black text-xs bg-red-100 text-red-700 border-2 border-red-700 uppercase";
             });
 
-            db.ref(id + '/packages').orderByChild('sortOrder').on('value', (snap) => {
+            db.ref(id + '/packages').on('value', (snap) => {
                 const list = document.getElementById('pkg-list'); list.innerHTML = "";
-                let pkgs = []; snap.forEach(c => { pkgs.push({key: c.key, ...c.val()}); });
-                pkgs.forEach((p, idx) => {
-                    const b64 = btoa(encodeURIComponent(JSON.stringify(p)));
+                snap.forEach(c => {
+                    const p = c.val(); const b64 = btoa(encodeURIComponent(JSON.stringify(p)));
                     list.innerHTML += `
-                    <div class="bg-white p-3 border-l-4 border-blue-600 rounded shadow-sm flex justify-between items-center">
-                        <div class="flex flex-col">
-                            <span class="font-bold text-xs text-slate-800">${p.title}</span>
-                            <span class="text-[9px] text-slate-400">Order: ${idx + 1}</span>
-                        </div>
+                    <div class="bg-white p-3 border-l-4 border-blue-600 rounded shadow-sm flex justify-between items-center mb-2">
+                        <span class="font-bold text-xs">${p.title}</span>
                         <div class="flex gap-1">
-                            <button onclick="editPkg('${p.key}', '${b64}')" class="bg-orange-500 text-white px-3 py-2 rounded text-[10px] font-bold">EDIT</button>
-                            <button onclick="delPkg('${p.key}')" class="bg-red-100 text-red-600 px-3 py-2 rounded text-[10px] font-bold">DEL</button>
+                            <button onclick="editPkg('${c.key}', '${b64}')" class="bg-orange-500 text-white px-3 py-2 rounded text-[10px] font-bold">EDIT</button>
+                            <button onclick="delPkg('${c.key}')" class="bg-red-100 text-red-600 px-3 py-2 rounded text-[10px] font-bold">DEL</button>
                         </div>
                     </div>`;
                 });
             });
-        };
-
-        window.toggleUnitStatus = () => {
-            const id = document.getElementById('taxi-selector').value;
-            const newStatus = currentUnitStatus === "active" ? "inactive" : "active";
-            if(confirm(newStatus === "inactive" ? "Stop access?" : "Activate access?")) {
-                db.ref(id + '/settings/status').set(newStatus);
-            }
         };
 
         window.saveSet = () => {
@@ -228,48 +246,50 @@
                 capacity: document.getElementById('tCapacity').value,
                 phone: document.getElementById('phone').value,
                 driverImg: document.getElementById('dImg').value
-            }).then(() => alert("✅ Driver Profile Updated!"));
+            }).then(() => alert("✅ Profile Updated!"));
         };
 
         window.addPkg = async () => {
             const id = document.getElementById('taxi-selector').value;
-            const ref = db.ref(id + '/packages');
-            const snap = await ref.once('value');
-            ref.push({
+            const gallery = getGalleryData();
+            db.ref(id + '/packages').push({
                 title: document.getElementById('pTitle').value,
                 desc: document.getElementById('pDesc').value,
-                img: document.getElementById('pImg').value || "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400",
-                sortOrder: snap.exists() ? Object.keys(snap.val()).length : 0
-            }).then(() => { alert("🚀 New Package Added!"); cancelEdit(); });
+                img: gallery[0] || "", gallery: gallery
+            }).then(() => { alert("🚀 Added!"); cancelEdit(); });
         };
 
         window.editPkg = (key, b64) => {
             const d = JSON.parse(decodeURIComponent(atob(b64)));
             document.getElementById('edit-pkg-id').value = key;
             document.getElementById('pTitle').value = d.title;
-            document.getElementById('pImg').value = d.img;
             document.getElementById('pDesc').value = d.desc;
+            document.getElementById('gallery-links').innerHTML = "";
+            if (d.gallery) d.gallery.forEach(link => addImageRow(link));
+            else if (d.img) addImageRow(d.img);
             document.getElementById('btn-add').classList.add('hidden');
             document.getElementById('btn-update').classList.remove('hidden');
             document.getElementById('btn-cancel').classList.remove('hidden');
-            window.scrollTo({ top: 300, behavior: 'smooth' });
+            window.scrollTo({ top: 400, behavior: 'smooth' });
         };
 
         window.updatePkg = () => {
             const id = document.getElementById('taxi-selector').value;
             const key = document.getElementById('edit-pkg-id').value;
+            const gallery = getGalleryData();
             db.ref(id + '/packages/' + key).update({
                 title: document.getElementById('pTitle').value,
                 desc: document.getElementById('pDesc').value,
-                img: document.getElementById('pImg').value
-            }).then(() => { alert("✨ Package Updated!"); cancelEdit(); });
+                gallery: gallery, img: gallery[0] || ""
+            }).then(() => { alert("✨ Updated!"); cancelEdit(); });
         };
 
         window.cancelEdit = () => {
             document.getElementById('edit-pkg-id').value = "";
             document.getElementById('pTitle').value = "";
-            document.getElementById('pImg').value = "";
             document.getElementById('pDesc').value = "";
+            document.getElementById('gallery-links').innerHTML = "";
+            checkGalleryEmpty();
             document.getElementById('btn-add').classList.remove('hidden');
             document.getElementById('btn-update').classList.add('hidden');
             document.getElementById('btn-cancel').classList.add('hidden');
@@ -277,7 +297,13 @@
 
         window.delPkg = (k) => {
             const id = document.getElementById('taxi-selector').value;
-            if(confirm("🗑 Delete this package?")) db.ref(id + '/packages/' + k).remove();
+            if(confirm("Delete this?")) db.ref(id + '/packages/' + k).remove();
+        };
+
+        window.toggleUnitStatus = () => {
+            const id = document.getElementById('taxi-selector').value;
+            const newS = currentUnitStatus === "active" ? "inactive" : "active";
+            db.ref(id + '/settings/status').set(newS);
         };
     </script>
 </body>
