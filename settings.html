@@ -37,7 +37,7 @@
 
         <div class="p-4 space-y-6">
             <div class="bg-white p-5 rounded-2xl border-b-4 border-blue-600 shadow-sm">
-                <h2 class="text-center font-black text-blue-800 uppercase mb-4">🚖 Vehicle & Driver Profile</h2>
+                <h2 class="text-center font-black text-blue-800 uppercase mb-4">🚖 Vehicle Profile</h2>
                 <div class="space-y-3">
                     <input id="title" type="text" placeholder="Travels Title" class="w-full p-3 border rounded-lg font-semibold">
                     <input id="phone" type="text" placeholder="WhatsApp (91...)" class="w-full p-3 border rounded-lg font-semibold">
@@ -55,31 +55,30 @@
                             📸 PHOTO <input type="file" class="hidden" onchange="uploadImg(this, 'dImg')">
                         </label>
                     </div>
-                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase shadow-lg active:scale-95 transition-all">Update Profile</button>
+                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase">Update Profile</button>
                 </div>
             </div>
 
             <div class="bg-white p-5 rounded-2xl border-b-4 border-green-600 shadow-sm">
                 <h2 class="text-center font-black text-green-800 uppercase mb-4">Add Tour Package</h2>
                 <input type="hidden" id="edit-pkg-id">
-                <input id="pTitle" type="text" placeholder="Package Name (e.g. Ooty Trip)" class="w-full p-3 border rounded-lg mb-4 font-bold">
+                <input id="pTitle" type="text" placeholder="Package Name" class="w-full p-3 border rounded-lg mb-4 font-bold">
                 
                 <div class="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-300 mb-4">
-                    <p class="text-[10px] font-black text-slate-500 uppercase mb-2">Package Photo Gallery</p>
-                    <label class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-sm cursor-pointer flex items-center justify-center gap-2 mb-3 shadow-md">
+                    <p class="text-[10px] font-black text-slate-500 uppercase mb-2 text-center">Images for Description</p>
+                    <label class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-sm cursor-pointer flex items-center justify-center gap-2 mb-3">
                         <span>➕ ADD TRIP PHOTO</span>
                         <input type="file" class="hidden" onchange="uploadToGallery(this)">
                     </label>
                     <div id="gallery-links" class="space-y-2"></div>
-                    <p id="gallery-empty-msg" class="text-[10px] text-center text-slate-400 mt-2 italic">No photos added yet</p>
                 </div>
 
                 <textarea id="pDesc" placeholder="Tour Itinerary / Description..." class="w-full p-3 border rounded-lg h-32 mb-4 text-sm"></textarea>
                 
                 <div class="flex gap-2">
-                    <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-4 rounded-xl font-bold uppercase shadow-md">Add Package</button>
-                    <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-4 rounded-xl font-bold uppercase shadow-md">Update Package</button>
-                    <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-slate-500 text-white px-6 rounded-xl font-bold italic">✕</button>
+                    <button id="btn-add" onclick="addPkg()" class="flex-1 bg-green-700 text-white py-4 rounded-xl font-bold uppercase">Add Package</button>
+                    <button id="btn-update" onclick="updatePkg()" class="hidden flex-1 bg-orange-600 text-white py-4 rounded-xl font-bold uppercase">Update</button>
+                    <button id="btn-cancel" onclick="cancelEdit()" class="hidden bg-slate-500 text-white px-6 rounded-xl font-bold">✕</button>
                 </div>
             </div>
 
@@ -87,14 +86,7 @@
         </div>
     </div>
 
-    <div id="bottom-bar" class="hidden fixed bottom-0 left-0 right-0 bg-white p-4 border-t flex gap-3 shadow-[0_-5px_20px_rgba(0,0,0,0.15)] z-50">
-        <button onclick="openLive()" class="flex-1 bg-blue-800 text-white py-4 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-2 tracking-widest">
-            🚀 VIEW LIVE CUSTOMER PAGE
-        </button>
-    </div>
-
     <script>
-        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
             authDomain: "master-web-app-d8d1b.firebaseapp.com",
@@ -111,16 +103,14 @@
             if(localStorage.getItem("fleet_admin_logged_in") === "true") {
                 document.getElementById('login-box').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
-                document.getElementById('bottom-bar').classList.remove('hidden');
                 setupSelector();
             }
         };
 
-        // IMAGE UPLOAD (IMGUR)
+        // --- IMAGE & GALLERY LOGIC ---
         async function uploadImg(input, targetId) {
             const file = input.files[0]; if (!file) return;
-            const btn = input.parentElement; const oldText = btn.innerHTML;
-            btn.innerHTML = "⏳...";
+            const btn = input.parentElement; btn.innerHTML = "⏳...";
             const formData = new FormData(); formData.append("image", file);
             try {
                 const res = await fetch("https://api.imgur.com/3/image", {
@@ -131,33 +121,12 @@
                 const data = await res.json();
                 if(data.success) { document.getElementById(targetId).value = data.data.link; alert("✅ Photo Uploaded!"); }
             } catch (e) { alert("Upload Failed"); }
-            btn.innerHTML = oldText;
-        }
-
-        // GALLERY MANAGEMENT
-        function addImageRow(url = "") {
-            const container = document.getElementById('gallery-links');
-            const rowId = 'row-' + Date.now() + Math.random().toString(16).slice(2);
-            const div = document.createElement('div');
-            div.id = rowId;
-            div.className = "gallery-input-row flex gap-2";
-            div.innerHTML = `
-                <input type="text" value="${url}" placeholder="Image Link" class="gallery-input flex-1 p-2 border rounded-lg text-[10px] bg-white outline-none focus:border-blue-400">
-                <button onclick="document.getElementById('${rowId}').remove(); checkGalleryEmpty();" class="bg-red-50 text-red-500 px-3 rounded-lg font-bold text-xs border border-red-200">✕</button>
-            `;
-            container.appendChild(div);
-            checkGalleryEmpty();
-        }
-
-        function checkGalleryEmpty() {
-            const container = document.getElementById('gallery-links');
-            document.getElementById('gallery-empty-msg').style.display = container.children.length > 0 ? 'none' : 'block';
+            btn.innerHTML = "📸 PHOTO";
         }
 
         async function uploadToGallery(input) {
             const file = input.files[0]; if (!file) return;
-            const label = input.parentElement; const oldText = label.innerHTML;
-            label.innerHTML = "⏳ Uploading...";
+            const label = input.parentElement; label.innerHTML = "⏳ Uploading...";
             const formData = new FormData(); formData.append("image", file);
             try {
                 const res = await fetch("https://api.imgur.com/3/image", {
@@ -168,14 +137,27 @@
                 const data = await res.json();
                 if(data.success) addImageRow(data.data.link);
             } catch (e) { alert("Upload Failed"); }
-            label.innerHTML = oldText;
+            label.innerHTML = "<span>➕ ADD TRIP PHOTO</span>";
+        }
+
+        function addImageRow(url = "") {
+            const container = document.getElementById('gallery-links');
+            const rowId = 'row-' + Date.now();
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = "gallery-input-row flex gap-2";
+            div.innerHTML = `
+                <input type="text" value="${url}" class="gallery-input flex-1 p-2 border rounded-lg text-[10px]">
+                <button onclick="document.getElementById('${rowId}').remove()" class="bg-red-500 text-white px-3 rounded-lg font-bold">✕</button>
+            `;
+            container.appendChild(div);
         }
 
         function getGalleryData() {
             return Array.from(document.querySelectorAll('.gallery-input')).map(inp => inp.value).filter(v => v !== "");
         }
 
-        // CORE LOGIC
+        // --- CORE ADMIN LOGIC ---
         function setupSelector() {
             const selector = document.getElementById('taxi-selector');
             for(let i=1; i<=20; i++) {
@@ -186,37 +168,19 @@
             loadData();
         }
 
-        window.openLive = () => {
-            const id = document.getElementById('taxi-selector').value;
-            window.open(`https://bhaskar28051975-ctrl.github.io/bhaskar-travels/?id=${id}`, '_blank');
-        };
-
-        window.checkPass = () => {
-            if(document.getElementById('pass-input').value === "1234") {
-                localStorage.setItem("fleet_admin_logged_in", "true"); location.reload();
-            } else alert("❌ Wrong Password");
-        };
-
-        window.logout = () => { localStorage.removeItem("fleet_admin_logged_in"); location.reload(); };
-
         window.loadData = () => {
             const id = document.getElementById('taxi-selector').value;
             db.ref(id + '/settings').on('value', (snap) => {
                 const d = snap.val() || {};
                 document.getElementById('title').value = d.title || "";
+                document.getElementById('phone').value = d.phone || "";
                 document.getElementById('dName').value = d.driverName || "";
                 document.getElementById('vType').value = d.vehicleType || "Taxi";
                 document.getElementById('tNo').value = d.taxiNo || "";
-                document.getElementById('tModel').value = d.taxiModel || "";
-                document.getElementById('tCapacity').value = d.capacity || "";
-                document.getElementById('phone').value = d.phone || "";
                 document.getElementById('dImg').value = d.driverImg || "";
                 currentUnitStatus = d.status || "active";
                 const sBtn = document.getElementById('status-toggle-btn');
                 sBtn.innerHTML = currentUnitStatus === "active" ? "🟢 ACTIVE" : "🔴 INACTIVE";
-                sBtn.className = currentUnitStatus === "active" ? 
-                    "px-6 py-2 rounded-lg font-black text-xs bg-green-100 text-green-700 border-2 border-green-700 uppercase" : 
-                    "px-6 py-2 rounded-lg font-black text-xs bg-red-100 text-red-700 border-2 border-red-700 uppercase";
             });
 
             db.ref(id + '/packages').on('value', (snap) => {
@@ -224,29 +188,15 @@
                 snap.forEach(c => {
                     const p = c.val(); const b64 = btoa(encodeURIComponent(JSON.stringify(p)));
                     list.innerHTML += `
-                    <div class="bg-white p-3 border-l-4 border-blue-600 rounded shadow-sm flex justify-between items-center mb-2">
+                    <div class="bg-white p-3 border-l-4 border-blue-600 rounded flex justify-between items-center mb-2">
                         <span class="font-bold text-xs">${p.title}</span>
                         <div class="flex gap-1">
-                            <button onclick="editPkg('${c.key}', '${b64}')" class="bg-orange-500 text-white px-3 py-2 rounded text-[10px] font-bold">EDIT</button>
-                            <button onclick="delPkg('${c.key}')" class="bg-red-100 text-red-600 px-3 py-2 rounded text-[10px] font-bold">DEL</button>
+                            <button onclick="editPkg('${c.key}', '${b64}')" class="bg-orange-500 text-white px-3 py-2 rounded text-[10px]">EDIT</button>
+                            <button onclick="delPkg('${c.key}')" class="bg-red-100 text-red-600 px-3 py-2 rounded text-[10px]">DEL</button>
                         </div>
                     </div>`;
                 });
             });
-        };
-
-        window.saveSet = () => {
-            const id = document.getElementById('taxi-selector').value;
-            db.ref(id + '/settings').update({
-                title: document.getElementById('title').value,
-                driverName: document.getElementById('dName').value,
-                vehicleType: document.getElementById('vType').value,
-                taxiNo: document.getElementById('tNo').value,
-                taxiModel: document.getElementById('tModel').value,
-                capacity: document.getElementById('tCapacity').value,
-                phone: document.getElementById('phone').value,
-                driverImg: document.getElementById('dImg').value
-            }).then(() => alert("✅ Profile Updated!"));
         };
 
         window.addPkg = async () => {
@@ -255,22 +205,9 @@
             db.ref(id + '/packages').push({
                 title: document.getElementById('pTitle').value,
                 desc: document.getElementById('pDesc').value,
-                img: gallery[0] || "", gallery: gallery
+                img: gallery[0] || "",
+                gallery: gallery
             }).then(() => { alert("🚀 Added!"); cancelEdit(); });
-        };
-
-        window.editPkg = (key, b64) => {
-            const d = JSON.parse(decodeURIComponent(atob(b64)));
-            document.getElementById('edit-pkg-id').value = key;
-            document.getElementById('pTitle').value = d.title;
-            document.getElementById('pDesc').value = d.desc;
-            document.getElementById('gallery-links').innerHTML = "";
-            if (d.gallery) d.gallery.forEach(link => addImageRow(link));
-            else if (d.img) addImageRow(d.img);
-            document.getElementById('btn-add').classList.add('hidden');
-            document.getElementById('btn-update').classList.remove('hidden');
-            document.getElementById('btn-cancel').classList.remove('hidden');
-            window.scrollTo({ top: 400, behavior: 'smooth' });
         };
 
         window.updatePkg = () => {
@@ -284,27 +221,48 @@
             }).then(() => { alert("✨ Updated!"); cancelEdit(); });
         };
 
+        window.editPkg = (key, b64) => {
+            const d = JSON.parse(decodeURIComponent(atob(b64)));
+            document.getElementById('edit-pkg-id').value = key;
+            document.getElementById('pTitle').value = d.title;
+            document.getElementById('pDesc').value = d.desc;
+            document.getElementById('gallery-links').innerHTML = "";
+            if (d.gallery) d.gallery.forEach(link => addImageRow(link));
+            document.getElementById('btn-add').classList.add('hidden');
+            document.getElementById('btn-update').classList.remove('hidden');
+            document.getElementById('btn-cancel').classList.remove('hidden');
+        };
+
         window.cancelEdit = () => {
             document.getElementById('edit-pkg-id').value = "";
             document.getElementById('pTitle').value = "";
             document.getElementById('pDesc').value = "";
             document.getElementById('gallery-links').innerHTML = "";
-            checkGalleryEmpty();
             document.getElementById('btn-add').classList.remove('hidden');
             document.getElementById('btn-update').classList.add('hidden');
             document.getElementById('btn-cancel').classList.add('hidden');
         };
 
-        window.delPkg = (k) => {
+        window.saveSet = () => {
             const id = document.getElementById('taxi-selector').value;
-            if(confirm("Delete this?")) db.ref(id + '/packages/' + k).remove();
+            db.ref(id + '/settings').update({
+                title: document.getElementById('title').value,
+                phone: document.getElementById('phone').value,
+                driverName: document.getElementById('dName').value,
+                vehicleType: document.getElementById('vType').value,
+                taxiNo: document.getElementById('tNo').value,
+                driverImg: document.getElementById('dImg').value
+            }).then(() => alert("✅ Profile Updated!"));
         };
 
+        window.checkPass = () => { if(document.getElementById('pass-input').value === "1234") { localStorage.setItem("fleet_admin_logged_in", "true"); location.reload(); } };
+        window.logout = () => { localStorage.removeItem("fleet_admin_logged_in"); location.reload(); };
         window.toggleUnitStatus = () => {
             const id = document.getElementById('taxi-selector').value;
             const newS = currentUnitStatus === "active" ? "inactive" : "active";
             db.ref(id + '/settings/status').set(newS);
         };
+        window.delPkg = (k) => { if(confirm("Delete?")) db.ref(document.getElementById('taxi-selector').value + '/packages/' + k).remove(); };
     </script>
 </body>
 </html>
