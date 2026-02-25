@@ -7,139 +7,51 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .title-text { font-size: clamp(1.4rem, 6vw, 2rem); font-weight: 900; letter-spacing: 0.05em; }
-        .phone-text { font-size: clamp(1.1rem, 5vw, 1.5rem); font-weight: bold; }
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
-        #google_translate_element, .skiptranslate, .goog-te-banner-frame { display: none !important; }
-        body { top: 0px !important; }
-        .website-share-btn { position: fixed; right: 0; top: 60%; transform: translateY(-50%); background: #25D366; color: white; padding: 12px 15px; border-radius: 30px 0 0 30px; box-shadow: -2px 5px 15px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; gap: 8px; font-weight: 900; border: none; cursor: pointer; }
-        #inactive-screen { display: none; position: fixed; inset: 0; background: #0f172a; color: white; z-index: 1000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        /* Live Tracking Badge */
-        #live-indicator { position: fixed; bottom: 85px; right: 20px; background: rgba(0,0,0,0.7); color: #22c55e; padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; z-index: 99; border: 1px solid #22c55e; display: none; }
-        .blink { animation: blinker 1.5s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
 
-    <div id="inactive-screen">
-        <div class="bg-white text-slate-900 p-8 rounded-3xl shadow-2xl border-t-8 border-red-600">
-            <h1 class="text-6xl mb-4">🚫</h1>
-            <h2 class="text-2xl font-black uppercase mb-2">Access Denied</h2>
-            <p class="font-bold text-gray-600 mb-6">మీ యాక్సెస్ ప్రస్తుతం నిలిపివేయబడింది. దయచేసి అడ్మిన్‌ను సంప్రదించండి.</p>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest">Bhaskar Travels Control System</p>
-        </div>
+    <div id="inactive-screen" class="hidden fixed inset-0 bg-slate-900 text-white z-[1000] flex-col items-center justify-center p-10 text-center">
+        <h1 class="text-6xl mb-4">🚫</h1>
+        <h2 class="text-2xl font-black uppercase">Access Denied</h2>
     </div>
 
-    <div id="live-indicator"><span class="blink">●</span> GPS LIVE</div>
-
-    <nav id="master-nav" class="bg-white border-b p-2 flex justify-between items-center px-4 shadow-sm">
-        <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest">Master Web App</span>
-        <a href="settings.html" class="text-[10px] font-bold text-white bg-blue-600 px-3 py-1.5 rounded-lg uppercase shadow-sm">Admin Login</a>
-    </nav>
-
-    <div id="google_translate_element"></div>
-
-    <button onclick="shareWithCustomer()" class="website-share-btn notranslate shadow-2xl active:scale-95 transition-transform">
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.539 2.016 2.126-.54c1.083.58 1.948.893 3.162.893 3.181 0 5.767-2.586 5.768-5.766 0-3.18-2.586-5.766-5.768-5.766z"/></svg>
-        SHARE
-    </button>
-
-    <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-md text-center">
-        <h1 id="display-title" class="title-text uppercase notranslate">LOADING...</h1>
-        <p id="display-phone" class="phone-text text-yellow-300 mt-1 notranslate">---</p>
+    <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 text-center shadow-lg">
+        <h1 id="display-title" class="title-text uppercase">BHASKAR TRAVELS</h1>
+        <p id="display-phone" class="font-bold text-yellow-300">---</p>
     </header>
 
-    <div class="sticky top-0 z-40 shadow-md">
-        <div class="bg-gray-900 p-2 flex flex-wrap justify-center gap-2">
-            <button onclick="changeLang('en')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">English</button>
-            <button onclick="changeLang('hi')" class="bg-orange-500 text-white px-3 py-1 rounded font-bold text-[10px] uppercase">Hindi</button>
-            <button onclick="changeLang('te')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">Telugu</button>
-            <button onclick="changeLang('ta')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">Tamil</button>
-            <button onclick="changeLang('kn')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">Kannada</button>
-            <button onclick="changeLang('mr')" class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] uppercase">Marathi</button>
-        </div>
-        <div class="bg-gray-100 p-3 border-b">
-            <div class="relative max-w-md mx-auto">
-                <input type="text" id="customer-search" onkeyup="searchTours()" placeholder="Search Tours (e.g. Tirupati, Ooty)..." 
-                       class="w-full p-3 pl-10 rounded-xl border-2 border-blue-200 shadow-inner text-sm outline-none focus:border-blue-500">
-                <span class="absolute left-3 top-3 opacity-40">🔍</span>
-            </div>
-        </div>
-    </div>
-
     <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
-        <div class="w-[35%] text-center">
-            <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-lg shadow-sm">
+        <div class="w-[35%]">
+            <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-lg">
         </div>
-        <div class="w-[65%] pl-5 font-bold space-y-1">
-            <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1 notranslate">DRIVER</p>
-            <p class="text-[14px] notranslate"><span id="v-type">Vehicle</span>: <span id="v-no" class="bg-white text-red-700 px-1 rounded">---</span></p>
-            <p id="display-taxi-model" class="text-[14px] notranslate leading-tight">Model: ---</p>
-            <p id="display-capacity" class="text-[13px] text-yellow-200 uppercase tracking-tighter notranslate">Capacity: ---</p>
+        <div class="w-[65%] pl-5 font-bold">
+            <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1">DRIVER</p>
+            <p class="text-[14px]"><span id="v-type">Vehicle</span>: <span id="v-no" class="bg-white text-red-700 px-1 rounded">---</span></p>
         </div>
     </section>
 
     <main id="package-container" class="px-4 pb-24 space-y-6"></main>
 
     <div id="popup-box" class="popup-overlay">
-        <div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden relative shadow-2xl">
-            <button onclick="closePopup()" class="absolute top-3 right-3 bg-red-600 text-white w-10 h-10 rounded-full font-bold z-50 shadow-lg text-xl">✕</button>
-            <img id="pop-img" src="" class="w-full h-56 object-cover">
-            <div class="p-5 text-slate-800">
-                <h2 id="pop-title" class="text-2xl font-black text-blue-900 mb-3 uppercase leading-tight"></h2>
-                <div id="pop-desc" class="text-gray-800 desc-text max-h-64 overflow-y-auto whitespace-pre-line"></div>
+        <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden relative shadow-2xl flex flex-col max-h-[85vh]">
+            <button onclick="closePopup()" class="absolute top-3 right-3 bg-red-600 text-white w-10 h-10 rounded-full font-bold z-50">✕</button>
+            <div id="pop-content" class="overflow-y-auto p-5">
+                <h2 id="pop-title" class="text-2xl font-black text-blue-900 mb-4 uppercase"></h2>
+                <div id="pop-gallery" class="space-y-3 mb-4"></div>
+                <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-blue-600">
+                    <p id="pop-desc" class="text-gray-800 text-sm whitespace-pre-line"></p>
+                </div>
+                <button onclick="bookWhatsApp(document.getElementById('pop-title').innerText)" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold mt-6 uppercase">Book via WhatsApp</button>
             </div>
         </div>
     </div>
 
-    <script type="text/javascript">
-        function googleTranslateElementInit() { new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element'); }
-        function changeLang(langCode) {
-            var selectField = document.querySelector("select.goog-te-combo");
-            if (selectField) { selectField.value = langCode; selectField.dispatchEvent(new Event('change')); }
-            else { setTimeout(function() { changeLang(langCode); }, 500); }
-        }
-        function openPop(t, d, i) {
-            document.getElementById('pop-title').innerText = decodeURIComponent(escape(atob(t)));
-            document.getElementById('pop-desc').innerText = decodeURIComponent(escape(atob(d)));
-            document.getElementById('pop-img').src = i;
-            document.getElementById('popup-box').classList.add('popup-active');
-        }
-        function closePopup() { document.getElementById('popup-box').classList.remove('popup-active'); }
-        
-        function shareWithCustomer() {
-            const customerNo = prompt("Enter Customer WhatsApp Number\n(Include 91 at start, e.g. 919876543210):", "91");
-            if (customerNo && customerNo.length >= 12) {
-                const siteTitle = document.getElementById('display-title').innerText;
-                const url = window.location.href;
-                const message = `*${siteTitle}*\n\nHello! Here are our tour packages and taxi details. You can view them here:\n${url}`;
-                window.open(`https://wa.me/${customerNo}?text=${encodeURIComponent(message)}`, '_blank');
-            } else if (customerNo !== null) {
-                alert("Please enter a valid 10-digit number starting with 91.");
-            }
-        }
-
-        function bookWhatsApp(tourName) {
-            const phone = document.getElementById('display-phone').innerText.replace(/\D/g,'');
-            const message = `Hello! I am interested in the *${tourName}* tour package. Please provide more details.`;
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-        }
-        
-        function searchTours() {
-            let filter = document.getElementById('customer-search').value.toLowerCase();
-            let cards = document.getElementsByClassName('tour-card');
-            for (let i = 0; i < cards.length; i++) {
-                let title = cards[i].getAttribute('data-title').toLowerCase();
-                cards[i].style.display = title.includes(filter) ? "" : "none";
-            }
-        }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, query, orderByChild, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
@@ -154,74 +66,61 @@
         const urlParams = new URLSearchParams(window.location.search);
         const TAXI_ID = urlParams.get('id') || 'taxi1';
 
-        if (urlParams.get('id')) { document.getElementById('master-nav').style.display = 'none'; }
-
-        // --- LIVE LOCATION TRACKING ---
-        function startLiveTracking() {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.watchPosition((pos) => {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-
-                    update(ref(db, TAXI_ID + '/location'), {
-                        lat: lat,
-                        lng: lng,
-                        lastSeen: Date.now()
-                    });
-                    document.getElementById('live-indicator').style.display = 'block';
-                }, (err) => {
-                    console.error("Location Permission Denied");
-                }, { enableHighAccuracy: true });
-            }
-        }
-        startLiveTracking();
-
-        // LOAD SETTINGS
+        // Load Settings
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
-                if(data.status === "inactive") {
-                    document.getElementById('inactive-screen').style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    document.getElementById('inactive-screen').style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                }
+                document.getElementById('inactive-screen').style.display = data.status === "inactive" ? 'flex' : 'none';
                 document.getElementById('display-title').innerText = data.title || "TRAVELS";
                 document.getElementById('display-phone').innerText = data.phone || "";
                 document.getElementById('display-driver-name').innerText = data.driverName || "DRIVER";
                 document.getElementById('v-type').innerText = data.vehicleType || "Taxi";
                 document.getElementById('v-no').innerText = data.taxiNo || "";
-                document.getElementById('display-taxi-model').innerText = "Model: " + (data.taxiModel || "---");
-                const cap = data.capacity || "---";
-                document.getElementById('display-capacity').innerText = "Capacity: " + cap + " Seater";
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
             }
         });
 
-        const packageRef = query(ref(db, TAXI_ID + '/packages'), orderByChild('sortOrder'));
-        onValue(packageRef, (snap) => {
+        // Load Packages
+        onValue(ref(db, TAXI_ID + '/packages'), (snap) => {
             const container = document.getElementById('package-container'); container.innerHTML = "";
             snap.forEach((child) => {
                 const pkg = child.val();
                 const b64Title = btoa(unescape(encodeURIComponent(pkg.title)));
                 const b64Desc = btoa(unescape(encodeURIComponent(pkg.desc)));
+                // Gallery Data
+                const gallery = pkg.gallery || [pkg.img];
+                const b64Gallery = btoa(unescape(encodeURIComponent(JSON.stringify(gallery))));
+
                 container.innerHTML += `
-                    <div class="tour-card bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200" data-title="${pkg.title}">
+                    <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
                         <img src="${pkg.img || 'https://via.placeholder.com/400x200'}" class="w-full h-52 object-cover">
                         <div class="p-5">
-                            <h2 class="text-[22px] font-black uppercase text-blue-900 mb-2 leading-tight">${pkg.title}</h2>
-                            <p class="text-gray-700 mb-5 line-clamp-3 text-sm">${pkg.desc}</p>
-                            <div class="flex gap-3">
-                                <button onclick="openPop('${b64Title}', '${b64Desc}', '${pkg.img}')" 
-                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[13px] uppercase shadow-md">DETAILS</button>
-                                <button onclick="bookWhatsApp('${pkg.title.replace(/'/g, "\\'")}')" 
-                                    class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-[13px] text-center uppercase shadow-md flex items-center justify-center">WHATSAPP</button>
+                            <h2 class="text-xl font-black uppercase text-blue-900 mb-2">${pkg.title}</h2>
+                            <p class="text-gray-700 text-sm mb-5 line-clamp-2">${pkg.desc}</p>
+                            <div class="flex gap-2">
+                                <button onclick="openPop('${b64Title}', '${b64Desc}', '${b64Gallery}')" class="flex-1 bg-blue-700 text-white font-black py-4 rounded-lg text-xs uppercase shadow-md">View Details</button>
+                                <button onclick="bookWhatsApp('${pkg.title}')" class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-xs uppercase shadow-md">WhatsApp</button>
                             </div>
                         </div>
                     </div>`;
             });
         });
+
+        window.openPop = (t, d, g) => {
+            document.getElementById('pop-title').innerText = decodeURIComponent(escape(atob(t)));
+            document.getElementById('pop-desc').innerText = decodeURIComponent(escape(atob(d)));
+            const gallery = JSON.parse(decodeURIComponent(escape(atob(g))));
+            let galHtml = "";
+            gallery.forEach(img => galHtml += `<img src="${img}" class="w-full rounded-xl shadow-md border object-cover">`);
+            document.getElementById('pop-gallery').innerHTML = galHtml;
+            document.getElementById('popup-box').classList.add('popup-active');
+        };
+
+        window.closePopup = () => document.getElementById('popup-box').classList.remove('popup-active');
+        window.bookWhatsApp = (t) => {
+            const p = document.getElementById('display-phone').innerText;
+            window.open(`https://wa.me/${p.replace(/\D/g,'')}?text=I am interested in ${t}`, '_blank');
+        };
     </script>
 </body>
 </html>
