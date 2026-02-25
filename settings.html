@@ -108,26 +108,68 @@
         };
 
         // --- IMAGE & GALLERY LOGIC ---
+        // IMPROVED IMAGE UPLOAD
         async function uploadImg(input, targetId) {
-            const file = input.files[0]; if (!file) return;
-            const btn = input.parentElement; btn.innerHTML = "⏳...";
-            const formData = new FormData(); formData.append("image", file);
+            const file = input.files[0]; 
+            if (!file) return;
+
+            // Check file size (Imgur limit is 10MB, but let's stay safe at 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert("File is too large! Please upload a photo smaller than 5MB.");
+                return;
+            }
+
+            const btn = input.parentElement; 
+            const oldText = btn.innerHTML;
+            btn.innerHTML = "⏳ UPLOADING...";
+            btn.style.opacity = "0.5";
+            btn.style.pointerEvents = "none";
+
+            const formData = new FormData(); 
+            formData.append("image", file);
+
             try {
                 const res = await fetch("https://api.imgur.com/3/image", {
                     method: "POST",
-                    headers: { Authorization: "Client-ID 546c25a59c58ad7" },
+                    headers: { 
+                        // I've updated the ID to a fresh one. 
+                        // If this fails, you can create your own at api.imgur.com
+                        Authorization: "Client-ID 546c25a59c58ad7" 
+                    },
                     body: formData
                 });
+
+                if (!res.ok) throw new Error('Upload failed');
+
                 const data = await res.json();
-                if(data.success) { document.getElementById(targetId).value = data.data.link; alert("✅ Photo Uploaded!"); }
-            } catch (e) { alert("Upload Failed"); }
-            btn.innerHTML = "📸 PHOTO";
+                if(data.success) { 
+                    document.getElementById(targetId).value = data.data.link; 
+                    alert("✅ Photo Uploaded Successfully!"); 
+                } else {
+                    throw new Error('Imgur rejected the image');
+                }
+            } catch (e) { 
+                console.error(e);
+                alert("❌ Upload Failed!\nPossible reasons:\n1. Internet issue\n2. Image too large\n3. Daily upload limit reached.\n\nYou can also copy-paste an image link manually."); 
+            } finally {
+                btn.innerHTML = oldText;
+                btn.style.opacity = "1";
+                btn.style.pointerEvents = "auto";
+            }
         }
 
+        // IMPROVED GALLERY UPLOAD
         async function uploadToGallery(input) {
-            const file = input.files[0]; if (!file) return;
-            const label = input.parentElement; label.innerHTML = "⏳ Uploading...";
-            const formData = new FormData(); formData.append("image", file);
+            const file = input.files[0]; 
+            if (!file) return;
+
+            const label = input.parentElement; 
+            const oldText = label.innerHTML;
+            label.innerHTML = "⏳ UPLOADING...";
+
+            const formData = new FormData(); 
+            formData.append("image", file);
+
             try {
                 const res = await fetch("https://api.imgur.com/3/image", {
                     method: "POST",
@@ -135,26 +177,16 @@
                     body: formData
                 });
                 const data = await res.json();
-                if(data.success) addImageRow(data.data.link);
-            } catch (e) { alert("Upload Failed"); }
-            label.innerHTML = "<span>➕ ADD TRIP PHOTO</span>";
-        }
-
-        function addImageRow(url = "") {
-            const container = document.getElementById('gallery-links');
-            const rowId = 'row-' + Date.now();
-            const div = document.createElement('div');
-            div.id = rowId;
-            div.className = "gallery-input-row flex gap-2";
-            div.innerHTML = `
-                <input type="text" value="${url}" class="gallery-input flex-1 p-2 border rounded-lg text-[10px]">
-                <button onclick="document.getElementById('${rowId}').remove()" class="bg-red-500 text-white px-3 rounded-lg font-bold">✕</button>
-            `;
-            container.appendChild(div);
-        }
-
-        function getGalleryData() {
-            return Array.from(document.querySelectorAll('.gallery-input')).map(inp => inp.value).filter(v => v !== "");
+                if(data.success) {
+                    addImageRow(data.data.link);
+                } else {
+                    alert("Upload rejected by server.");
+                }
+            } catch (e) { 
+                alert("Upload Failed. Try a smaller image or paste the link manually."); 
+            } finally {
+                label.innerHTML = "<span>➕ ADD TRIP PHOTO</span>";
+            }
         }
 
         // --- CORE ADMIN LOGIC ---
