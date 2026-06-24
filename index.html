@@ -6,7 +6,7 @@
     <title>Travels - Fleet Driver</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .title-text { font-size: clamp(1.4rem, 6vw, 2rem); font-weight: 900; letter-spacing: 0.05em; }
+        .title-text { font-size: clamp(1.2rem, 5.5vw, 1.8rem); font-weight: 900; letter-spacing: 0.05em; }
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
     </style>
@@ -15,7 +15,8 @@
 
     <div id="inactive-screen" class="hidden fixed inset-0 bg-slate-900 text-white z-[1000] flex-col items-center justify-center p-10 text-center">
         <h1 class="text-6xl mb-4">🚫</h1>
-        <h2 class="text-2xl font-black uppercase">Access Denied</h2>
+        <h2 class="text-2xl font-black uppercase tracking-wide">Access Denied</h2>
+        <p class="text-sm text-slate-400 mt-2 font-medium">This fleet tracking node is currently set to inactive by management.</p>
     </div>
 
     <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 text-center shadow-lg">
@@ -23,13 +24,30 @@
         <p id="display-phone" class="font-bold text-yellow-300">---</p>
     </header>
 
-    <section class="bg-[#cc0000] text-white flex items-center p-4 mb-4 shadow-lg">
-        <div class="w-[35%]">
-            <img id="display-driver-img" src="https://via.placeholder.com/150" class="w-full aspect-square object-cover border-2 border-white rounded-lg">
+    <section class="bg-[#cc0000] text-white p-4 mb-4 shadow-lg flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+            <div class="w-[30%] relative">
+                <img id="display-driver-img" src="https://via.placeholder.com/150?text=Driver" class="w-full aspect-square object-cover border-2 border-white rounded-2xl shadow-md bg-white/10" alt="Driver">
+                <span class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-yellow-400 text-slate-900 text-[9px] font-black uppercase px-2 py-0.5 rounded shadow tracking-wider">Driver</span>
+            </div>
+
+            <div class="w-[40%] px-2 text-center">
+                <p id="display-driver-name" class="uppercase text-yellow-300 text-lg font-black tracking-tight leading-tight mb-1 truncate">DRIVER</p>
+                <div class="inline-block bg-white text-red-700 font-extrabold text-xs px-2 py-0.5 rounded tracking-wide shadow-sm" id="v-no">
+                    ---
+                </div>
+            </div>
+
+            <div class="w-[30%] relative flex justify-end">
+                <img id="display-taxi-img" src="https://via.placeholder.com/150?text=Taxi" class="w-full max-w-[90px] aspect-square object-cover border-2 border-white rounded-2xl shadow-md bg-white/10" alt="Vehicle">
+                <span class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded shadow tracking-wider">Vehicle</span>
+            </div>
         </div>
-        <div class="w-[65%] pl-5 font-bold">
-            <p id="display-driver-name" class="uppercase text-yellow-300 text-xl border-b border-red-400 pb-1 mb-1">DRIVER</p>
-            <p class="text-[14px]"><span id="v-type">Vehicle</span>: <span id="v-no" class="bg-white text-red-700 px-1 rounded">---</span></p>
+
+        <div class="w-full text-center border-t border-white/20 pt-2 mt-1">
+            <p class="text-xs font-bold text-red-100">
+                🚖 Fleet Profile: <span id="v-type" class="text-white font-black uppercase">Taxi</span> - <span id="v-capacity" class="text-yellow-300 font-black">---</span> Seating
+            </p>
         </div>
     </section>
 
@@ -37,21 +55,21 @@
 
     <div id="popup-box" class="popup-overlay">
         <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden relative shadow-2xl flex flex-col max-h-[85vh]">
-            <button onclick="closePopup()" class="absolute top-3 right-3 bg-red-600 text-white w-10 h-10 rounded-full font-bold z-50">✕</button>
+            <button onclick="closePopup()" class="absolute top-3 right-3 bg-red-600 text-white w-10 h-10 rounded-full font-bold z-50 shadow-md">✕</button>
             <div id="pop-content" class="overflow-y-auto p-5">
-                <h2 id="pop-title" class="text-2xl font-black text-blue-900 mb-4 uppercase"></h2>
+                <h2 id="pop-title" class="text-2xl font-black text-blue-900 mb-4 uppercase tracking-tight"></h2>
                 <div id="pop-gallery" class="space-y-3 mb-4"></div>
-                <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-blue-600">
-                    <p id="pop-desc" class="text-gray-800 text-sm whitespace-pre-line"></p>
+                <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-blue-600 shadow-inner">
+                    <p id="pop-desc" class="text-gray-800 text-sm whitespace-pre-line leading-relaxed"></p>
                 </div>
-                <button onclick="bookWhatsApp(document.getElementById('pop-title').innerText)" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold mt-6 uppercase">Book via WhatsApp</button>
+                <button onclick="bookWhatsApp(document.getElementById('pop-title').innerText)" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold mt-6 uppercase tracking-wider transition shadow-md">Book via WhatsApp</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
@@ -66,7 +84,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const TAXI_ID = urlParams.get('id') || 'taxi1';
 
-        // Load Settings
+        // Load Settings (UPDATED to pull all new vehicle variables cleanly)
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
@@ -75,31 +93,34 @@
                 document.getElementById('display-phone').innerText = data.phone || "";
                 document.getElementById('display-driver-name').innerText = data.driverName || "DRIVER";
                 document.getElementById('v-type').innerText = data.vehicleType || "Taxi";
-                document.getElementById('v-no').innerText = data.taxiNo || "";
+                document.getElementById('v-capacity').innerText = data.vehicleCapacity || "4+1";
+                document.getElementById('v-no').innerText = data.taxiNo || "---";
+                
+                // Render base64 image strings or load falling generic defaults securely
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
+                if(data.taxiImg) document.getElementById('display-taxi-img').src = data.taxiImg;
             }
         });
 
-        // Load Packages
+        // Load Tour Packages
         onValue(ref(db, TAXI_ID + '/packages'), (snap) => {
             const container = document.getElementById('package-container'); container.innerHTML = "";
             snap.forEach((child) => {
                 const pkg = child.val();
                 const b64Title = btoa(unescape(encodeURIComponent(pkg.title)));
                 const b64Desc = btoa(unescape(encodeURIComponent(pkg.desc)));
-                // Gallery Data
                 const gallery = pkg.gallery || [pkg.img];
                 const b64Gallery = btoa(unescape(encodeURIComponent(JSON.stringify(gallery))));
 
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
-                        <img src="${pkg.img || 'https://via.placeholder.com/400x200'}" class="w-full h-52 object-cover">
+                        <img src="${pkg.img || 'https://via.placeholder.com/400x200?text=No+Image+Available'}" class="w-full h-52 object-cover">
                         <div class="p-5">
-                            <h2 class="text-xl font-black uppercase text-blue-900 mb-2">${pkg.title}</h2>
-                            <p class="text-gray-700 text-sm mb-5 line-clamp-2">${pkg.desc}</p>
+                            <h2 class="text-xl font-black uppercase text-blue-900 mb-2 tracking-tight">${pkg.title}</h2>
+                            <p class="text-gray-700 text-sm mb-5 line-clamp-2 leading-relaxed">${pkg.desc}</p>
                             <div class="flex gap-2">
-                                <button onclick="openPop('${b64Title}', '${b64Desc}', '${b64Gallery}')" class="flex-1 bg-blue-700 text-white font-black py-4 rounded-lg text-xs uppercase shadow-md">View Details</button>
-                                <button onclick="bookWhatsApp('${pkg.title}')" class="flex-1 bg-green-600 text-white font-black py-4 rounded-lg text-xs uppercase shadow-md">WhatsApp</button>
+                                <button onclick="openPop('${b64Title}', '${b64Desc}', '${b64Gallery}')" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-black py-4 rounded-lg text-xs uppercase shadow-md transition tracking-wider">View Details</button>
+                                <button onclick="bookWhatsApp('${pkg.title}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-lg text-xs uppercase shadow-md transition tracking-wider">WhatsApp</button>
                             </div>
                         </div>
                     </div>`;
@@ -111,7 +132,7 @@
             document.getElementById('pop-desc').innerText = decodeURIComponent(escape(atob(d)));
             const gallery = JSON.parse(decodeURIComponent(escape(atob(g))));
             let galHtml = "";
-            gallery.forEach(img => galHtml += `<img src="${img}" class="w-full rounded-xl shadow-md border object-cover">`);
+            gallery.forEach(img => galHtml += `<img src="${img}" class="w-full rounded-xl shadow-md border object-cover mb-2">`);
             document.getElementById('pop-gallery').innerHTML = galHtml;
             document.getElementById('popup-box').classList.add('popup-active');
         };
@@ -119,7 +140,7 @@
         window.closePopup = () => document.getElementById('popup-box').classList.remove('popup-active');
         window.bookWhatsApp = (t) => {
             const p = document.getElementById('display-phone').innerText;
-            window.open(`https://wa.me/${p.replace(/\D/g,'')}?text=I am interested in ${t}`, '_blank');
+            window.open(`https://wa.me/${p.replace(/\D/g,'')}?text=Hello%20Bhaskar%20Travels%2C%20I%20am%20interested%20in%20booking%20the%20tour%20package%3A%20*${encodeURIComponent(t)}*`, '_blank');
         };
     </script>
 </body>
