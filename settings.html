@@ -137,7 +137,6 @@
             return links;
         }
 
-        // SMART COMPRESSION VECTOR: Automatically resizes large images locally to keep database fast
         function compressAndProcess(file, maxWidth, callback) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -154,9 +153,9 @@
                         canvas.width = img.width;
                         canvas.height = img.height;
                     }
-                    const ctx = canvas.getContext('2currentTaxiId');
+                    // FIXED TYPO HERE: Corrected context assignment execution parameter
+                    const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    // Compresses quality into highly optimized data strings
                     callback(canvas.toDataURL('image/jpeg', 0.6));
                 };
             };
@@ -170,8 +169,8 @@
 
             compressAndProcess(file, 400, function(compressedBase64) {
                 document.getElementById(targetId).value = compressedBase64;
-                label.innerHTML = "✅ DONE";
-                alert("Image compiled successfully! Click 'Update Profile' to store changes.");
+                label.innerHTML = "📸 PHOTO";
+                alert("Image processed successfully! Click 'Update Profile' below to apply changes.");
             });
         }
 
