@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <style>
         .gallery-input-row { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -44,15 +45,17 @@
                     <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded-lg font-semibold">
                     <div class="grid grid-cols-2 gap-2">
                         <select id="vType" class="p-3 border rounded-lg font-bold bg-slate-50">
-                            <option value="Taxi">TAXI</option><option value="Auto">AUTO</option>
-                            <option value="Innova">INNOVA</option><option value="Bus">BUS</option>
+                            <option value="Taxi">TAXI</option>
+                            <option value="Auto">AUTO</option>
+                            <option value="Innova">INNOVA</option>
+                            <option value="Bus">BUS</option>
                         </select>
                         <input id="tNo" type="text" placeholder="Number Plate" class="p-3 border rounded-lg font-bold text-blue-700">
                     </div>
                     <div class="flex gap-2">
-                        <input id="dImg" type="text" placeholder="Driver Photo Link" class="flex-1 p-3 border rounded-lg text-xs">
-                        <label class="bg-blue-100 text-blue-700 px-4 py-3 rounded-lg font-bold text-xs cursor-pointer flex items-center shadow-sm">
-                            📸 PHOTO <input type="file" class="hidden" onchange="uploadImg(this, 'dImg')">
+                        <input id="dImg" type="text" placeholder="Driver Photo Link" class="flex-1 p-3 border rounded-lg text-xs" readonly>
+                        <label id="lbl-dImg" class="bg-blue-100 text-blue-700 px-4 py-3 rounded-lg font-bold text-xs cursor-pointer flex items-center shadow-sm whitespace-nowrap">
+                            📸 PHOTO <input type="file" accept="image/*" class="hidden" onchange="uploadImgDirect(this, 'dImg', 'lbl-dImg')">
                         </label>
                     </div>
                     <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase">Update Profile</button>
@@ -66,18 +69,18 @@
                 
                 <div class="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-300 mb-4">
                     <p class="text-[10px] font-black text-slate-500 uppercase mb-2 text-center">Main Package Photo</p>
-                    <label class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-sm cursor-pointer flex items-center justify-center gap-2 mb-3">
-                        <span>➕ ADD MAIN PHOTO</span>
-                        <input type="file" class="hidden" onchange="uploadToGallery(this, 'gallery-links')">
+                    <label id="lbl-main-photo" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-sm cursor-pointer flex items-center justify-center gap-2 mb-3">
+                        <span> ➕ ADD MAIN PHOTO</span>
+                        <input type="file" accept="image/*" class="hidden" onchange="uploadToGalleryDirect(this, 'gallery-links', 'lbl-main-photo')">
                     </label>
                     <div id="gallery-links" class="space-y-2"></div>
                 </div>
 
                 <div class="bg-blue-50 p-4 rounded-xl border-2 border-dashed border-blue-300 mb-4">
                     <p class="text-[10px] font-black text-blue-500 uppercase mb-2 text-center">Details Section Photos</p>
-                    <label class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-sm cursor-pointer flex items-center justify-center gap-2 mb-3">
+                    <label id="lbl-detail-photo" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-sm cursor-pointer flex items-center justify-center gap-2 mb-3">
                         <span>🖼️ ADD DETAIL PHOTO</span>
-                        <input type="file" class="hidden" onchange="uploadToGallery(this, 'details-links')">
+                        <input type="file" accept="image/*" class="hidden" onchange="uploadToGalleryDirect(this, 'details-links', 'lbl-detail-photo')">
                     </label>
                     <div id="details-links" class="space-y-2"></div>
                 </div>
@@ -101,10 +104,12 @@
             authDomain: "master-web-app-d8d1b.firebaseapp.com",
             projectId: "master-web-app-d8d1b",
             databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
+            storageBucket: "master-web-app-d8d1b.appspot.com", // ENABLED SECURE STORAGE TARGET BUCKET
             appId: "1:460731698074:web:40ad4f12c5fb3126874823"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const storage = firebase.storage(); // FIXED: Initializing Native Firebase Storage Vector
 
         let currentUnitStatus = "active";
 
@@ -116,7 +121,6 @@
             }
         };
 
-        // --- IMAGE HELPERS ---
         function addImageRow(link, containerId) {
             const container = document.getElementById(containerId);
             const div = document.createElement('div');
@@ -135,50 +139,47 @@
             return links;
         }
 
-        async function uploadImg(input, targetId) {
+        // FIXED DIRECT STORAGE METHOD: Replaces Imgur for Driver Profile Photos
+        async function uploadImgDirect(input, targetId, labelId) {
             const file = input.files[0]; 
             if (!file) return;
-            const btn = input.parentElement; 
-            const oldText = btn.innerHTML;
-            btn.innerHTML = "⏳...";
-            const formData = new FormData(); 
-            formData.append("image", file);
+            const labelEl = document.getElementById(labelId);
+            const oldText = labelEl.innerHTML;
+            labelEl.innerHTML = "⏳...";
+            
+            const storageRef = storage.ref('driver_profiles/' + Date.now() + '_' + file.name);
             try {
-                const res = await fetch("https://api.imgur.com/3/image", {
-                    method: "POST",
-                    headers: { Authorization: "Client-ID 546c25a59c58ad7" },
-                    body: formData
-                });
-                const data = await res.json();
-                if(data.success) { 
-                    document.getElementById(targetId).value = data.data.link; 
-                    alert("✅ Uploaded!"); 
-                }
-            } catch (e) { alert("❌ Failed!"); }
-            finally { btn.innerHTML = oldText; }
+                const snapshot = await storageRef.put(file);
+                const downloadURL = await snapshot.ref.getDownloadURL();
+                document.getElementById(targetId).value = downloadURL;
+                alert("✅ Driver Photo Uploaded Successfully!");
+            } catch (e) { 
+                alert("❌ Upload Failed: " + e.message); 
+            } finally { 
+                labelEl.innerHTML = oldText; 
+            }
         }
 
-        async function uploadToGallery(input, containerId) {
+        // FIXED DIRECT STORAGE METHOD: Replaces Imgur for Package Photos
+        async function uploadToGalleryDirect(input, containerId, labelId) {
             const file = input.files[0]; 
             if (!file) return;
-            const label = input.parentElement; 
-            const oldText = label.innerHTML;
-            label.innerHTML = "⏳ UPLOADING...";
-            const formData = new FormData(); 
-            formData.append("image", file);
+            const labelEl = document.getElementById(labelId);
+            const oldText = labelEl.innerHTML;
+            labelEl.innerHTML = "⏳ UPLOADING...";
+            
+            const storageRef = storage.ref('package_galleries/' + Date.now() + '_' + file.name);
             try {
-                const res = await fetch("https://api.imgur.com/3/image", {
-                    method: "POST",
-                    headers: { Authorization: "Client-ID 546c25a59c58ad7" },
-                    body: formData
-                });
-                const data = await res.json();
-                if(data.success) { addImageRow(data.data.link, containerId); }
-            } catch (e) { alert("Upload Failed."); }
-            finally { label.innerHTML = oldText; }
+                const snapshot = await storageRef.put(file);
+                const downloadURL = await snapshot.ref.getDownloadURL();
+                addImageRow(downloadURL, containerId);
+            } catch (e) { 
+                alert("❌ Gallery Upload Failed: " + e.message); 
+            } finally { 
+                labelEl.innerHTML = oldText; 
+            }
         }
 
-        // --- CORE LOGIC ---
         function setupSelector() {
             const selector = document.getElementById('taxi-selector');
             for(let i=1; i<=20; i++) {
