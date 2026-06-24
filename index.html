@@ -6,9 +6,11 @@
     <title>Travels - Fleet Driver</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .title-text { font-size: clamp(1.2rem, 5.5vw, 1.8rem); font-weight: 900; letter-spacing: 0.05em; }
+        .title-text { font-size: clamp(1.1rem, 5vw, 1.6rem); font-weight: 900; letter-spacing: 0.02em; }
         .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
         .popup-active { display: flex; }
+        .share-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; padding: 15px; }
+        .share-active { display: flex; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
@@ -19,10 +21,36 @@
         <p class="text-sm text-slate-400 mt-2 font-medium">This fleet tracking node is currently set to inactive by management.</p>
     </div>
 
-    <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 text-center shadow-lg">
-        <h1 id="display-title" class="title-text uppercase">BHASKAR TRAVELS</h1>
-        <p id="display-phone" class="font-bold text-yellow-300">---</p>
+    <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-lg sticky top-0 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <div class="text-left flex-1 pr-2">
+                <h1 id="display-title" class="title-text uppercase leading-tight truncate">BHASKAR TRAVELS</h1>
+                <p id="display-phone" class="font-bold text-yellow-300 text-xs mt-0.5">---</p>
+            </div>
+            <button onclick="openShareModal()" class="shrink-0 bg-green-600 hover:bg-green-700 text-white font-black text-[11px] px-3 py-2 rounded-xl tracking-wider uppercase shadow-md flex items-center gap-1 transition">
+                Share 🔗
+            </button>
+        </div>
     </header>
+
+    <div id="share-modal" class="share-overlay">
+        <div class="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl relative text-slate-900 text-center animate-in fade-in zoom-in-95 duration-200">
+            <button onclick="closeShareModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
+            <h3 class="font-black text-blue-900 uppercase tracking-tight text-base mb-1">Share This Vehicle</h3>
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-4">Send profile details to WhatsApp</p>
+            
+            <div class="space-y-3 text-left">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1 pl-1">WhatsApp Mobile Number</label>
+                    <input id="share-target-phone" type="tel" placeholder="e.g. 919154095125" class="w-full p-3 border-2 border-gray-200 rounded-xl font-bold text-center text-sm outline-none focus:border-blue-600">
+                </div>
+            </div>
+
+            <button id="submit-share-btn" class="w-full bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md mt-5 transition">
+                Open WhatsApp 🚀
+            </button>
+        </div>
+    </div>
 
     <section class="bg-[#cc0000] text-white p-4 mb-4 shadow-lg flex flex-col gap-3">
         <div class="flex items-center justify-between">
@@ -62,14 +90,14 @@
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-blue-600 shadow-inner">
                     <p id="pop-desc" class="text-gray-800 text-sm whitespace-pre-line leading-relaxed"></p>
                 </div>
-                <button onclick="bookWhatsApp(document.getElementById('pop-title').innerText)" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold mt-6 uppercase tracking-wider transition shadow-md">Book via WhatsApp</button>
+                <button id="submit-book-btn" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold mt-6 uppercase tracking-wider transition shadow-md">Book via WhatsApp</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
@@ -84,7 +112,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const TAXI_ID = urlParams.get('id') || 'taxi1';
 
-        // Load Settings (UPDATED to pull all new vehicle variables cleanly)
+        // Load Settings
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
@@ -96,7 +124,6 @@
                 document.getElementById('v-capacity').innerText = data.vehicleCapacity || "4+1";
                 document.getElementById('v-no').innerText = data.taxiNo || "---";
                 
-                // Render base64 image strings or load falling generic defaults securely
                 if(data.driverImg) document.getElementById('display-driver-img').src = data.driverImg;
                 if(data.taxiImg) document.getElementById('display-taxi-img').src = data.taxiImg;
             }
@@ -127,6 +154,62 @@
             });
         });
 
+        // INTEGRATED CRITICAL AUTO-TRACKING SHARE FUNCTION BLOCK
+        window.sendProfileViaWhatsApp = () => {
+            const num = document.getElementById('share-target-phone').value.trim();
+            const travelsTitle = document.getElementById('display-title').innerText;
+            const driverName = document.getElementById('display-driver-name').innerText;
+            const vehicle = document.getElementById('v-type').innerText;
+            const cap = document.getElementById('v-capacity').innerText;
+            const plateNo = document.getElementById('v-no').innerText;
+
+            if(!num) {
+                alert("Please enter a valid mobile number with country code (e.g. 91xxxxxxxxxx)");
+                return;
+            }
+
+            // 1. DYNAMICALLY GENERATE THE LINK
+            const shareUrl = window.location.origin + window.location.pathname + "?id=" + TAXI_ID;
+            
+            // 2. LOG THE SHARED NUMBER INTO FIREBASE IMMEDIATELY
+            const trackingRef = ref(db, 'referrals_shared');
+            push(trackingRef, {
+                senderUnit: TAXI_ID,            
+                sharedToNumber: num,            
+                timestamp: new Date().toISOString(), 
+                travelsName: travelsTitle
+            });
+
+            // 3. BUILD TEXT AND REDIRECT TO WHATSAPP AS USUAL
+            const messageText = `🚖 *${travelsTitle} - Fleet Profile Details* \n\n` +
+                                `👤 *Driver Name:* ${driverName}\n` +
+                                `🚘 *Vehicle:* ${vehicle} (${cap} Seating)\n` +
+                                `🔢 *Number:* ${plateNo}\n\n` +
+                                `Click the link below to view live tour itineraries and book instantly:\n🔗 ${shareUrl}`;
+
+            const url = `https://wa.me/${num.replace(/\D/g,'')}?text=${encodeURIComponent(messageText)}`;
+            window.open(url, '_blank');
+            closeShareModal();
+        };
+
+        window.bookWhatsApp = (t) => {
+            const p = document.getElementById('display-phone').innerText;
+            window.open(`https://wa.me/${p.replace(/\D/g,'')}?text=Hello%20Bhaskar%20Travels%2C%20I%20am%20interested%20in%20booking%20the%20tour%20package%3A%20*${encodeURIComponent(t)}*`, '_blank');
+        };
+
+        // Attach event triggers securely to interactive buttons inside module ecosystem
+        document.getElementById('submit-share-btn').onclick = window.sendProfileViaWhatsApp;
+        document.getElementById('submit-book-btn').onclick = () => window.bookWhatsApp(document.getElementById('pop-title').innerText);
+    </script>
+
+    <script>
+        // Global UI Modal window state triggers
+        window.openShareModal = () => {
+            document.getElementById('share-target-phone').value = "";
+            document.getElementById('share-modal').classList.add('share-active');
+        };
+        window.closeShareModal = () => document.getElementById('share-modal').classList.remove('share-active');
+        
         window.openPop = (t, d, g) => {
             document.getElementById('pop-title').innerText = decodeURIComponent(escape(atob(t)));
             document.getElementById('pop-desc').innerText = decodeURIComponent(escape(atob(d)));
@@ -136,12 +219,7 @@
             document.getElementById('pop-gallery').innerHTML = galHtml;
             document.getElementById('popup-box').classList.add('popup-active');
         };
-
         window.closePopup = () => document.getElementById('popup-box').classList.remove('popup-active');
-        window.bookWhatsApp = (t) => {
-            const p = document.getElementById('display-phone').innerText;
-            window.open(`https://wa.me/${p.replace(/\D/g,'')}?text=Hello%20Bhaskar%20Travels%2C%20I%20am%20interested%20in%20booking%20the%20tour%20package%3A%20*${encodeURIComponent(t)}*`, '_blank');
-        };
     </script>
 </body>
 </html>
