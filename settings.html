@@ -42,22 +42,58 @@
                     <input id="title" type="text" placeholder="Travels Title" class="w-full p-3 border rounded-lg font-semibold">
                     <input id="phone" type="text" placeholder="WhatsApp (91...)" class="w-full p-3 border rounded-lg font-semibold">
                     <input id="dName" type="text" placeholder="Driver Name" class="w-full p-3 border rounded-lg font-semibold">
+                    
                     <div class="grid grid-cols-2 gap-2">
-                        <select id="vType" class="p-3 border rounded-lg font-bold bg-slate-50">
-                            <option value="Taxi">TAXI</option>
-                            <option value="Auto">AUTO</option>
-                            <option value="Innova">INNOVA</option>
-                            <option value="Bus">BUS</option>
-                        </select>
-                        <input id="tNo" type="text" placeholder="Number Plate" class="p-3 border rounded-lg font-bold text-blue-700">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1 pl-1">Taxi Type</label>
+                            <select id="vType" class="w-full p-3 border rounded-lg font-bold bg-slate-50">
+                                <option value="Taxi">TAXI</option>
+                                <option value="Auto">AUTO</option>
+                                <option value="Innova">INNOVA</option>
+                                <option value="Bus">BUS</option>
+                                <option value="Cruiser">CRUISER</option>
+                                <option value="Ertiga">ERTIGA</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1 pl-1">Seating Capacity</label>
+                            <select id="vCapacity" class="w-full p-3 border rounded-lg font-bold bg-slate-50 text-blue-700">
+                                <option value="3+1">3+1 Seater</option>
+                                <option value="4+1">4+1 Seater</option>
+                                <option value="6+1">6+1 Seater</option>
+                                <option value="7+1">7+1 Seater</option>
+                                <option value="12+1">12+1 Seater</option>
+                                <option value="26+1">26+1 Seater</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="flex gap-2">
-                        <input id="dImg" type="text" placeholder="Driver Photo Link Data" class="flex-1 p-3 border rounded-lg text-xs" readonly>
-                        <label id="lbl-dImg" class="bg-blue-100 text-blue-700 px-4 py-3 rounded-lg font-bold text-xs cursor-pointer flex items-center shadow-sm whitespace-nowrap">
-                            📸 PHOTO <input type="file" accept="image/*" class="hidden" onchange="processFileToDataString(this, 'dImg', 'lbl-dImg')">
-                        </label>
+
+                    <div class="w-full">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1 pl-1">Number Plate</label>
+                        <input id="tNo" type="text" placeholder="e.g. AP04 2435" class="w-full p-3 border rounded-lg font-bold uppercase text-slate-800">
                     </div>
-                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase">Update Profile</button>
+
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                        <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">1. Driver Identity Photo</span>
+                        <div class="flex gap-2">
+                            <input id="dImg" type="text" placeholder="Driver Image Base64 String" class="flex-1 p-3 border rounded-lg text-xs bg-white" readonly>
+                            <label id="lbl-dImg" class="bg-blue-100 text-blue-700 px-4 py-3 rounded-lg font-bold text-xs cursor-pointer flex items-center shadow-sm whitespace-nowrap">
+                                📸 DRIVER <input type="file" accept="image/*" class="hidden" onchange="processFileToDataString(this, 'dImg', 'lbl-dImg', 400)">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                        <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">2. Vehicle Exterior Photo</span>
+                        <div class="flex gap-2">
+                            <input id="vImg" type="text" placeholder="Taxi Image Base64 String" class="flex-1 p-3 border rounded-lg text-xs bg-white" readonly>
+                            <label id="lbl-vImg" class="bg-indigo-100 text-indigo-700 px-4 py-3 rounded-lg font-bold text-xs cursor-pointer flex items-center shadow-sm whitespace-nowrap">
+                                🚘 VEHICLE <input type="file" accept="image/*" class="hidden" onchange="processFileToDataString(this, 'vImg', 'lbl-vImg', 500)">
+                            </label>
+                        </div>
+                    </div>
+
+                    <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase mt-2">Update Profile</button>
                 </div>
             </div>
 
@@ -153,7 +189,6 @@
                         canvas.width = img.width;
                         canvas.height = img.height;
                     }
-                    // FIXED TYPO HERE: Corrected context assignment execution parameter
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     callback(canvas.toDataURL('image/jpeg', 0.6));
@@ -161,16 +196,17 @@
             };
         }
 
-        function processFileToDataString(input, targetId, labelId) {
+        function processFileToDataString(input, targetId, labelId, customWidth) {
             const file = input.files[0];
             if (!file) return;
             const label = document.getElementById(labelId);
+            const originalLabelText = label.innerHTML;
             label.innerHTML = "⏳...";
 
-            compressAndProcess(file, 400, function(compressedBase64) {
+            compressAndProcess(file, customWidth, function(compressedBase64) {
                 document.getElementById(targetId).value = compressedBase64;
-                label.innerHTML = "📸 PHOTO";
-                alert("Image processed successfully! Click 'Update Profile' below to apply changes.");
+                label.innerHTML = originalLabelText;
+                alert("Image converted successfully! Click 'Update Profile' below to sync database.");
             });
         }
 
@@ -205,8 +241,11 @@
                 document.getElementById('phone').value = d.phone || "";
                 document.getElementById('dName').value = d.driverName || "";
                 document.getElementById('vType').value = d.vehicleType || "Taxi";
+                document.getElementById('vCapacity').value = d.vehicleCapacity || "4+1";
                 document.getElementById('tNo').value = d.taxiNo || "";
                 document.getElementById('dImg').value = d.driverImg || "";
+                document.getElementById('vImg').value = d.taxiImg || ""; // Load vehicle image data string
+                
                 currentUnitStatus = d.status || "active";
                 const sBtn = document.getElementById('status-toggle-btn');
                 sBtn.innerHTML = currentUnitStatus === "active" ? "🟢 ACTIVE" : "🔴 INACTIVE";
@@ -290,8 +329,10 @@
                 phone: document.getElementById('phone').value,
                 driverName: document.getElementById('dName').value,
                 vehicleType: document.getElementById('vType').value,
+                vehicleCapacity: document.getElementById('vCapacity').value, // Saved Capacity value string
                 taxiNo: document.getElementById('tNo').value,
-                driverImg: document.getElementById('dImg').value
+                driverImg: document.getElementById('dImg').value,
+                taxiImg: document.getElementById('vImg').value // Saved Taxi Image target to Realtime node
             }).then(() => alert("✅ Profile Data Synced Successfully!"));
         };
 
