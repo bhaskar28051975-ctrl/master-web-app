@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <style>
         .gallery-input-row { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -53,9 +52,9 @@
                         <input id="tNo" type="text" placeholder="Number Plate" class="p-3 border rounded-lg font-bold text-blue-700">
                     </div>
                     <div class="flex gap-2">
-                        <input id="dImg" type="text" placeholder="Driver Photo Link" class="flex-1 p-3 border rounded-lg text-xs" readonly>
+                        <input id="dImg" type="text" placeholder="Driver Photo Link Data" class="flex-1 p-3 border rounded-lg text-xs" readonly>
                         <label id="lbl-dImg" class="bg-blue-100 text-blue-700 px-4 py-3 rounded-lg font-bold text-xs cursor-pointer flex items-center shadow-sm whitespace-nowrap">
-                            📸 PHOTO <input type="file" accept="image/*" class="hidden" onchange="uploadImgDirect(this, 'dImg', 'lbl-dImg')">
+                            📸 PHOTO <input type="file" accept="image/*" class="hidden" onchange="processFileToDataString(this, 'dImg', 'lbl-dImg')">
                         </label>
                     </div>
                     <button onclick="saveSet()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase">Update Profile</button>
@@ -70,8 +69,8 @@
                 <div class="bg-slate-50 p-4 rounded-xl border-2 border-dashed border-slate-300 mb-4">
                     <p class="text-[10px] font-black text-slate-500 uppercase mb-2 text-center">Main Package Photo</p>
                     <label id="lbl-main-photo" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-sm cursor-pointer flex items-center justify-center gap-2 mb-3">
-                        <span> ➕ ADD MAIN PHOTO</span>
-                        <input type="file" accept="image/*" class="hidden" onchange="uploadToGalleryDirect(this, 'gallery-links', 'lbl-main-photo')">
+                        <span>➕ ADD MAIN PHOTO</span>
+                        <input type="file" accept="image/*" class="hidden" onchange="processFileToGallery(this, 'gallery-links', 'lbl-main-photo')">
                     </label>
                     <div id="gallery-links" class="space-y-2"></div>
                 </div>
@@ -80,7 +79,7 @@
                     <p class="text-[10px] font-black text-blue-500 uppercase mb-2 text-center">Details Section Photos</p>
                     <label id="lbl-detail-photo" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-sm cursor-pointer flex items-center justify-center gap-2 mb-3">
                         <span>🖼️ ADD DETAIL PHOTO</span>
-                        <input type="file" accept="image/*" class="hidden" onchange="uploadToGalleryDirect(this, 'details-links', 'lbl-detail-photo')">
+                        <input type="file" accept="image/*" class="hidden" onchange="processFileToGallery(this, 'details-links', 'lbl-detail-photo')">
                     </label>
                     <div id="details-links" class="space-y-2"></div>
                 </div>
@@ -104,12 +103,10 @@
             authDomain: "master-web-app-d8d1b.firebaseapp.com",
             projectId: "master-web-app-d8d1b",
             databaseURL: "https://master-web-app-d8d1b-default-rtdb.firebaseio.com",
-            storageBucket: "master-web-app-d8d1b.appspot.com", // ENABLED SECURE STORAGE TARGET BUCKET
             appId: "1:460731698074:web:40ad4f12c5fb3126874823"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const storage = firebase.storage(); // FIXED: Initializing Native Firebase Storage Vector
 
         let currentUnitStatus = "active";
 
@@ -127,7 +124,8 @@
             div.className = "gallery-input-row flex items-center gap-2 bg-white p-2 rounded-lg border shadow-sm";
             div.innerHTML = `
                 <img src="${link}" class="w-10 h-10 object-cover rounded">
-                <input type="text" value="${link}" class="flex-1 text-[10px] border-none outline-none overflow-hidden" readonly>
+                <input type="text" value="${link.substring(0, 30)}..." class="flex-1 text-[10px] border-none outline-none overflow-hidden" readonly>
+                <input type="hidden" value="${link}">
                 <button onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">✕</button>
             `;
             container.appendChild(div);
@@ -135,49 +133,59 @@
 
         function getGalleryData(containerId) {
             const links = [];
-            document.querySelectorAll(`#${containerId} input`).forEach(input => links.push(input.value));
+            document.querySelectorAll(`#${containerId} input[type="hidden"]`).forEach(input => links.push(input.value));
             return links;
         }
 
-        // FIXED DIRECT STORAGE METHOD: Replaces Imgur for Driver Profile Photos
-        async function uploadImgDirect(input, targetId, labelId) {
-            const file = input.files[0]; 
-            if (!file) return;
-            const labelEl = document.getElementById(labelId);
-            const oldText = labelEl.innerHTML;
-            labelEl.innerHTML = "⏳...";
-            
-            const storageRef = storage.ref('driver_profiles/' + Date.now() + '_' + file.name);
-            try {
-                const snapshot = await storageRef.put(file);
-                const downloadURL = await snapshot.ref.getDownloadURL();
-                document.getElementById(targetId).value = downloadURL;
-                alert("✅ Driver Photo Uploaded Successfully!");
-            } catch (e) { 
-                alert("❌ Upload Failed: " + e.message); 
-            } finally { 
-                labelEl.innerHTML = oldText; 
-            }
+        // SMART COMPRESSION VECTOR: Automatically resizes large images locally to keep database fast
+        function compressAndProcess(file, maxWidth, callback) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    const scale = maxWidth / img.width;
+                    if(scale < 1) {
+                        canvas.width = maxWidth;
+                        canvas.height = img.height * scale;
+                    } else {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                    }
+                    const ctx = canvas.getContext('2currentTaxiId');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    // Compresses quality into highly optimized data strings
+                    callback(canvas.toDataURL('image/jpeg', 0.6));
+                };
+            };
         }
 
-        // FIXED DIRECT STORAGE METHOD: Replaces Imgur for Package Photos
-        async function uploadToGalleryDirect(input, containerId, labelId) {
-            const file = input.files[0]; 
+        function processFileToDataString(input, targetId, labelId) {
+            const file = input.files[0];
             if (!file) return;
-            const labelEl = document.getElementById(labelId);
-            const oldText = labelEl.innerHTML;
-            labelEl.innerHTML = "⏳ UPLOADING...";
-            
-            const storageRef = storage.ref('package_galleries/' + Date.now() + '_' + file.name);
-            try {
-                const snapshot = await storageRef.put(file);
-                const downloadURL = await snapshot.ref.getDownloadURL();
-                addImageRow(downloadURL, containerId);
-            } catch (e) { 
-                alert("❌ Gallery Upload Failed: " + e.message); 
-            } finally { 
-                labelEl.innerHTML = oldText; 
-            }
+            const label = document.getElementById(labelId);
+            label.innerHTML = "⏳...";
+
+            compressAndProcess(file, 400, function(compressedBase64) {
+                document.getElementById(targetId).value = compressedBase64;
+                label.innerHTML = "✅ DONE";
+                alert("Image compiled successfully! Click 'Update Profile' to store changes.");
+            });
+        }
+
+        function processFileToGallery(input, containerId, labelId) {
+            const file = input.files[0];
+            if (!file) return;
+            const label = document.getElementById(labelId);
+            const oldText = label.innerHTML;
+            label.innerHTML = "⏳ LOCALIZING...";
+
+            compressAndProcess(file, 600, function(compressedBase64) {
+                addImageRow(compressedBase64, containerId);
+                label.innerHTML = oldText;
+            });
         }
 
         function setupSelector() {
@@ -231,7 +239,7 @@
                 img: mainGall[0] || "",
                 gallery: mainGall,
                 detailsImages: detGall
-            }).then(() => { alert("🚀 Added!"); cancelEdit(); });
+            }).then(() => { alert("🚀 Tour Package Saved!"); cancelEdit(); });
         };
 
         window.updatePkg = () => {
@@ -245,7 +253,7 @@
                 gallery: mainGall, 
                 img: mainGall[0] || "",
                 detailsImages: detGall
-            }).then(() => { alert("✨ Updated!"); cancelEdit(); });
+            }).then(() => { alert("✨ Updated Successfully!"); cancelEdit(); });
         };
 
         window.editPkg = (key, b64) => {
@@ -285,7 +293,7 @@
                 vehicleType: document.getElementById('vType').value,
                 taxiNo: document.getElementById('tNo').value,
                 driverImg: document.getElementById('dImg').value
-            }).then(() => alert("✅ Profile Updated!"));
+            }).then(() => alert("✅ Profile Data Synced Successfully!"));
         };
 
         window.checkPass = () => { if(document.getElementById('pass-input').value === "1234") { localStorage.setItem("fleet_admin_logged_in", "true"); location.reload(); } };
