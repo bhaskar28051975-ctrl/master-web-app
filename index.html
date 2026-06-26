@@ -11,41 +11,36 @@
         .popup-active { display: flex; }
         .share-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; padding: 15px; }
         .share-active { display: flex; }
-        /* Ad Overlay Styling */
         .ad-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .ad-active { display: flex; }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">
 
-    <!-- Access Lockout Screen -->
     <div id="inactive-screen" class="hidden fixed inset-0 bg-slate-900 text-white z-[2000] flex-col items-center justify-center p-10 text-center">
         <h1 class="text-6xl mb-4">🚫</h1>
         <h2 class="text-2xl font-black uppercase tracking-wide">Access Denied</h2>
         <p class="text-sm text-slate-400 mt-2 font-medium">This fleet tracking node is currently set to inactive by management.</p>
     </div>
 
-    <!-- TIMED INTERSTITIAL AD OVERLAY -->
     <div id="ad-overlay" class="ad-overlay">
         <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl p-6 relative flex flex-col items-center text-center">
-            <!-- Countdown Badge -->
             <div class="absolute top-4 right-4 bg-red-600 text-white font-black text-xs px-3 py-1.5 rounded-full tracking-wider shadow-sm">
                 Ad closes in: <span id="ad-timer">5</span>s
             </div>
             
-            <span class="text-xs font-black tracking-widest text-blue-600 uppercase mb-1 mt-4">Sponsored Announcement</span>
-            <h3 class="font-black text-xl text-slate-900 uppercase tracking-tight mb-4">Premium Travel Services</h3>
+            <span id="ad-display-tag" class="text-xs font-black tracking-widest text-blue-600 uppercase mb-1 mt-4">Sponsored Announcement</span>
+            <h3 id="ad-display-headline" class="font-black text-xl text-slate-900 uppercase tracking-tight mb-4">Premium Travel Services</h3>
             
-            <!-- Video/Image Ad Content Container (You can replace src with a video link) -->
             <div class="w-full aspect-video rounded-xl overflow-hidden bg-black shadow-inner border mb-4">
-                <video src="https://www.w3schools.com/html/mov_bbb.mp4" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+                <video id="ad-display-video" src="" autoplay loop muted playsinline class="w-full h-full object-cover hidden"></video>
+                <img id="ad-display-img" src="" class="w-full h-full object-cover hidden" alt="Advertisement">
             </div>
             
-            <p class="text-xs text-gray-500 font-medium px-2 leading-relaxed">Book premium commercial route configurations, multi-state tour permits, and corporate event management solutions with Bhaskar Travels.</p>
+            <p id="ad-display-desc" class="text-xs text-gray-500 font-medium px-2 leading-relaxed">Loading promotional details...</p>
         </div>
     </div>
 
-    <!-- Main Navigation Bar Header with Share Button -->
     <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-lg sticky top-0 z-50">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="text-left flex-1 pr-2">
@@ -58,7 +53,6 @@
         </div>
     </header>
 
-    <!-- INTERACTIVE SHARE LINK GATEWAY MODAL -->
     <div id="share-modal" class="share-overlay">
         <div class="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl relative text-slate-900 text-center animate-in fade-in zoom-in-95 duration-200">
             <button onclick="closeShareModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
@@ -78,10 +72,8 @@
         </div>
     </div>
 
-    <!-- Multi-Profile Visual Section (Displays Driver Video/Photo AND Taxi Photo) -->
     <section class="bg-[#cc0000] text-white p-4 mb-4 shadow-lg flex flex-col gap-3">
         <div class="flex items-center justify-between">
-            <!-- Driver Video Component Holder Container -->
             <div class="w-[30%] relative">
                 <div class="w-full aspect-square border-2 border-white rounded-2xl shadow-md overflow-hidden bg-black">
                     <video id="display-driver-video" src="" autoplay loop muted playsinline class="w-full h-full object-cover hidden"></video>
@@ -97,7 +89,6 @@
                 </div>
             </div>
 
-            <!-- Taxi Image/Video Component Holder Container -->
             <div class="w-[30%] relative flex justify-end">
                 <div class="w-full max-w-[90px] aspect-square border-2 border-white rounded-2xl shadow-md overflow-hidden bg-black">
                     <video id="display-taxi-video" src="" autoplay loop muted playsinline class="w-full h-full object-cover hidden"></video>
@@ -114,16 +105,13 @@
         </div>
     </section>
 
-    <!-- Active Tour Packages Container -->
     <main id="package-container" class="px-4 pb-24 space-y-6"></main>
 
-    <!-- Details View Presentation Overlay Modal Box -->
     <div id="popup-box" class="popup-overlay">
         <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden relative shadow-2xl flex flex-col max-h-[85vh]">
             <button onclick="closePopup()" class="absolute top-3 right-3 bg-red-600 text-white w-10 h-10 rounded-full font-bold z-50 shadow-md">✕</button>
             <div id="pop-content" class="overflow-y-auto p-5">
                 <h2 id="pop-title" class="text-2xl font-black text-blue-900 mb-4 uppercase tracking-tight"></h2>
-                <!-- Video / Image Container within Content Popup Context -->
                 <div id="pop-gallery" class="space-y-3 mb-4"></div>
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-blue-600 shadow-inner">
                     <p id="pop-desc" class="text-gray-800 text-sm whitespace-pre-line leading-relaxed"></p>
@@ -150,7 +138,18 @@
         const urlParams = new URLSearchParams(window.location.search);
         const TAXI_ID = urlParams.get('id') || 'taxi1';
 
-        // Load Settings (Handles both image URLs and video paths dynamically)
+        // Global state tracking variables for Advertisement Config
+        window.adConfig = {
+            timerDuration: 5
+        };
+
+        const isVideoFile = (url) => {
+            if (!url) return false;
+            const cleanUrl = url.split('?')[0].toLowerCase();
+            return cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm');
+        };
+
+        // LOAD SETTINGS
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
@@ -162,9 +161,8 @@
                 document.getElementById('v-capacity').innerText = data.vehicleCapacity || "4+1";
                 document.getElementById('v-no').innerText = data.taxiNo || "---";
                 
-                // Driver Media Toggle Check
                 if(data.driverImg) {
-                    if(data.driverImg.endsWith('.mp4') || data.driverImg.endsWith('.webm')) {
+                    if(isVideoFile(data.driverImg)) {
                         document.getElementById('display-driver-video').src = data.driverImg;
                         document.getElementById('display-driver-video').classList.remove('hidden');
                         document.getElementById('display-driver-img').classList.add('hidden');
@@ -175,9 +173,8 @@
                     }
                 }
                 
-                // Taxi Media Toggle Check
                 if(data.taxiImg) {
-                    if(data.taxiImg.endsWith('.mp4') || data.taxiImg.endsWith('.webm')) {
+                    if(isVideoFile(data.taxiImg)) {
                         document.getElementById('display-taxi-video').src = data.taxiImg;
                         document.getElementById('display-taxi-video').classList.remove('hidden');
                         document.getElementById('display-taxi-img').classList.add('hidden');
@@ -190,40 +187,63 @@
             }
         });
 
-        // Load Tour Packages
+        // NEW! LIVE SYNCHRONIZED LISTEN FOR AD ENGINE
+        onValue(ref(db, TAXI_ID + '/advertisement'), (snap) => {
+            const data = snap.val();
+            if (data) {
+                window.adConfig.timerDuration = data.timerDuration || 5;
+                document.getElementById('ad-display-tag').innerText = data.sponsoredTag || "Sponsored Announcement";
+                document.getElementById('ad-display-headline').innerText = data.headline || "Premium Travel Services";
+                document.getElementById('ad-display-desc').innerText = data.description || "";
+                
+                const mediaUrl = data.mediaUrl || "";
+                if (mediaUrl) {
+                    if (isVideoFile(mediaUrl)) {
+                        document.getElementById('ad-display-video').src = mediaUrl;
+                        document.getElementById('ad-display-video').classList.remove('hidden');
+                        document.getElementById('ad-display-img').classList.add('hidden');
+                    } else {
+                        document.getElementById('ad-display-img').src = mediaUrl;
+                        document.getElementById('ad-display-img').classList.remove('hidden');
+                        document.getElementById('ad-display-video').classList.add('hidden');
+                    }
+                }
+            }
+        });
+
+        // LOAD TOUR PACKAGES
         onValue(ref(db, TAXI_ID + '/packages'), (snap) => {
             const container = document.getElementById('package-container'); container.innerHTML = "";
             snap.forEach((child) => {
                 const pkg = child.val();
-                const b64Title = btoa(unescape(encodeURIComponent(pkg.title)));
-                const b64Desc = btoa(unescape(encodeURIComponent(pkg.desc)));
-                const gallery = pkg.gallery || [pkg.img];
+                const b64Title = btoa(unescape(encodeURIComponent(pkg.title || '')));
+                const b64Desc = btoa(unescape(encodeURIComponent(pkg.desc || '')));
+                const gallery = pkg.gallery || (pkg.img ? [pkg.img] : []);
                 const b64Gallery = btoa(unescape(encodeURIComponent(JSON.stringify(gallery))));
 
-                // Package media calculation engine render (Supports both video element or images)
                 let visualCode = '';
-                if(pkg.img && (pkg.img.endsWith('.mp4') || pkg.img.endsWith('.webm'))) {
+                if(pkg.img && isVideoFile(pkg.img)) {
                     visualCode = `<video src="${pkg.img}" autoplay loop muted playsinline class="w-full h-52 object-cover"></video>`;
                 } else {
-                    visualCode = `<img src="${pkg.img || 'https://via.placeholder.com/400x200?text=No+Image+Available'}" class="w-full h-52 object-cover">`;
+                    visualCode = `<img src="${pkg.img || 'https://via.placeholder.com/400x200?text=No+Image+Available'}" class="w-full h-52 object-cover" alt="Package Media">`;
                 }
 
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
                         ${visualCode}
                         <div class="p-5">
-                            <h2 class="text-xl font-black uppercase text-blue-900 mb-2 tracking-tight">${pkg.title}</h2>
-                            <p class="text-gray-700 text-sm mb-5 line-clamp-2 leading-relaxed">${pkg.desc}</p>
+                            <h2 class="text-xl font-black uppercase text-blue-900 mb-2 tracking-tight">${pkg.title || 'Tour Package'}</h2>
+                            <p class="text-gray-700 text-sm mb-5 line-clamp-2 leading-relaxed">${pkg.desc || ''}</p>
                             <div class="flex gap-2">
                                 <button onclick="triggerAdGate(() => openPop('${b64Title}', '${b64Desc}', '${b64Gallery}'))" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-black py-4 rounded-lg text-xs uppercase shadow-md transition tracking-wider">View Details</button>
-                                <button onclick="triggerAdGate(() => bookWhatsApp('${pkg.title}'))" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-lg text-xs uppercase shadow-md transition tracking-wider">WhatsApp</button>
+                                <button onclick="triggerAdGate(() => bookWhatsApp('${(pkg.title || '').replace(/'/g, "\\'")}'))" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-lg text-xs uppercase shadow-md transition tracking-wider">WhatsApp</button>
                             </div>
                         </div>
                     </div>`;
             });
         });
 
-        // REFERRED APP LINK SHARING LOGIC
+        // WHATSAPP SHARE ACTION
         window.sendProfileViaWhatsApp = () => {
             const num = document.getElementById('share-target-phone').value.trim();
             const travelsTitle = document.getElementById('display-title').innerText;
@@ -262,10 +282,12 @@
     </script>
 
     <script>
-        // AD ROUTING GATEKEEPER MECHANISM
+        // AD OVERLAY TIMED RUNTIME ENGINE
         let countdownInterval;
         window.triggerAdGate = (callbackAction) => {
-            let durationLeft = 5; // Configurable Ad view window duration time parameter
+            // Read dynamic duration populated via DB lookup config
+            let durationLeft = window.adConfig ? window.adConfig.timerDuration : 5; 
+            
             document.getElementById('ad-timer').innerText = durationLeft;
             document.getElementById('ad-overlay').classList.add('ad-active');
             
@@ -277,7 +299,6 @@
                 if (durationLeft <= 0) {
                     clearInterval(countdownInterval);
                     document.getElementById('ad-overlay').classList.remove('ad-active');
-                    // Fire off the intended process function smoothly
                     callbackAction();
                 }
             }, 1000);
@@ -292,14 +313,26 @@
         window.openPop = (t, d, g) => {
             document.getElementById('pop-title').innerText = decodeURIComponent(escape(atob(t)));
             document.getElementById('pop-desc').innerText = decodeURIComponent(escape(atob(d)));
-            const gallery = JSON.parse(decodeURIComponent(escape(atob(g))));
-            let galHtml = "";
             
+            let gallery = [];
+            try {
+                gallery = JSON.parse(decodeURIComponent(escape(atob(g))));
+            } catch(e) { console.error(e); }
+            
+            let galHtml = "";
+            const isVideoFile = (url) => {
+                if (!url) return false;
+                const cleanUrl = url.split('?')[0].toLowerCase();
+                return cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm');
+            };
+
             gallery.forEach(mediaItem => {
-                if(mediaItem.endsWith('.mp4') || mediaItem.endsWith('.webm')) {
-                    galHtml += `<video src="${mediaItem}" autoplay loop muted playsinline class="w-full rounded-xl shadow-md border object-cover mb-2"></video>`;
-                } else {
-                    galHtml += `<img src="${mediaItem}" class="w-full rounded-xl shadow-md border object-cover mb-2">`;
+                if(mediaItem) {
+                    if(isVideoFile(mediaItem)) {
+                        galHtml += `<video src="${mediaItem}" autoplay loop muted playsinline class="w-full rounded-xl shadow-md border object-cover mb-2"></video>`;
+                    } else {
+                        galHtml += `<img src="${mediaItem}" class="w-full rounded-xl shadow-md border object-cover mb-2" alt="Gallery">`;
+                    }
                 }
             });
             
