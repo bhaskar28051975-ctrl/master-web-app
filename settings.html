@@ -15,17 +15,14 @@
                 <p class="text-xs text-yellow-400 font-bold">Manage Fleet Nodes, Packages & Interstitials</p>
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
-                    <label for="taxi-select" class="text-xs font-bold uppercase tracking-wider text-slate-400">Select Unit:</label>
-                    <select id="taxi-select" class="bg-slate-900 text-yellow-400 font-mono font-bold text-xs p-1 rounded outline-none border border-slate-600 focus:border-yellow-400">
-                        <option value="taxi1">Taxi Node 1 (taxi1)</option>
-                        <option value="taxi2">Taxi Node 2 (taxi2)</option>
-                        <option value="taxi3">Taxi Node 3 (taxi3)</option>
-                        <option value="taxi4">Taxi Node 4 (taxi4)</option>
-                        <option value="taxi5">Taxi Node 5 (taxi5)</option>
-                    </select>
+                <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-xl border border-slate-700 w-full sm:w-auto">
+                    <label for="taxi-input" class="text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">Unit ID:</label>
+                    <input id="taxi-input" type="text" placeholder="e.g. taxi6, taxi100" class="bg-slate-900 text-yellow-400 font-mono font-bold text-xs p-1.5 rounded outline-none border border-slate-600 focus:border-yellow-400 w-full sm:w-28 text-center uppercase">
+                    <button id="load-node-btn" class="bg-yellow-500 hover:bg-yellow-600 text-slate-950 text-xs font-black px-3 py-1.5 rounded-lg transition uppercase shrink-0">
+                        Load 🔄
+                    </button>
                 </div>
-                <span class="text-xs font-mono bg-slate-800 px-3 py-2 rounded-xl border border-slate-700 text-slate-300 hidden sm:inline-block">
+                <span class="text-xs font-mono bg-slate-800 px-3 py-3 rounded-xl border border-slate-700 text-slate-300 hidden md:inline-block">
                     Active ID: <span id="current-node-txt" class="text-white font-bold">...</span>
                 </span>
             </div>
@@ -167,21 +164,19 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
-        // Initial Taxi node configuration setup
+        // Initial setup reading from URL params
         const urlParams = new URLSearchParams(window.location.search);
         let TAXI_ID = urlParams.get('id') || 'taxi1';
         
-        // Match drop down value to URL params or default settings
-        const taxiSelect = document.getElementById('taxi-select');
-        taxiSelect.value = TAXI_ID;
+        const taxiInput = document.getElementById('taxi-input');
+        taxiInput.value = TAXI_ID;
         document.getElementById('current-node-txt').innerText = TAXI_ID;
 
-        // Firebase references holders for dynamic reassignment
         let settingsListener, adListener;
 
-        // Master function to sync admin data inputs when selector modifications are made
+        // Core data synchronization engine
         function setupDatabaseListeners(nodeId) {
-            // Detach previous bindings if any exist to clean processor pipeline memory
+            // Unbind previous active listeners to protect runtime speed
             if(settingsListener) settingsListener();
             if(adListener) adListener();
 
@@ -201,12 +196,20 @@
                     document.getElementById('set-v-capacity').value = data.vehicleCapacity || "";
                     document.getElementById('set-taxi-img').value = data.taxiImg || "";
                 } else {
-                    // Reset to clean layouts if configuration object isn't present yet on specific node path
-                    document.getElementById('settings-form').reset();
+                    // Set clean default state values if creating a brand new node path string
+                    document.getElementById('set-status').value = "active";
+                    document.getElementById('set-title').value = "";
+                    document.getElementById('set-phone').value = "";
+                    document.getElementById('set-driver-name').value = "";
+                    document.getElementById('set-driver-img').value = "";
+                    document.getElementById('set-taxi-no').value = "";
+                    document.getElementById('set-v-type').value = "";
+                    document.getElementById('set-v-capacity').value = "";
+                    document.getElementById('set-taxi-img').value = "";
                 }
             });
 
-            // 2. Sync interstitial advertisement data keys
+            // 2. Sync interstitial advertisement parameters
             adListener = onValue(ref(db, nodeId + '/advertisement'), (snap) => {
                 const data = snap.val();
                 if(data) {
@@ -216,23 +219,37 @@
                     document.getElementById('ad-set-media').value = data.mediaUrl || "https://www.w3schools.com/html/mov_bbb.mp4";
                     document.getElementById('ad-set-desc').value = data.description || "";
                 } else {
-                    document.getElementById('ad-form').reset();
+                    // Default values for clear new nodes setup
+                    document.getElementById('ad-set-timer').value = 5;
+                    document.getElementById('ad-set-tag').value = "Sponsored Announcement";
+                    document.getElementById('ad-set-headline').value = "Premium Travel Services";
+                    document.getElementById('ad-set-media').value = "";
+                    document.getElementById('ad-set-desc').value = "";
                 }
             });
         }
 
-        // Initialize bindings immediately for startup load state
+        // Initialize immediately
         setupDatabaseListeners(TAXI_ID);
 
-        // Bind drop-down action switcher to alter targeted target node updates live
-        taxiSelect.addEventListener('change', (e) => {
-            TAXI_ID = e.target.value;
-            // Update URL search parameters container window safely without page refresh loop
+        // Unlimited Manual Entry Switcher Trigger
+        document.getElementById('load-node-btn').onclick = () => {
+            let rawVal = taxiInput.value.trim().toLowerCase();
+            if(!rawVal) {
+                alert("Please enter a valid node name string value.");
+                return;
+            }
+            // Sanitize tracking path characters strictly for Firebase standard rules
+            TAXI_ID = rawVal.replace(/[\.#\$\[\]]/g, "-");
+            taxiInput.value = TAXI_ID;
+
+            // Push updated URL tracking variables cleanly
             const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + TAXI_ID;
             window.history.pushState({ path: newUrl }, '', newUrl);
             
             setupDatabaseListeners(TAXI_ID);
-        });
+            alert(`Switched to unit console workspace path: "${TAXI_ID}"`);
+        };
 
         // Form Submit: Process Settings Data Update Task
         document.getElementById('settings-form').onsubmit = (e) => {
@@ -247,7 +264,7 @@
                 vehicleType: document.getElementById('set-v-type').value,
                 vehicleCapacity: document.getElementById('set-v-capacity').value,
                 taxiImg: document.getElementById('set-taxi-img').value
-            }).then(() => alert(`Profile properties for ${TAXI_ID} synchronized successfully!`)).catch(err => alert("Error saving: " + err.message));
+            }).then(() => alert(`Profile properties for "${TAXI_ID}" synchronized successfully!`)).catch(err => alert("Error saving: " + err.message));
         };
 
         // Form Submit: Process Advertisement Context Parameters Update Task
@@ -259,7 +276,7 @@
                 headline: document.getElementById('ad-set-headline').value,
                 mediaUrl: document.getElementById('ad-set-media').value,
                 description: document.getElementById('ad-set-desc').value
-            }).then(() => alert(`Advertisement properties for ${TAXI_ID} synchronized live!`)).catch(err => alert("Error saving ad block: " + err.message));
+            }).then(() => alert(`Advertisement properties for "${TAXI_ID}" synchronized live!`)).catch(err => alert("Error saving ad block: " + err.message));
         };
 
         // Form Submit: Insert New Tour Package Block Task
@@ -285,7 +302,7 @@
             if(parsedGallery) newPackageData.gallery = parsedGallery;
 
             push(ref(db, TAXI_ID + '/packages'), newPackageData).then(() => {
-                alert(`New travel routing package module added to ${TAXI_ID} successfully!`);
+                alert(`New travel routing package module added to "${TAXI_ID}" successfully!`);
                 document.getElementById('package-form').reset();
             }).catch(err => alert("Error appending package: " + err.message));
         };
