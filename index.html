@@ -187,7 +187,7 @@
             }
         });
 
-        // NEW! LIVE SYNCHRONIZED LISTEN FOR AD ENGINE
+        // LIVE SYNCHRONIZED LISTEN FOR AD ENGINE
         onValue(ref(db, TAXI_ID + '/advertisement'), (snap) => {
             const data = snap.val();
             if (data) {
@@ -211,11 +211,27 @@
             }
         });
 
-        // LOAD TOUR PACKAGES
+        // LOAD TOUR PACKAGES WITH ORDER SORTING
         onValue(ref(db, TAXI_ID + '/packages'), (snap) => {
-            const container = document.getElementById('package-container'); container.innerHTML = "";
-            snap.forEach((child) => {
-                const pkg = child.val();
+            const container = document.getElementById('package-container'); 
+            container.innerHTML = "";
+            
+            const rawData = snap.val() || {};
+            const packagesList = [];
+
+            // Convert object map into array
+            Object.keys(rawData).forEach(key => {
+                packagesList.push({
+                    id: key,
+                    ...rawData[key]
+                });
+            });
+
+            // Sort array sequentially by 'order' property
+            packagesList.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+
+            // Render sorted packages
+            packagesList.forEach((pkg) => {
                 const b64Title = btoa(unescape(encodeURIComponent(pkg.title || '')));
                 const b64Desc = btoa(unescape(encodeURIComponent(pkg.desc || '')));
                 const gallery = pkg.gallery || (pkg.img ? [pkg.img] : []);
@@ -285,7 +301,6 @@
         // AD OVERLAY TIMED RUNTIME ENGINE
         let countdownInterval;
         window.triggerAdGate = (callbackAction) => {
-            // Read dynamic duration populated via DB lookup config
             let durationLeft = window.adConfig ? window.adConfig.timerDuration : 5; 
             
             document.getElementById('ad-timer').innerText = durationLeft;
