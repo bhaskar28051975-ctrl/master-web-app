@@ -31,6 +31,7 @@
 
     <main class="max-w-4xl mx-auto p-4 space-y-8 mt-4">
 
+        <!-- Profile Settings Section -->
         <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
             <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 flex items-center gap-2">
                 ⚙️ Profile & Fleet Settings
@@ -83,6 +84,7 @@
             </form>
         </section>
 
+        <!-- Advertisement Interstitial Section -->
         <section class="bg-amber-50 rounded-2xl p-6 shadow-sm border border-amber-200">
             <h2 class="text-lg font-black text-amber-900 uppercase tracking-tight mb-1 flex items-center gap-2">
                 📺 Manage Advertisement Interstitial
@@ -118,6 +120,7 @@
             </form>
         </section>
 
+        <!-- Add New Tour Package Section -->
         <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
             <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 flex items-center gap-2">
                 📦 Add New Tour Package Module
@@ -147,11 +150,62 @@
             </form>
         </section>
 
+        <!-- Dynamic Tour Packages Manager List -->
+        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                    🗺️ Dynamic Packages Manager (<span id="pkg-count">0</span>)
+                </h2>
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Use arrows to reorder items</span>
+            </div>
+
+            <div id="packages-list-container" class="space-y-3">
+                <p class="text-center text-xs font-bold text-slate-400 py-6">Loading packages list...</p>
+            </div>
+        </section>
+
     </main>
+
+    <!-- Edit Package Modal -->
+    <div id="edit-pkg-modal" class="fixed inset-0 bg-slate-950/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+            <div class="bg-slate-900 text-white p-4 px-6 flex justify-between items-center">
+                <h3 class="font-black uppercase tracking-wider text-sm text-yellow-400">Edit Tour Package</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-white font-extrabold text-lg">✕</button>
+            </div>
+            <form id="edit-pkg-form" class="p-6 space-y-4">
+                <input type="hidden" id="edit-pkg-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Package Name / Destination Route</label>
+                    <input id="edit-pkg-title" type="text" required class="w-full p-3 border rounded-xl font-bold text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Primary Cover Media URL</label>
+                    <input id="edit-pkg-img" type="url" required class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Package Description details</label>
+                    <textarea id="edit-pkg-desc" rows="3" required class="w-full p-3 border rounded-xl text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Gallery Assets JSON List</label>
+                    <input id="edit-pkg-gallery" type="text" class="w-full p-3 border rounded-xl text-xs font-mono">
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button type="button" onclick="closeEditModal()" class="border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold py-3 rounded-xl uppercase tracking-wider transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black py-3 rounded-xl uppercase tracking-wider transition shadow-md">
+                        Save Changes 💾
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, update, push, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
@@ -172,13 +226,15 @@
         taxiInput.value = TAXI_ID;
         document.getElementById('current-node-txt').innerText = TAXI_ID;
 
-        let settingsListener, adListener;
+        let settingsListener, adListener, packagesListener;
+        let currentPackagesList = [];
 
         // Core data synchronization engine
         function setupDatabaseListeners(nodeId) {
             // Unbind previous active listeners to protect runtime speed
             if(settingsListener) settingsListener();
             if(adListener) adListener();
+            if(packagesListener) packagesListener();
 
             document.getElementById('current-node-txt').innerText = nodeId;
 
@@ -196,7 +252,6 @@
                     document.getElementById('set-v-capacity').value = data.vehicleCapacity || "";
                     document.getElementById('set-taxi-img').value = data.taxiImg || "";
                 } else {
-                    // Set clean default state values if creating a brand new node path string
                     document.getElementById('set-status').value = "active";
                     document.getElementById('set-title').value = "";
                     document.getElementById('set-phone').value = "";
@@ -219,13 +274,79 @@
                     document.getElementById('ad-set-media').value = data.mediaUrl || "https://www.w3schools.com/html/mov_bbb.mp4";
                     document.getElementById('ad-set-desc').value = data.description || "";
                 } else {
-                    // Default values for clear new nodes setup
                     document.getElementById('ad-set-timer').value = 5;
                     document.getElementById('ad-set-tag').value = "Sponsored Announcement";
                     document.getElementById('ad-set-headline').value = "Premium Travel Services";
                     document.getElementById('ad-set-media').value = "";
                     document.getElementById('ad-set-desc').value = "";
                 }
+            });
+
+            // 3. Sync and render Packages List with order sorting
+            packagesListener = onValue(ref(db, nodeId + '/packages'), (snap) => {
+                const data = snap.val() || {};
+                currentPackagesList = [];
+
+                Object.keys(data).forEach((key) => {
+                    currentPackagesList.push({
+                        id: key,
+                        ...data[key]
+                    });
+                });
+
+                // Sort by display order if present
+                currentPackagesList.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+                renderPackagesUI();
+            });
+        }
+
+        // Render Packages List UI
+        function renderPackagesUI() {
+            const container = document.getElementById('packages-list-container');
+            document.getElementById('pkg-count').innerText = currentPackagesList.length;
+            container.innerHTML = '';
+
+            if (currentPackagesList.length === 0) {
+                container.innerHTML = `<p class="text-center text-xs font-bold text-slate-400 py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">No tour packages found for this node. Add one above!</p>`;
+                return;
+            }
+
+            currentPackagesList.forEach((pkg, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 hover:border-slate-300 transition";
+                
+                const galleryText = pkg.gallery ? JSON.stringify(pkg.gallery) : '';
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <img src="${pkg.img}" class="w-14 h-14 object-cover rounded-lg bg-slate-200 border border-slate-300 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200'">
+                        <div class="min-w-0 flex-1">
+                            <h3 class="font-extrabold text-xs text-slate-800 uppercase line-clamp-1">${pkg.title || 'Untitled Package'}</h3>
+                            <p class="text-[11px] font-medium text-slate-500 line-clamp-1 mt-0.5">${pkg.desc || 'No description provided'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+                        <!-- Up / Down Reorder Buttons -->
+                        <button onclick="movePackage('${pkg.id}', ${index}, -1)" ${index === 0 ? 'disabled class="opacity-30 cursor-not-allowed bg-slate-200 text-slate-600 p-2 rounded-lg text-xs font-black"' : 'class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-lg text-xs font-black transition"'}>
+                            ▲
+                        </button>
+                        <button onclick="movePackage('${pkg.id}', ${index}, 1)" ${index === currentPackagesList.length - 1 ? 'disabled class="opacity-30 cursor-not-allowed bg-slate-200 text-slate-600 p-2 rounded-lg text-xs font-black"' : 'class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-lg text-xs font-black transition"'}>
+                            ▼
+                        </button>
+                        
+                        <!-- Edit Button -->
+                        <button onclick="openEditModal('${pkg.id}')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold text-xs px-3 py-2 rounded-lg transition uppercase flex items-center gap-1 ml-1">
+                            ✏️ Edit
+                        </button>
+
+                        <!-- Delete Button -->
+                        <button onclick="deletePackage('${pkg.id}', '${pkg.title}')" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold text-xs px-3 py-2 rounded-lg transition uppercase flex items-center gap-1">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
             });
         }
 
@@ -239,11 +360,9 @@
                 alert("Please enter a valid node name string value.");
                 return;
             }
-            // Sanitize tracking path characters strictly for Firebase standard rules
             TAXI_ID = rawVal.replace(/[\.#\$\[\]]/g, "-");
             taxiInput.value = TAXI_ID;
 
-            // Push updated URL tracking variables cleanly
             const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + TAXI_ID;
             window.history.pushState({ path: newUrl }, '', newUrl);
             
@@ -297,7 +416,8 @@
             const newPackageData = {
                 title: document.getElementById('pkg-title').value,
                 img: document.getElementById('pkg-img').value,
-                desc: document.getElementById('pkg-desc').value
+                desc: document.getElementById('pkg-desc').value,
+                order: currentPackagesList.length
             };
             if(parsedGallery) newPackageData.gallery = parsedGallery;
 
@@ -305,6 +425,78 @@
                 alert(`New travel routing package module added to "${TAXI_ID}" successfully!`);
                 document.getElementById('package-form').reset();
             }).catch(err => alert("Error appending package: " + err.message));
+        };
+
+        // Global functions for Edit, Delete, Move
+        window.openEditModal = function(pkgId) {
+            const pkg = currentPackagesList.find(p => p.id === pkgId);
+            if (!pkg) return;
+
+            document.getElementById('edit-pkg-id').value = pkg.id;
+            document.getElementById('edit-pkg-title').value = pkg.title || '';
+            document.getElementById('edit-pkg-img').value = pkg.img || '';
+            document.getElementById('edit-pkg-desc').value = pkg.desc || '';
+            document.getElementById('edit-pkg-gallery').value = pkg.gallery ? JSON.stringify(pkg.gallery) : '';
+
+            document.getElementById('edit-pkg-modal').classList.remove('hidden');
+        };
+
+        window.closeEditModal = function() {
+            document.getElementById('edit-pkg-modal').classList.add('hidden');
+        };
+
+        document.getElementById('edit-pkg-form').onsubmit = function(e) {
+            e.preventDefault();
+            const pkgId = document.getElementById('edit-pkg-id').value;
+
+            let parsedGallery = null;
+            const galleryVal = document.getElementById('edit-pkg-gallery').value.trim();
+            if(galleryVal) {
+                try {
+                    parsedGallery = JSON.parse(galleryVal);
+                } catch(err) {
+                    alert("Invalid JSON format written into Gallery field.");
+                    return;
+                }
+            }
+
+            const updatedData = {
+                title: document.getElementById('edit-pkg-title').value,
+                img: document.getElementById('edit-pkg-img').value,
+                desc: document.getElementById('edit-pkg-desc').value
+            };
+
+            if(parsedGallery) updatedData.gallery = parsedGallery;
+            else updatedData.gallery = null;
+
+            update(ref(db, TAXI_ID + '/packages/' + pkgId), updatedData)
+                .then(() => {
+                    alert("Package updated successfully!");
+                    closeEditModal();
+                })
+                .catch(err => alert("Error updating package: " + err.message));
+        };
+
+        window.deletePackage = function(pkgId, title) {
+            if (confirm(`Are you sure you want to delete "${title || 'this package'}"?`)) {
+                remove(ref(db, TAXI_ID + '/packages/' + pkgId))
+                    .then(() => alert("Package deleted successfully!"))
+                    .catch(err => alert("Error deleting package: " + err.message));
+            }
+        };
+
+        window.movePackage = function(pkgId, currentIndex, direction) {
+            const targetIndex = currentIndex + direction;
+            if (targetIndex < 0 || targetIndex >= currentPackagesList.length) return;
+
+            const updates = {};
+            const itemA = currentPackagesList[currentIndex];
+            const itemB = currentPackagesList[targetIndex];
+
+            updates[TAXI_ID + '/packages/' + itemA.id + '/order'] = targetIndex;
+            updates[TAXI_ID + '/packages/' + itemB.id + '/order'] = currentIndex;
+
+            update(ref(db), updates).catch(err => alert("Error reordering packages: " + err.message));
         };
     </script>
 </body>
