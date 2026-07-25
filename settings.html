@@ -126,13 +126,20 @@
                 📦 Add New Tour Package Module
             </h2>
             <form id="package-form" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-1">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Package Name / Destination Route</label>
-                        <input id="pkg-title" type="text" required class="w-full p-3 border rounded-xl font-bold">
+                        <input id="pkg-title" type="text" required class="w-full p-3 border rounded-xl font-bold text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Primary Cover Media URL (.mp4 / .webm / image url)</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Media Format</label>
+                        <select id="pkg-media-type" class="w-full p-3 border rounded-xl font-bold bg-slate-50 text-sm">
+                            <option value="image">📷 Image URL</option>
+                            <option value="video">🎥 Video URL (.mp4 / .webm)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Primary Cover Media URL</label>
                         <input id="pkg-img" type="url" required class="w-full p-3 border rounded-xl text-sm">
                     </div>
                 </div>
@@ -168,16 +175,25 @@
 
     <!-- Edit Package Modal -->
     <div id="edit-pkg-modal" class="fixed inset-0 bg-slate-950/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100">
             <div class="bg-slate-900 text-white p-4 px-6 flex justify-between items-center">
                 <h3 class="font-black uppercase tracking-wider text-sm text-yellow-400">Edit Tour Package</h3>
                 <button onclick="closeEditModal()" class="text-slate-400 hover:text-white font-extrabold text-lg">✕</button>
             </div>
             <form id="edit-pkg-form" class="p-6 space-y-4">
                 <input type="hidden" id="edit-pkg-id">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Package Name / Destination Route</label>
-                    <input id="edit-pkg-title" type="text" required class="w-full p-3 border rounded-xl font-bold text-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Package Name / Destination Route</label>
+                        <input id="edit-pkg-title" type="text" required class="w-full p-3 border rounded-xl font-bold text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Media Format</label>
+                        <select id="edit-pkg-media-type" class="w-full p-3 border rounded-xl font-bold bg-slate-50 text-sm">
+                            <option value="image">📷 Image URL</option>
+                            <option value="video">🎥 Video URL (.mp4 / .webm)</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Primary Cover Media URL</label>
@@ -205,7 +221,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, push, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7omObD0cWgdqGsNq-8L7n9i_Akp_JCEM",
@@ -231,7 +247,7 @@
 
         // Core data synchronization engine
         function setupDatabaseListeners(nodeId) {
-            // Unbind previous active listeners to protect runtime speed
+            // Unbind previous active listeners
             if(settingsListener) settingsListener();
             if(adListener) adListener();
             if(packagesListener) packagesListener();
@@ -315,32 +331,34 @@
                 const card = document.createElement('div');
                 card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 hover:border-slate-300 transition";
                 
-                const galleryText = pkg.gallery ? JSON.stringify(pkg.gallery) : '';
+                const isVideo = pkg.mediaType === 'video' || (pkg.img && (pkg.img.endsWith('.mp4') || pkg.img.endsWith('.webm')));
+                
+                const mediaTag = isVideo 
+                    ? `<video src="${pkg.img}" autoplay loop muted playsinline class="w-14 h-14 object-cover rounded-lg bg-slate-900 border border-slate-300 shrink-0"></video>`
+                    : `<img src="${pkg.img}" class="w-14 h-14 object-cover rounded-lg bg-slate-200 border border-slate-300 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200'">`;
 
                 card.innerHTML = `
                     <div class="flex items-center gap-3 w-full sm:w-auto">
-                        <img src="${pkg.img}" class="w-14 h-14 object-cover rounded-lg bg-slate-200 border border-slate-300 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200'">
+                        ${mediaTag}
                         <div class="min-w-0 flex-1">
-                            <h3 class="font-extrabold text-xs text-slate-800 uppercase line-clamp-1">${pkg.title || 'Untitled Package'}</h3>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-extrabold text-xs text-slate-800 uppercase line-clamp-1">${pkg.title || 'Untitled Package'}</h3>
+                                <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${isVideo ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">${isVideo ? '🎥 Video' : '📷 Image'}</span>
+                            </div>
                             <p class="text-[11px] font-medium text-slate-500 line-clamp-1 mt-0.5">${pkg.desc || 'No description provided'}</p>
                         </div>
                     </div>
                     
                     <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
-                        <!-- Up / Down Reorder Buttons -->
                         <button onclick="movePackage('${pkg.id}', ${index}, -1)" ${index === 0 ? 'disabled class="opacity-30 cursor-not-allowed bg-slate-200 text-slate-600 p-2 rounded-lg text-xs font-black"' : 'class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-lg text-xs font-black transition"'}>
                             ▲
                         </button>
                         <button onclick="movePackage('${pkg.id}', ${index}, 1)" ${index === currentPackagesList.length - 1 ? 'disabled class="opacity-30 cursor-not-allowed bg-slate-200 text-slate-600 p-2 rounded-lg text-xs font-black"' : 'class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-lg text-xs font-black transition"'}>
                             ▼
                         </button>
-                        
-                        <!-- Edit Button -->
                         <button onclick="openEditModal('${pkg.id}')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold text-xs px-3 py-2 rounded-lg transition uppercase flex items-center gap-1 ml-1">
                             ✏️ Edit
                         </button>
-
-                        <!-- Delete Button -->
                         <button onclick="deletePackage('${pkg.id}', '${pkg.title}')" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold text-xs px-3 py-2 rounded-lg transition uppercase flex items-center gap-1">
                             🗑️ Delete
                         </button>
@@ -350,10 +368,10 @@
             });
         }
 
-        // Initialize immediately
+        // Initialize database listeners
         setupDatabaseListeners(TAXI_ID);
 
-        // Unlimited Manual Entry Switcher Trigger
+        // Unit Node Switcher Trigger
         document.getElementById('load-node-btn').onclick = () => {
             let rawVal = taxiInput.value.trim().toLowerCase();
             if(!rawVal) {
@@ -370,7 +388,7 @@
             alert(`Switched to unit console workspace path: "${TAXI_ID}"`);
         };
 
-        // Form Submit: Process Settings Data Update Task
+        // Form Submit: Settings Profile Update
         document.getElementById('settings-form').onsubmit = (e) => {
             e.preventDefault();
             update(ref(db, TAXI_ID + '/settings'), {
@@ -386,7 +404,7 @@
             }).then(() => alert(`Profile properties for "${TAXI_ID}" synchronized successfully!`)).catch(err => alert("Error saving: " + err.message));
         };
 
-        // Form Submit: Process Advertisement Context Parameters Update Task
+        // Form Submit: Advertisement Update
         document.getElementById('ad-form').onsubmit = (e) => {
             e.preventDefault();
             update(ref(db, TAXI_ID + '/advertisement'), {
@@ -398,7 +416,7 @@
             }).then(() => alert(`Advertisement properties for "${TAXI_ID}" synchronized live!`)).catch(err => alert("Error saving ad block: " + err.message));
         };
 
-        // Form Submit: Insert New Tour Package Block Task
+        // Form Submit: Insert New Tour Package
         document.getElementById('package-form').onsubmit = (e) => {
             e.preventDefault();
             
@@ -415,6 +433,7 @@
 
             const newPackageData = {
                 title: document.getElementById('pkg-title').value,
+                mediaType: document.getElementById('pkg-media-type').value,
                 img: document.getElementById('pkg-img').value,
                 desc: document.getElementById('pkg-desc').value,
                 order: currentPackagesList.length
@@ -427,13 +446,14 @@
             }).catch(err => alert("Error appending package: " + err.message));
         };
 
-        // Global functions for Edit, Delete, Move
+        // Global functions for Edit Modal & Item actions
         window.openEditModal = function(pkgId) {
             const pkg = currentPackagesList.find(p => p.id === pkgId);
             if (!pkg) return;
 
             document.getElementById('edit-pkg-id').value = pkg.id;
             document.getElementById('edit-pkg-title').value = pkg.title || '';
+            document.getElementById('edit-pkg-media-type').value = pkg.mediaType || 'image';
             document.getElementById('edit-pkg-img').value = pkg.img || '';
             document.getElementById('edit-pkg-desc').value = pkg.desc || '';
             document.getElementById('edit-pkg-gallery').value = pkg.gallery ? JSON.stringify(pkg.gallery) : '';
@@ -462,6 +482,7 @@
 
             const updatedData = {
                 title: document.getElementById('edit-pkg-title').value,
+                mediaType: document.getElementById('edit-pkg-media-type').value,
                 img: document.getElementById('edit-pkg-img').value,
                 desc: document.getElementById('edit-pkg-desc').value
             };
