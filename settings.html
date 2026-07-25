@@ -57,7 +57,7 @@
                     <input id="set-driver-name" type="text" class="w-full p-3 border rounded-xl font-medium">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Driver Photo/Video Link (.mp4 / .webm / image url)</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Driver Photo/Video Link (.mp4 / YouTube / image url)</label>
                     <input id="set-driver-img" type="url" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
@@ -73,7 +73,7 @@
                     <input id="set-v-capacity" type="text" placeholder="e.g. 6+1, 4+1" class="w-full p-3 border rounded-xl">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Vehicle Fleet Photo/Video Link (.mp4 / .webm / image url)</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Vehicle Fleet Photo/Video Link (.mp4 / YouTube / image url)</label>
                     <input id="set-taxi-img" type="url" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div class="md:col-span-2 pt-2">
@@ -105,7 +105,7 @@
                     <input id="ad-set-headline" type="text" class="w-full p-3 border-2 border-amber-200 rounded-xl font-bold bg-white">
                 </div>
                 <div class="md:col-span-3">
-                    <label class="block text-xs font-bold text-amber-800 uppercase mb-1">Ad Media URL (.mp4 / .webm video / banner image asset link)</label>
+                    <label class="block text-xs font-bold text-amber-800 uppercase mb-1">Ad Media URL (.mp4 / YouTube link / banner image asset)</label>
                     <input id="ad-set-media" type="url" class="w-full p-3 border-2 border-amber-200 rounded-xl text-sm bg-white">
                 </div>
                 <div class="md:col-span-3">
@@ -135,12 +135,12 @@
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Media Format</label>
                         <select id="pkg-media-type" class="w-full p-3 border rounded-xl font-bold bg-slate-50 text-sm">
                             <option value="image">📷 Image URL</option>
-                            <option value="video">🎥 Video URL (.mp4 / .webm)</option>
+                            <option value="video">🎥 Video URL (MP4 / YouTube / Shorts)</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Primary Cover Media URL</label>
-                        <input id="pkg-img" type="url" required class="w-full p-3 border rounded-xl text-sm">
+                        <input id="pkg-img" type="url" required placeholder="https://..." class="w-full p-3 border rounded-xl text-sm">
                     </div>
                 </div>
                 <div>
@@ -191,7 +191,7 @@
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Media Format</label>
                         <select id="edit-pkg-media-type" class="w-full p-3 border rounded-xl font-bold bg-slate-50 text-sm">
                             <option value="image">📷 Image URL</option>
-                            <option value="video">🎥 Video URL (.mp4 / .webm)</option>
+                            <option value="video">🎥 Video URL (MP4 / YouTube / Shorts)</option>
                         </select>
                     </div>
                 </div>
@@ -244,6 +244,38 @@
 
         let settingsListener, adListener, packagesListener;
         let currentPackagesList = [];
+
+        // Helper: Extract Embed URLs for YouTube/Vimeo/Video Links
+        function getEmbedMediaHTML(url, customClass = "w-14 h-14 object-cover rounded-lg bg-slate-900 border border-slate-300 shrink-0") {
+            if (!url) return `<div class="${customClass} bg-slate-200 flex items-center justify-center text-[10px] text-slate-400">No Media</div>`;
+
+            const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+            
+            if (isYouTube) {
+                let ytId = '';
+                if (url.includes('youtube.com/shorts/')) {
+                    ytId = url.split('youtube.com/shorts/')[1].split('?')[0];
+                } else if (url.includes('v=')) {
+                    ytId = url.split('v=')[1].split('&')[0];
+                } else if (url.includes('youtu.be/')) {
+                    ytId = url.split('youtu.be/')[1].split('?')[0];
+                } else if (url.includes('embed/')) {
+                    ytId = url.split('embed/')[1].split('?')[0];
+                }
+
+                if (ytId) {
+                    return `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}" class="${customClass}" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+                }
+            }
+
+            const isDirectVideo = url.endsWith('.mp4') || url.endsWith('.webm') || url.includes('video');
+            if (isDirectVideo) {
+                return `<video src="${url}" autoplay loop muted playsinline class="${customClass}"></video>`;
+            }
+
+            // Default to standard image tag
+            return `<img src="${url}" class="${customClass}" onerror="this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200'">`;
+        }
 
         // Core data synchronization engine
         function setupDatabaseListeners(nodeId) {
@@ -331,14 +363,11 @@
                 const card = document.createElement('div');
                 card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 hover:border-slate-300 transition";
                 
-                const isVideo = pkg.mediaType === 'video' || (pkg.img && (pkg.img.endsWith('.mp4') || pkg.img.endsWith('.webm')));
-                
-                const mediaTag = isVideo 
-                    ? `<video src="${pkg.img}" autoplay loop muted playsinline class="w-14 h-14 object-cover rounded-lg bg-slate-900 border border-slate-300 shrink-0"></video>`
-                    : `<img src="${pkg.img}" class="w-14 h-14 object-cover rounded-lg bg-slate-200 border border-slate-300 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200'">`;
+                const isVideo = pkg.mediaType === 'video' || (pkg.img && (pkg.img.endsWith('.mp4') || pkg.img.endsWith('.webm') || pkg.img.includes('youtube.com') || pkg.img.includes('youtu.be')));
+                const mediaTag = isVideo ? getEmbedMediaHTML(pkg.img) : `<img src="${pkg.img}" class="w-14 h-14 object-cover rounded-lg bg-slate-200 border border-slate-300 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200'">`;
 
                 card.innerHTML = `
-                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="flex items-center gap-3 w-full sm:w-auto overflow-hidden">
                         ${mediaTag}
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2">
@@ -349,7 +378,7 @@
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+                    <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200 shrink-0">
                         <button onclick="movePackage('${pkg.id}', ${index}, -1)" ${index === 0 ? 'disabled class="opacity-30 cursor-not-allowed bg-slate-200 text-slate-600 p-2 rounded-lg text-xs font-black"' : 'class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-lg text-xs font-black transition"'}>
                             ▲
                         </button>
