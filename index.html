@@ -23,24 +23,25 @@
         <p class="text-sm text-slate-400 mt-2 font-medium">This fleet tracking node is currently set to inactive by management.</p>
     </div>
 
+    <!-- Interstitial Ad Overlay -->
     <div id="ad-overlay" class="ad-overlay">
         <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl p-6 relative flex flex-col items-center text-center">
-            <div class="absolute top-4 right-4 bg-red-600 text-white font-black text-xs px-3 py-1.5 rounded-full tracking-wider shadow-sm">
+            <div class="absolute top-4 right-4 bg-red-600 text-white font-black text-xs px-3 py-1.5 rounded-full tracking-wider shadow-sm z-10">
                 Ad closes in: <span id="ad-timer">5</span>s
             </div>
             
             <span id="ad-display-tag" class="text-xs font-black tracking-widest text-blue-600 uppercase mb-1 mt-4">Sponsored Announcement</span>
             <h3 id="ad-display-headline" class="font-black text-xl text-slate-900 uppercase tracking-tight mb-4">Premium Travel Services</h3>
             
-            <div class="w-full aspect-video rounded-xl overflow-hidden bg-black shadow-inner border mb-4">
-                <video id="ad-display-video" src="" autoplay loop muted playsinline class="w-full h-full object-cover hidden"></video>
-                <img id="ad-display-img" src="" class="w-full h-full object-cover hidden" alt="Advertisement">
+            <div id="ad-media-container" class="w-full aspect-video rounded-xl overflow-hidden bg-black shadow-inner border mb-4 flex items-center justify-center">
+                <!-- Dynamic Video / Image / Embed Injected Here -->
             </div>
             
             <p id="ad-display-desc" class="text-xs text-gray-500 font-medium px-2 leading-relaxed">Loading promotional details...</p>
         </div>
     </div>
 
+    <!-- App Header -->
     <header class="bg-[#003399] text-white p-4 border-b-4 border-yellow-400 shadow-lg sticky top-0 z-50">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="text-left flex-1 pr-2">
@@ -53,6 +54,7 @@
         </div>
     </header>
 
+    <!-- WhatsApp Share Modal -->
     <div id="share-modal" class="share-overlay">
         <div class="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl relative text-slate-900 text-center animate-in fade-in zoom-in-95 duration-200">
             <button onclick="closeShareModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
@@ -72,11 +74,11 @@
         </div>
     </div>
 
+    <!-- Fleet Profile Card -->
     <section class="bg-[#cc0000] text-white p-4 mb-4 shadow-lg flex flex-col gap-3">
         <div class="flex items-center justify-between">
             <div class="w-[30%] relative">
-                <div class="w-full aspect-square border-2 border-white rounded-2xl shadow-md overflow-hidden bg-black">
-                    <video id="display-driver-video" src="" autoplay loop muted playsinline class="w-full h-full object-cover hidden"></video>
+                <div id="driver-media-box" class="w-full aspect-square border-2 border-white rounded-2xl shadow-md overflow-hidden bg-black flex items-center justify-center">
                     <img id="display-driver-img" src="https://via.placeholder.com/150?text=Driver" class="w-full h-full object-cover" alt="Driver">
                 </div>
                 <span class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-yellow-400 text-slate-900 text-[9px] font-black uppercase px-2 py-0.5 rounded shadow tracking-wider">Driver</span>
@@ -90,8 +92,7 @@
             </div>
 
             <div class="w-[30%] relative flex justify-end">
-                <div class="w-full max-w-[90px] aspect-square border-2 border-white rounded-2xl shadow-md overflow-hidden bg-black">
-                    <video id="display-taxi-video" src="" autoplay loop muted playsinline class="w-full h-full object-cover hidden"></video>
+                <div id="taxi-media-box" class="w-full max-w-[90px] aspect-square border-2 border-white rounded-2xl shadow-md overflow-hidden bg-black flex items-center justify-center">
                     <img id="display-taxi-img" src="https://via.placeholder.com/150?text=Taxi" class="w-full h-full object-cover" alt="Vehicle">
                 </div>
                 <span class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded shadow tracking-wider">Vehicle</span>
@@ -105,8 +106,10 @@
         </div>
     </section>
 
+    <!-- Main Tour Packages Container -->
     <main id="package-container" class="px-4 pb-24 space-y-6"></main>
 
+    <!-- Package Details Popup Modal -->
     <div id="popup-box" class="popup-overlay">
         <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden relative shadow-2xl flex flex-col max-h-[85vh]">
             <button onclick="closePopup()" class="absolute top-3 right-3 bg-red-600 text-white w-10 h-10 rounded-full font-bold z-50 shadow-md">✕</button>
@@ -121,6 +124,40 @@
         </div>
     </div>
 
+    <!-- Universal Media Render Helper JS -->
+    <script>
+        function getEmbedMediaHTML(url, customClass = "w-full h-full object-cover") {
+            if (!url) return `<div class="${customClass} bg-slate-900 flex items-center justify-center text-xs text-slate-400">No Media</div>`;
+
+            const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+            
+            if (isYouTube) {
+                let ytId = '';
+                if (url.includes('youtube.com/shorts/')) {
+                    ytId = url.split('youtube.com/shorts/')[1].split('?')[0];
+                } else if (url.includes('v=')) {
+                    ytId = url.split('v=')[1].split('&')[0];
+                } else if (url.includes('youtu.be/')) {
+                    ytId = url.split('youtu.be/')[1].split('?')[0];
+                } else if (url.includes('embed/')) {
+                    ytId = url.split('embed/')[1].split('?')[0];
+                }
+
+                if (ytId) {
+                    return `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}" class="${customClass}" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+                }
+            }
+
+            const isDirectVideo = url.endsWith('.mp4') || url.endsWith('.webm') || url.includes('video');
+            if (isDirectVideo) {
+                return `<video src="${url}" autoplay loop muted playsinline class="${customClass}"></video>`;
+            }
+
+            return `<img src="${url}" class="${customClass}" alt="Media Item" onerror="this.src='https://via.placeholder.com/400x200?text=Image+Unavailable'">`;
+        }
+    </script>
+
+    <!-- Main Firebase Engine Modules -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -143,18 +180,12 @@
             timerDuration: 5
         };
 
-        const isVideoFile = (url) => {
-            if (!url) return false;
-            const cleanUrl = url.split('?')[0].toLowerCase();
-            return cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm');
-        };
-
         // LOAD SETTINGS
         onValue(ref(db, TAXI_ID + '/settings'), (snap) => {
             const data = snap.val();
             if(data) {
                 document.getElementById('inactive-screen').style.display = data.status === "inactive" ? 'flex' : 'none';
-                document.getElementById('display-title').innerText = data.title || "TRAVELS";
+                document.getElementById('display-title').innerText = data.title || "BHASKAR TRAVELS";
                 document.getElementById('display-phone').innerText = data.phone || "";
                 document.getElementById('display-driver-name').innerText = data.driverName || "DRIVER";
                 document.getElementById('v-type').innerText = data.vehicleType || "Taxi";
@@ -162,27 +193,11 @@
                 document.getElementById('v-no').innerText = data.taxiNo || "---";
                 
                 if(data.driverImg) {
-                    if(isVideoFile(data.driverImg)) {
-                        document.getElementById('display-driver-video').src = data.driverImg;
-                        document.getElementById('display-driver-video').classList.remove('hidden');
-                        document.getElementById('display-driver-img').classList.add('hidden');
-                    } else {
-                        document.getElementById('display-driver-img').src = data.driverImg;
-                        document.getElementById('display-driver-img').classList.remove('hidden');
-                        document.getElementById('display-driver-video').classList.add('hidden');
-                    }
+                    document.getElementById('driver-media-box').innerHTML = getEmbedMediaHTML(data.driverImg);
                 }
                 
                 if(data.taxiImg) {
-                    if(isVideoFile(data.taxiImg)) {
-                        document.getElementById('display-taxi-video').src = data.taxiImg;
-                        document.getElementById('display-taxi-video').classList.remove('hidden');
-                        document.getElementById('display-taxi-img').classList.add('hidden');
-                    } else {
-                        document.getElementById('display-taxi-img').src = data.taxiImg;
-                        document.getElementById('display-taxi-img').classList.remove('hidden');
-                        document.getElementById('display-taxi-video').classList.add('hidden');
-                    }
+                    document.getElementById('taxi-media-box').innerHTML = getEmbedMediaHTML(data.taxiImg);
                 }
             }
         });
@@ -197,17 +212,7 @@
                 document.getElementById('ad-display-desc').innerText = data.description || "";
                 
                 const mediaUrl = data.mediaUrl || "";
-                if (mediaUrl) {
-                    if (isVideoFile(mediaUrl)) {
-                        document.getElementById('ad-display-video').src = mediaUrl;
-                        document.getElementById('ad-display-video').classList.remove('hidden');
-                        document.getElementById('ad-display-img').classList.add('hidden');
-                    } else {
-                        document.getElementById('ad-display-img').src = mediaUrl;
-                        document.getElementById('ad-display-img').classList.remove('hidden');
-                        document.getElementById('ad-display-video').classList.add('hidden');
-                    }
-                }
+                document.getElementById('ad-media-container').innerHTML = getEmbedMediaHTML(mediaUrl);
             }
         });
 
@@ -237,12 +242,7 @@
                 const gallery = pkg.gallery || (pkg.img ? [pkg.img] : []);
                 const b64Gallery = btoa(unescape(encodeURIComponent(JSON.stringify(gallery))));
 
-                let visualCode = '';
-                if(pkg.img && isVideoFile(pkg.img)) {
-                    visualCode = `<video src="${pkg.img}" autoplay loop muted playsinline class="w-full h-52 object-cover"></video>`;
-                } else {
-                    visualCode = `<img src="${pkg.img || 'https://via.placeholder.com/400x200?text=No+Image+Available'}" class="w-full h-52 object-cover" alt="Package Media">`;
-                }
+                const visualCode = `<div class="w-full h-52 overflow-hidden bg-black flex items-center justify-center">${getEmbedMediaHTML(pkg.img, "w-full h-52 object-cover")}</div>`;
 
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
@@ -290,7 +290,7 @@
 
         window.bookWhatsApp = (t) => {
             const p = document.getElementById('display-phone').innerText;
-            window.open(`https://wa.me/${p.replace(/\D/g,'')}?text=Hello%20Bhaskar%20Travels%2C%20I%20am%20interested%20in%20booking%20the%20tour%20package%3A%20*${encodeURIComponent(t)}*`, '_blank');
+            window.open(`https://wa.me/${p.replace(/\D/g,'')}?text=Hello%20${encodeURIComponent(document.getElementById('display-title').innerText)}%2C%20I%20am%20interested%20in%20booking%20the%20tour%20package%3A%20*${encodeURIComponent(t)}*`, '_blank');
         };
 
         document.getElementById('submit-share-btn').onclick = window.sendProfileViaWhatsApp;
@@ -335,19 +335,9 @@
             } catch(e) { console.error(e); }
             
             let galHtml = "";
-            const isVideoFile = (url) => {
-                if (!url) return false;
-                const cleanUrl = url.split('?')[0].toLowerCase();
-                return cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm');
-            };
-
             gallery.forEach(mediaItem => {
                 if(mediaItem) {
-                    if(isVideoFile(mediaItem)) {
-                        galHtml += `<video src="${mediaItem}" autoplay loop muted playsinline class="w-full rounded-xl shadow-md border object-cover mb-2"></video>`;
-                    } else {
-                        galHtml += `<img src="${mediaItem}" class="w-full rounded-xl shadow-md border object-cover mb-2" alt="Gallery">`;
-                    }
+                    galHtml += `<div class="w-full aspect-video rounded-xl overflow-hidden shadow-md border mb-2 bg-black">${getEmbedMediaHTML(mediaItem, "w-full h-full object-cover")}</div>`;
                 }
             });
             
