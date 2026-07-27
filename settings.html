@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans pb-24">
-
     <header class="bg-slate-900 text-white p-5 shadow-md sticky top-0 z-50 border-b-4 border-yellow-500">
         <div class="max-w-4xl mx-auto flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div>
@@ -30,7 +29,6 @@
     </header>
 
     <main class="max-w-4xl mx-auto p-4 space-y-8 mt-4">
-
         <!-- Profile Settings Section -->
         <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
             <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 flex items-center gap-2">
@@ -126,9 +124,16 @@
                 📦 Add New Tour Package Module
             </h2>
             <form id="package-form" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Package Name / Destination Route</label>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Node Scope</label>
+                        <select id="pkg-scope" class="w-full p-3 border rounded-xl font-bold bg-yellow-50 text-yellow-900 border-yellow-300 text-sm">
+                            <option value="global">🌐 Global Master (All Taxis Default)</option>
+                            <option value="node">🚕 Current Unit Only (<span class="target-node-label">...</span>)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Package Name / Route</label>
                         <input id="pkg-title" type="text" required class="w-full p-3 border rounded-xl font-bold text-sm">
                     </div>
                     <div>
@@ -160,17 +165,18 @@
         <!-- Dynamic Tour Packages Manager List -->
         <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                    🗺️ Dynamic Packages Manager (<span id="pkg-count">0</span>)
-                </h2>
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                        🗺️ Dynamic Packages Manager (<span id="pkg-count">0</span>)
+                    </h2>
+                    <p id="pkg-source-badge" class="text-xs font-bold text-blue-600 mt-0.5">---</p>
+                </div>
                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Use arrows to reorder items</span>
             </div>
-
             <div id="packages-list-container" class="space-y-3">
                 <p class="text-center text-xs font-bold text-slate-400 py-6">Loading packages list...</p>
             </div>
         </section>
-
     </main>
 
     <!-- Edit Package Modal -->
@@ -240,15 +246,20 @@
         
         const taxiInput = document.getElementById('taxi-input');
         taxiInput.value = TAXI_ID;
-        document.getElementById('current-node-txt').innerText = TAXI_ID;
+        updateNodeLabels(TAXI_ID);
 
-        let settingsListener, adListener, packagesListener;
+        let settingsListener, adListener, packagesListener, globalListener;
         let currentPackagesList = [];
+        let activePackagePath = '';
+
+        function updateNodeLabels(nodeId) {
+            document.getElementById('current-node-txt').innerText = nodeId;
+            document.querySelectorAll('.target-node-label').forEach(el => el.innerText = nodeId);
+        }
 
         // Helper: Extract Embed URLs for YouTube/Vimeo/Video Links
         function getEmbedMediaHTML(url, customClass = "w-14 h-14 object-cover rounded-lg bg-slate-900 border border-slate-300 shrink-0") {
             if (!url) return `<div class="${customClass} bg-slate-200 flex items-center justify-center text-[10px] text-slate-400">No Media</div>`;
-
             const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
             
             if (isYouTube) {
@@ -262,18 +273,14 @@
                 } else if (url.includes('embed/')) {
                     ytId = url.split('embed/')[1].split('?')[0];
                 }
-
                 if (ytId) {
                     return `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}" class="${customClass}" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
                 }
             }
-
             const isDirectVideo = url.endsWith('.mp4') || url.endsWith('.webm') || url.includes('video');
             if (isDirectVideo) {
                 return `<video src="${url}" autoplay loop muted playsinline class="${customClass}"></video>`;
             }
-
-            // Default to standard image tag
             return `<img src="${url}" class="${customClass}" onerror="this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200'">`;
         }
 
@@ -283,8 +290,9 @@
             if(settingsListener) settingsListener();
             if(adListener) adListener();
             if(packagesListener) packagesListener();
+            if(globalListener) globalListener();
 
-            document.getElementById('current-node-txt').innerText = nodeId;
+            updateNodeLabels(nodeId);
 
             // 1. Sync settings fields data
             settingsListener = onValue(ref(db, nodeId + '/settings'), (snap) => {
@@ -319,7 +327,7 @@
                     document.getElementById('ad-set-timer').value = data.timerDuration || 5;
                     document.getElementById('ad-set-tag').value = data.sponsoredTag || "Sponsored Announcement";
                     document.getElementById('ad-set-headline').value = data.headline || "Premium Travel Services";
-                    document.getElementById('ad-set-media').value = data.mediaUrl || "https://www.w3schools.com/html/mov_bbb.mp4";
+                    document.getElementById('ad-set-media').value = data.mediaUrl || "";
                     document.getElementById('ad-set-desc').value = data.description || "";
                 } else {
                     document.getElementById('ad-set-timer').value = 5;
@@ -330,22 +338,40 @@
                 }
             });
 
-            // 3. Sync and render Packages List with order sorting
+            // 3. STRATEGY 1 FALLBACK ENGINE: Sync Packages with Global Fallback
             packagesListener = onValue(ref(db, nodeId + '/packages'), (snap) => {
-                const data = snap.val() || {};
-                currentPackagesList = [];
+                const nodeData = snap.val();
 
-                Object.keys(data).forEach((key) => {
-                    currentPackagesList.push({
-                        id: key,
-                        ...data[key]
+                if (nodeData && Object.keys(nodeData).length > 0) {
+                    // Node has custom packages
+                    activePackagePath = nodeId + '/packages';
+                    document.getElementById('pkg-source-badge').innerText = `Showing node-specific packages for [${nodeId}]`;
+                    document.getElementById('pkg-source-badge').className = "text-xs font-bold text-green-600 mt-0.5";
+                    parseAndRenderPackages(nodeData);
+                } else {
+                    // Node has no custom packages -> Fallback to global_packages
+                    activePackagePath = 'global_packages';
+                    document.getElementById('pkg-source-badge').innerText = `No custom packages for [${nodeId}]. Showing Global Master Packages`;
+                    document.getElementById('pkg-source-badge').className = "text-xs font-bold text-amber-600 mt-0.5";
+                    
+                    globalListener = onValue(ref(db, 'global_packages'), (globalSnap) => {
+                        const globalData = globalSnap.val() || {};
+                        parseAndRenderPackages(globalData);
                     });
-                });
-
-                // Sort by display order if present
-                currentPackagesList.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-                renderPackagesUI();
+                }
             });
+        }
+
+        function parseAndRenderPackages(data) {
+            currentPackagesList = [];
+            Object.keys(data).forEach((key) => {
+                currentPackagesList.push({
+                    id: key,
+                    ...data[key]
+                });
+            });
+            currentPackagesList.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+            renderPackagesUI();
         }
 
         // Render Packages List UI
@@ -355,7 +381,7 @@
             container.innerHTML = '';
 
             if (currentPackagesList.length === 0) {
-                container.innerHTML = `<p class="text-center text-xs font-bold text-slate-400 py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">No tour packages found for this node. Add one above!</p>`;
+                container.innerHTML = `<p class="text-center text-xs font-bold text-slate-400 py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">No tour packages found. Add one above!</p>`;
                 return;
             }
 
@@ -365,7 +391,7 @@
                 
                 const isVideo = pkg.mediaType === 'video' || (pkg.img && (pkg.img.endsWith('.mp4') || pkg.img.endsWith('.webm') || pkg.img.includes('youtube.com') || pkg.img.includes('youtu.be')));
                 const mediaTag = isVideo ? getEmbedMediaHTML(pkg.img) : `<img src="${pkg.img}" class="w-14 h-14 object-cover rounded-lg bg-slate-200 border border-slate-300 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200'">`;
-
+                
                 card.innerHTML = `
                     <div class="flex items-center gap-3 w-full sm:w-auto overflow-hidden">
                         ${mediaTag}
@@ -407,9 +433,8 @@
                 alert("Please enter a valid node name string value.");
                 return;
             }
-            TAXI_ID = rawVal.replace(/[\.#\$\[\]]/g, "-");
+            TAXI_ID = rawVal.replace(/[\.\#\$\/\[\]]/g, "-");
             taxiInput.value = TAXI_ID;
-
             const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + TAXI_ID;
             window.history.pushState({ path: newUrl }, '', newUrl);
             
@@ -445,7 +470,7 @@
             }).then(() => alert(`Advertisement properties for "${TAXI_ID}" synchronized live!`)).catch(err => alert("Error saving ad block: " + err.message));
         };
 
-        // Form Submit: Insert New Tour Package
+        // Form Submit: Insert New Tour Package (Handles Global vs Node Scope)
         document.getElementById('package-form').onsubmit = (e) => {
             e.preventDefault();
             
@@ -460,6 +485,9 @@
                 }
             }
 
+            const scope = document.getElementById('pkg-scope').value;
+            const targetPath = scope === 'global' ? 'global_packages' : TAXI_ID + '/packages';
+
             const newPackageData = {
                 title: document.getElementById('pkg-title').value,
                 mediaType: document.getElementById('pkg-media-type').value,
@@ -469,8 +497,8 @@
             };
             if(parsedGallery) newPackageData.gallery = parsedGallery;
 
-            push(ref(db, TAXI_ID + '/packages'), newPackageData).then(() => {
-                alert(`New travel routing package module added to "${TAXI_ID}" successfully!`);
+            push(ref(db, targetPath), newPackageData).then(() => {
+                alert(`New travel package added to [${targetPath}] successfully!`);
                 document.getElementById('package-form').reset();
             }).catch(err => alert("Error appending package: " + err.message));
         };
@@ -479,14 +507,12 @@
         window.openEditModal = function(pkgId) {
             const pkg = currentPackagesList.find(p => p.id === pkgId);
             if (!pkg) return;
-
             document.getElementById('edit-pkg-id').value = pkg.id;
             document.getElementById('edit-pkg-title').value = pkg.title || '';
             document.getElementById('edit-pkg-media-type').value = pkg.mediaType || 'image';
             document.getElementById('edit-pkg-img').value = pkg.img || '';
             document.getElementById('edit-pkg-desc').value = pkg.desc || '';
             document.getElementById('edit-pkg-gallery').value = pkg.gallery ? JSON.stringify(pkg.gallery) : '';
-
             document.getElementById('edit-pkg-modal').classList.remove('hidden');
         };
 
@@ -497,7 +523,6 @@
         document.getElementById('edit-pkg-form').onsubmit = function(e) {
             e.preventDefault();
             const pkgId = document.getElementById('edit-pkg-id').value;
-
             let parsedGallery = null;
             const galleryVal = document.getElementById('edit-pkg-gallery').value.trim();
             if(galleryVal) {
@@ -508,18 +533,16 @@
                     return;
                 }
             }
-
             const updatedData = {
                 title: document.getElementById('edit-pkg-title').value,
                 mediaType: document.getElementById('edit-pkg-media-type').value,
                 img: document.getElementById('edit-pkg-img').value,
                 desc: document.getElementById('edit-pkg-desc').value
             };
-
             if(parsedGallery) updatedData.gallery = parsedGallery;
             else updatedData.gallery = null;
 
-            update(ref(db, TAXI_ID + '/packages/' + pkgId), updatedData)
+            update(ref(db, activePackagePath + '/' + pkgId), updatedData)
                 .then(() => {
                     alert("Package updated successfully!");
                     closeEditModal();
@@ -528,8 +551,8 @@
         };
 
         window.deletePackage = function(pkgId, title) {
-            if (confirm(`Are you sure you want to delete "${title || 'this package'}"?`)) {
-                remove(ref(db, TAXI_ID + '/packages/' + pkgId))
+            if (confirm(`Are you sure you want to delete "${title || 'this package'}" from [${activePackagePath}]?`)) {
+                remove(ref(db, activePackagePath + '/' + pkgId))
                     .then(() => alert("Package deleted successfully!"))
                     .catch(err => alert("Error deleting package: " + err.message));
             }
@@ -538,13 +561,13 @@
         window.movePackage = function(pkgId, currentIndex, direction) {
             const targetIndex = currentIndex + direction;
             if (targetIndex < 0 || targetIndex >= currentPackagesList.length) return;
-
+            
             const updates = {};
             const itemA = currentPackagesList[currentIndex];
             const itemB = currentPackagesList[targetIndex];
 
-            updates[TAXI_ID + '/packages/' + itemA.id + '/order'] = targetIndex;
-            updates[TAXI_ID + '/packages/' + itemB.id + '/order'] = currentIndex;
+            updates[activePackagePath + '/' + itemA.id + '/order'] = targetIndex;
+            updates[activePackagePath + '/' + itemB.id + '/order'] = currentIndex;
 
             update(ref(db), updates).catch(err => alert("Error reordering packages: " + err.message));
         };
